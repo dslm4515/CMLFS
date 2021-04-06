@@ -1,0 +1,7 @@
+# Cross-Tools: File
+# Build and install as cmlfs
+
+# Configure source
+./configure --prefix=/cross-tools --disable-libseccomp
+
+# Build and install
