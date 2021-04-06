@@ -1,0 +1,18 @@
+cd libunwind  
+
+cmake -B build -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=${LIBUNWIND_GNU_INSTALL_PATH} \
+      -DLIBUNWIND_ENABLE_SHARED=ON \
+      -DLLVM_PATH="${LLVMSRC}/llvm" \
+      -DCMAKE_C_FLAGS="-fPIC"  \
+      -DCMAKE_CXX_FLAGS="-fPIC" && \ 
+
+ninja -C build         && \
+ninja -C build install && \
+
+# Link libunwind to final toolchain. Libraries will be replaced once
+# libunwind is rebuilt with clang
+mkdir -pv /llvmtools/lib/ \
+ln -sv ${LIBUNWIND_GNU_INSTALL_PATH}/lib/* /llvmtools/lib/ &&\
+
+rm -rf build

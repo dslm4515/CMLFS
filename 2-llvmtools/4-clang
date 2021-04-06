@@ -1,0 +1,43 @@
+# Set CC and CXX compiler with recently built clang (cgnutools)
+export CXX=/cgnutools/bin/clang++
+export  CC=/cgnutools/bin/clang
+
+export  LIBUNWIND_INSTALL_PATH=/llvmtools/lib
+export  LIBCXXABI_INSTALL_PATH=/llvmtools/lib
+export  LIBCXX_INSTALL_PATH=/llvmtools/lib
+
+cd clang
+cmake -B build -G Ninja \
+      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_INSTALL_PREFIX=/llvmtools \
+      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" \
+      -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+      -DLLVM_LINK_LLVM_DYLIB=ON \
+      -DLLVM_BUILD_LLVM_DYLIB=ON \
+      -DLLVM_BUILD_TESTS=OFF \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_LIBCXX=ON \
+      -DLLVM_INCLUDE_GO_TESTS=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF \
+      -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
+      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" 
+      -DLLVM_TARGET_ARCH="X86" \
+      -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
+      -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+      -DCOMPILER_RT_BUILD_XRAY=OFF \
+      -DCOMPILER_RT_BUILD_PROFILE=OFF \
+      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+      -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \ 
+      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+      -DCLANG_DEFAULT_RTLIB=compiler-rt
+
+ninja -C build         && \
+ninja -C build install && \ 
+rm -rf build
+

@@ -1,0 +1,19 @@
+# Set CC and CXX compiler with recently built clang (cgnutools)
+export CXX=/cgnutools/bin/clang++
+export  CC=/cgnutools/bin/clang
+
+export  LIBUNWIND_INSTALL_PATH=/llvmtools/lib
+export  LIBCXXABI_INSTALL_PATH=/llvmtools/lib 
+export  LIBCXX_INSTALL_PATH=/llvmtools/lib
+
+cd libunwind
+
+cmake -B build -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=${LIBUNWIND_INSTALL_PATH} \
+      -DLIBUNWIND_ENABLE_SHARED=ON \
+      -DLLVM_PATH="${LLVMSRC}/llvm" \
+      -DCMAKE_C_FLAGS="-fPIC" \
+      -DCMAKE_CXX_FLAGS="-fPIC"
+ninja -C build 
+ninja -C build install
+rm -rf build       

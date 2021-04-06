@@ -1,0 +1,24 @@
+# Set CC and CXX compiler with recently built clang (cgnutools)
+export CXX=/cgnutools/bin/clang++
+export  CC=/cgnutools/bin/clang
+
+export  LIBUNWIND_INSTALL_PATH=/llvmtools/lib
+export  LIBCXXABI_INSTALL_PATH=/llvmtools/lib 
+export  LIBCXX_INSTALL_PATH=/llvmtools/lib
+
+cd libcxx
+
+cmake -B build -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=${LIBCXX_INSTALL_PATH} \
+      -DLLVM_PATH="${LLVMSRC}/llvm" \
+      -DLIBCXX_ENABLE_SHARED=ON \
+      -DLIBCXX_ENABLE_STATIC=ON  \
+      -DLIBCXX_HAS_GCC_S_LIB=OFF \
+      -DLIBCXX_HAS_MUSL_LIBC=ON \
+      -DLIBCXX_USE_COMPILER_RT=ON \
+      -DLIBCXX_CXX_ABI=libcxxabi \
+      -DLIBCXX_CXX_ABI_INCLUDE_PATHS="${LLVMSRC}/libcxxabi/include" \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON 
+ninja -C build 
+ninja -C build install
+rm -rf build       
