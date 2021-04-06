@@ -2,13 +2,26 @@
 
 This is based on Linux From Scratch (www.linuxfromscratch.org) but with the goal of building a system with clang & friends from LLVM and Musl Libc.
 
-## LLVM Version: 11.0.0
+## Specification
+<ul>
+<li>C Runtime Library (system libc): Musl </li>
+<li>Default C Compiler: clang (LLVM)</li>
+<li>Default C++ compiler: clang++ (LLVM)</li>
+<li>Default linker: lld (LLVM)</li>
+<li>C++ standard library: libcxx (LLVM)</li>
+<li>C++ ABI library: libcxxabi (LLVM)</li>
+<li>Unwinding Library: libunwind (LLVM)</li>
+<li>Init system: skarnet's S6 & S6-rc</li>
+<li>Device manager: Udev </li>
+<li>TLS Implementaion: LibreSSL</li>
+<li>System Shell: Bash </li>
+<li>System Gettext: gettext-tiny</li>
+</ul>
 
 ## Supported Architectures
 
 AMD64/x86_64
-
-Other arches will be supported after first successive build.
+_Other arches will be supported after first successive build._
 
 ## Goals
 
