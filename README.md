@@ -36,27 +36,28 @@ _Other arches will be supported after first successive build._
 </ul>
 
 ## Current Method
-Based on Genshen's repo(github.com/genshen/docker-clang-toolchain)
-Uses the large source archive that includes all LLVM source like clang, 
-compiler-rt, lld, libunwind, libcxxabi, and libcxx.
+~~Based on Genshen's repo(github.com/genshen/docker-clang-toolchain)~~
+_Final clang binary will not compile and links to host's runtime libc_
+
+
+Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile clang to _not_ link against host's runtime libc. This clang will still link to `libgcc_s` but will later be used to build a clang free of `libbgcc_s`
 <ol>
-<li>Stage 1: Build clang with GCC libraries</li>
+<li>Stage 0: Build `cross-tools` with GCC</li>
+<li>Stage 1: Build clang with GCC libraries with `cross-tools`</li>
 <li>Stage 2: Build new clang with old clang. This clang will not have GCC libraries</li>
 <li>Stage 3: Build final root filesystem in chroot</li>
 </ol>
 
 ## Issues
 <ul>
-<li>Stage 2 Clang fails to build</li>
-<li>Binaries built are still linked to host's libc</li>
-<li>LLVM's lld is not used, but wanted.</li>
+<li>None at the moment, still testing</li>
 </ul>
 
 ## Change log
 
 <ul>
-<li>DEV-01(Pending): Build cross-tools with GCC to build stage 1 clang</li>
-<li>DEV-00: First attempt, modeled afer Genshen's repo: Stage 2 clang fails to build.</li>
+<li>0.1.0(Pending): Build cross-tools with GCC to build stage 1 clang</li>
+<li>0.0.0: First attempt, modeled afer Genshen's repo: Stage 2 clang fails to build.</li>
 </ul>
 
 ## Projects of Interest
