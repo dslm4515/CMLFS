@@ -15,6 +15,11 @@ Other arches will be supported after first successive build.
 <ul>
 <li> [ ] Build a toolchain with LLVM but without GCC</li>
 <li> [ ] Build final root filesystem with LLVM</li>
+<li> [ ] Set default linker as lld(LLVM)</li>
+<li> [ ] Set default C++ standard library as libcxx(LLVM)</li>
+<li> [ ] Set default C++ ABI library as libcxxabi(LLVM)</li>
+<li> [ ] Set default stack unwinding library as libunwind(LLVM)</li>
+<li> [ ] Eliminate dependacy on GCC's libgcc_s</li>
 </ul>
 
 ## Current Method
@@ -39,4 +44,10 @@ compiler-rt, lld, libunwind, libcxxabi, and libcxx.
 <ul>
 <li>DEV-01(Pending): Build cross-tools with GCC to build stage 1 clang</li>
 <li>DEV-00: First attempt, modeled afer Genshen's repo: Stage 2 clang fails to build.</li>
+</ul>
+
+## Projects of Interest
+<ul>
+<li>Genshen's docker-clang-toolchain - https://github.com/genshen/docker-clang-toolchain</li>
+<li>Build a freestanding libc++ - https://blogs.gentoo.org/gsoc2016-native-clang/2016/05/05/build-a-freestanding-libcxx/ </li>
 </ul>
