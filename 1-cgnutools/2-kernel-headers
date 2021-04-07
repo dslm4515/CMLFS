@@ -1,0 +1,6 @@
+make mrproper
+ARCH=${CMLFS_ARCH} make headers
+
+find usr/include \( -name .install -o -name ..install.cmd \) -delete
+cp -rv usr/include/* /cgnutools/include/
+rm -v /cgnutools/include/Makefile

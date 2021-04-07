@@ -1,0 +1,17 @@
+cd /mnt/cmlfs/sources/musl-1.2.2
+
+./configure \
+  CROSS_COMPILE=${CMLFS_TARGET}- \
+  --prefix=/ \
+  --target=${CMLFS_TARGET}
+
+make && make DESTDIR=/cgnutools install
+
+rm -v /cgnutools/lib/ld-musl-x86_64.so.1
+ln -sv libc.so /cgnutools/lib/ld-musl-x86_64.so.1
+mkdir /cgnutools/{bin,etc}
+ln -sv ../lib/libc.so /cgnutools/bin/ldd
+
+cat > /cgnutools/etc/ld-musl-x86_64.path << "EOF"
+/cgnutools/lib
+EOF
