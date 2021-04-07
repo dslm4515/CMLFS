@@ -1,4 +1,4 @@
-cd libcxxabi
+cd ${LLVMSRC}/projects/libcxxabi
 
 cmake -B build -G Ninja \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
@@ -7,9 +7,9 @@ cmake -B build -G Ninja \
       -DCMAKE_SHARED_LINKER_FLAGS="-L/cgnutools/lib" \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-      -DLLVM_PATH="${LLVMSRC}/llvm" \
-      -DLIBCXXABI_LIBUNWIND_PATH="${LLVMSRC}libunwind" \
-      -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/libcxx/include" && \
+      -DLLVM_PATH="${LLVMSRC}" \
+      -DLIBCXXABI_LIBUNWIND_PATH="${LLVMSRC}/projects/libunwind" \
+      -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/projects/libcxx/include" && \
 
 ninja -C build         && \
 ninja -C build install && \
@@ -18,5 +18,8 @@ rm -rf build           && \
 # Link libcxxabi to final toolchain. Libraries will be replaced once
 # libcxxabi is rebuilt with clang
 ln -vs /cgnutools/lib/libc++abi* /llvmtools/lib/
+
+# Copy libcxxabi headers
+cp -v include/*.h /cgnutools/include/
 
 
