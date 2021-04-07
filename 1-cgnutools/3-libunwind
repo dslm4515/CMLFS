@@ -1,13 +1,12 @@
-cd ${LLVMSRC}/libunwind  
+cd libunwind  
 
 cmake -B build -G Ninja \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
       -DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
       -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \
       -DLIBUNWIND_ENABLE_SHARED=ON \
-      -DLLVM_PATH="${LLVMSRC}/llvm" \
       -DCMAKE_C_FLAGS="-fPIC"  \
-      -DCMAKE_CXX_FLAGS="-fPIC" && \ 
+      -DCMAKE_CXX_FLAGS="-fPIC"  
 
 ninja -C build         && \
 ninja -C build install && \
