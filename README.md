@@ -43,7 +43,7 @@ _Final clang binary will not compile and links to host's runtime libc_
 Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile clang to _not_ link against host's runtime libc. This clang will still link to `libgcc_s` but will later be used to build a clang free of `libbgcc_s`
 <ol>
 <li>Stage 0: Build `cross-tools` with GCC</li>
-<li>Stage 1: Build clang with GCC libraries with `cross-tools`... ~~build libunwind libcxxabi libcxx clang lld compilerrt individually~~ build clang via llvm source with cland+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
+<li>Stage 1: Build clang with GCC libraries with `cross-tools`... build clang via llvm source with cland+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
 <li>Stage 3: Build libunwind, libcxxabi and libcxx with stage 1 clang. </li>
 <li>Stage 4: Build new clang with stage1 clang. This new clang will not have GCC libraries</li>
 <li>Stage 5: Build final root filesystem in chroot</li>
