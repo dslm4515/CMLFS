@@ -1,0 +1,12 @@
+diff -uNr libcxx.orig/include/locale libcxx/include/locale
+--- libcxx.orig/include/locale       2020-10-07 05:10:48.000000000 -0500
++++ libcxx/include/locale    2021-04-07 19:59:15.019583537 -0500
+@@ -736,7 +736,7 @@
+         typename remove_reference<decltype(errno)>::type __save_errno = errno;
+         errno = 0;
+         char *__p2;
+-        long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++        long long __ll = strtoll(__a, &__p2, __base);
+         typename remove_reference<decltype(errno)>::type __current_errno = errno;
+         if (__current_errno == 0)
+             errno = __save_errno;
