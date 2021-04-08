@@ -2,20 +2,16 @@
 export CXX=/cgnutools/bin/clang++
 export  CC=/cgnutools/bin/clang
 
-export  LIBUNWIND_INSTALL_PATH=/llvmtools/lib
-export  LIBCXXABI_INSTALL_PATH=/llvmtools/lib 
-export  LIBCXX_INSTALL_PATH=/llvmtools/lib
-
 cd libcxxabi
 
 cmake -B build -G Ninja \
-      -DCMAKE_INSTALL_PREFIX=${LIBCXXABI_INSTALL_PATH} \
+      -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
       -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-      -DLIBCXXABI_LIBUNWIND_PATH="${LLVMSRC}/libunwind" \
-      -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/libcxx/include" \
-      -DLLVM_PATH="${LLVMSRC}/llvm" 
+      -DLIBCXXABI_LIBUNWIND_PATH="${LLVMSRC}/projects/libunwind" \
+      -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/projects/libcxx/include" \
+      -DLLVM_PATH="${LLVMSRC}" 
 ninja -C build 
 ninja -C build install
 rm -rf build       
