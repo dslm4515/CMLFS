@@ -13,8 +13,9 @@ install -D -m755 -v libexecinfo.so.1 /cgnutools/lib/libexecinfo.so.1   && \
 ln -sv /cgnutools/lib/libexecinfo.so.1     /cgnutools/lib/libexecinfo.so
 
 # Also needed by cross-tools when cross-compiling clang
-install -D -m755 -v execinfo.h       /cross-tools/include/execinfo.h     && \
-install -D -m755 -v stacktraverse.h  /cross-tools/include/stacktraverse.h && \
-install -D -m755 -v libexecinfo.a    /cross-tools/lib/libexecinfo.a      && \
-install -D -m755 -v libexecinfo.so.1 /cross-tools/lib/libexecinfo.so.1  
-
+#install -D -m755 -v execinfo.h       /cross-tools/include/execinfo.h     && \
+#install -D -m755 -v stacktraverse.h  /cross-tools/include/stacktraverse.h && \
+#install -D -m755 -v libexecinfo.a    /cross-tools/lib/libexecinfo.a      && \
+#install -D -m755 -v libexecinfo.so.1 /cross-tools/lib/libexecinfo.so.1  
+# ^ no need to add libexecinfo to cross-tools as hardcoding execinfo in stage1 
+#   clang build is enough to finish build.
