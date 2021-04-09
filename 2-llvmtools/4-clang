@@ -1,16 +1,54 @@
-# Set CC and CXX compiler with recently built clang (cgnutools)
+# Set CC and CXX compiler with recently built stage1 clang (cgnutools)
 export CXX=/cgnutools/bin/clang++
 export  CC=/cgnutools/bin/clang
 
-export  LIBUNWIND_INSTALL_PATH=/llvmtools/lib
-export  LIBCXXABI_INSTALL_PATH=/llvmtools/lib
-export  LIBCXX_INSTALL_PATH=/llvmtools/lib
+# Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
+# of /lib/ld-musl-x86_64.so.1 or /cgnutools/lib/ld-musl-x86_64.so.1
+# This is similar in Musl-LFS/LFS when gcc specs file is modified to use the
+# dynamic linker in /tools instead of host's /lib
+ln -sv clang-11   /cgnutools/bin/x86_64-clang
+ln -sv clang-11   /cgnutools/bin/x86_64-clang++
+cat > /cgnutools/bin/x86_64.cfg << "EOF"
+-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
+EOF
 
-cd clang
+
+cd ${LLVMSRC}
+# make sure compiler-rt are unpacked in ${{LLVMSRC}/projects
+# and clang & lld in ${LLVMSRC}/tools
+
+# Fix typo in libcxx
+cd projects/libcxx
+patch -Np1 -i  ../../../patches/libcxx/strtoll_fix.patch
+cd -
+
+# Apply patches from void linux
+patch -Np1 -i ../patches/llvm11-void/llvm-001-musl.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-002-ppcle.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-002-musl-ppc64-elfv2.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-003-ppc-secureplt.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-004-override-opt.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-005-ppc-bigpic.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-006-aarch64-mf_exec.patch
+cd tools/clang
+patch -Np1 -i ../../../patches/llvm11-void/clang-001-fix-unwind-chain-inclusion.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-001-ppcle.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-002-add-musl-triples.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-003-ppc64-dynamic-linker-path.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-004-ppc64-musl-elfv2.patch
+cd -
+
+sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
+
+export CFLAGS=" -g -g1"
+export CXXFLAGS=" -g -g1" 
+
+# Update host/target triple detection
+cp -v ../files/config.guess cmake/
+
 cmake -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=MinSizeRel \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
-      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" \
       -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
       -DLLVM_LINK_LLVM_DYLIB=ON \
       -DLLVM_BUILD_LLVM_DYLIB=ON \
@@ -24,7 +62,7 @@ cmake -B build -G Ninja \
       -DLLVM_INCLUDE_EXAMPLES=OFF \
       -DLLVM_INCLUDE_BENCHMARKS=OFF \
       -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
-      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" 
+      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
       -DLLVM_TARGET_ARCH="X86" \
       -DLLVM_TARGETS_TO_BUILD="X86" \
       -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
@@ -35,7 +73,26 @@ cmake -B build -G Ninja \
       -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
       -DCLANG_DEFAULT_CXX_STDLIB=libc++ \ 
       -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-      -DCLANG_DEFAULT_RTLIB=compiler-rt
+      -DCLANG_DEFAULT_RTLIB=compiler-rt \
+      -DCLANG_DEFAULT_LINKER="/llvmtools/bin/ld.lld" \
+      -DDEFAULT_SYSROOT="/llvmtools" \
+      -DLLVM_ENABLE_LLD=ON \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_ZLIB=OFF \
+      -DBacktrace_INCLUDE_DIR="/llvmtools/include" \
+      -DBacktrace_LIBRARY="/llvmtools/lib/libexecinfo.so" \
+      -DCMAKE_AR="/cgnutools/bin/llvm-ar" \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR="/llvmtools/include" \
+      -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
+      -DCMAKE_AR="/cgnutools/bin/llvm-ar" \
+      -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
+      -DCMAKE_NM="/cgnutools/bin/llvm-nm" \
+      -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy" \
+      -DCMAKE_OBJDUMP="/cgnutools/bin/llvm-objdump" \
+      -DCMAKE_RANLIB="/cgnutools/bin/llvm-ranlib" \
+      -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
+      -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
+      -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so" 
 
 ninja -C build         && \
 ninja -C build install && \ 
