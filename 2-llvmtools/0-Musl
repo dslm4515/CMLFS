@@ -1,0 +1,18 @@
+# Set CC and CXX compiler with stage 1 clang
+export CXX=clang++
+export  CC=clang
+
+cd /mnt/cmlfs/sources/musl-1.2.2
+
+./configure --prefix=/ 
+
+make && make DESTDIR=/llvmtools install
+
+rm -v /llvmtools/lib/ld-musl-x86_64.so.1
+ln -sv libc.so /llvmtools/lib/ld-musl-x86_64.so.1
+mkdir /llvmtools/{bin,etc}
+ln -sv ../lib/libc.so /llvmtools/bin/ldd
+
+cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
+/llvmtools/lib
+EOF
