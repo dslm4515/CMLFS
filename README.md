@@ -40,18 +40,18 @@ _Other arches will be supported after first successive build._
 _Final clang binary will not compile and links to host's runtime libc_
 
 
-Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile clang to _not_ link against host's runtime libc. This clang will still link to `libgcc_s` but will later be used to build a clang free of `libbgcc_s`
+Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile clang ~~to not link against host's runtime libc~~. This clang will still link to `libgcc_s` but will later be used to build a clang free of `libbgcc_s`
 <ol>
 <li>Stage 0: Build `cross-tools` with GCC</li>
 <li>Stage 1: Build clang with GCC libraries with `cross-tools`... build clang via llvm source with cland+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
-<li>Stage 3: Build libunwind, libcxxabi and libcxx with stage 1 clang. </li>
-<li>Stage 4: Build new clang with stage1 clang. This new clang will not have GCC libraries</li>
-<li>Stage 5: Build final root filesystem in chroot</li>
+<li>Stage 2: Build libunwind, libcxxabi and libcxx with stage 1 clang. </li>
+<li>Stage 3: Build new clang with stage1 clang. This new clang will not have GCC libraries</li>
+<li>Stage 4: Build final root filesystem in chroot</li>
 </ol>
 
 ## Issues
 <ul>
-<li>Clang requires execinfo.h - Added libexecinfo to build</li>
+<li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
 <li>Building clang fails with missing execinfo.h - Hard coded by hand</li>
 <li>Stage 1 clang is broken...Perhaps libunwind, libcxxabi, & libcxx should not have been built seperately?
 </ul>
@@ -60,7 +60,7 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 
 <ul>
 <li>0.1.1: [pending] Build stage 1 clang by building clang, lld, compiler-rt, libunwind, libcxxabi, libcxx together in llvm source tree</li>
-<li>0.1.0: Build cross-tools with GCC to build stage 1 clang... first build libunwind, libcxxabi & libcxx - Clang broken</li>
+<li>0.1.0: Build cross-tools with GCC to build stage 1 clang... first build libunwind, libcxxabi & libcxx - stage1 Clang broken</li>
 <li>0.0.0: First attempt, modeled afer Genshen's repo: Stage 2 clang fails to build.</li>
 </ul>
 
