@@ -1,0 +1,15 @@
+# Now adjust cross-tool's GCC to use musl libc in /cgnutools
+
+export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
+${CMLFS_TARGET}-gcc -dumpspecs > specs
+sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/cgnutools\/lib\/ld-musl-x86_64.so.1/g' specs
+
+# check
+grep "/cgnutoolstools/lib/ld-musl-x86_64.so.1" specs  --color=auto
+mv -v specs $SPECFILE
+unset SPECFILE
+
+# Copy libgcc_s from cross-tools so cross-tools can be removed
+cp -v /cross-tools/x86_64-mlfs-linux-musl/lib/libgcc_s.so.1 /cgnutools/lib/
+cp -v  /cross-tools/x86_64-mlfs-linux-musl/lib/libstdc++.so.6.0.28 /cgnutools/lib/
+ln -sv libstdc++.so.6.0.28 /cgnutools/lib/libstdc++.so.6

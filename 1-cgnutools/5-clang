@@ -63,15 +63,21 @@ cmake -B build -G Ninja  \
       -DDEFAULT_SYSROOT="/cgnutools" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLLVM_ENABLE_LIBCXX=ON \
-      -DCLANG_DEFAULT_LINKER="/cgnutools/bin/ld.lld" 
+      -DCLANG_DEFAULT_LINKER="/cgnutools/bin/ld.lld" \
+      -DBacktrace_HEADER="/cgnutools/include/execinfo.h" \
+      -DCMAKE_EXE_LINKER_FLAGS="--sysroot="/cgnutools" -Wl,-rpath,/cgnutools/lib" \
+      -DCMAKE_SHARED_LINKER_FLAGS="--sysroot="/cgnutools" -Wl,-rpath,/cgnutools/lib"
 
 # For some reason, execinfo.h cannot be found. Hard code it [for now]
 # from #include <execinfo.h> to #include "/cgnutools/include/execinfo.h"
-vi build/include/llvm/Config/config.h
+# vi build/include/llvm/Config/config.h
+# ^ fixed with -DBacktrace_HEADER
 
 ninja -C build         && \
 ninja -C build install && \ 
 rm -rf build
+
+export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
 # Build options:
 # BUILD_CLANG_FORMAT_VS_PLUGIN=OFF
