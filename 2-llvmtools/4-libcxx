@@ -14,7 +14,8 @@ cmake -B build -G Ninja \
       -DLIBCXX_CXX_ABI=libcxxabi \
       -DLIBCXX_CXX_ABI_INCLUDE_PATHS="/llvmtools/include" \
       -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-      -DLIBCXX_CXX_ABI_LIBRARY_PATH=/llvmtools/lib 
+      -DLIBCXX_CXX_ABI_LIBRARY_PATH=/llvmtools/lib \
+      -DLIBCXX_INSTALL_HEADERS=ON 
 ninja -C build 
 ninja -C build install
 rm -rf build       
