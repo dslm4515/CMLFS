@@ -1,7 +1,3 @@
-# Set CC and CXX compiler with recently built stage1 clang (cgnutools)
-export CXX=/cgnutools/bin/clang++
-export  CC=/cgnutools/bin/clang
-
 # Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
 # of /lib/ld-musl-x86_64.so.1 or /cgnutools/lib/ld-musl-x86_64.so.1
 # This is similar in Musl-LFS/LFS when gcc specs file is modified to use the
@@ -12,6 +8,10 @@ cat > /cgnutools/bin/x86_64.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
 EOF
 
+# Set CC and CXX compiler with recently built stage1 clang (cgnutools)
+# BUT build binaries with dynamic linker in /llvmtools
+export CXX=/cgnutools/bin/x86_64-clang++
+export  CC=/cgnutools/bin/x86_64-clang
 
 cd ${LLVMSRC}
 # make sure compiler-rt are unpacked in ${{LLVMSRC}/projects
