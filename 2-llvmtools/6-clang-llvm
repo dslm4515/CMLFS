@@ -100,7 +100,8 @@ cmake -B build -G Ninja \
       -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
       -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
       -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so" 
-
+      -DCMAKE_EXE_LINKER_FLAGS="--sysroot="/llvmtools" -Wl,-rpath,/llvmtools/lib" \
+      _DCMAKE_SHARED_LINKER_FLAGS="--sysroot="/llvmtools" -Wl,-rptah,/llvmtools/lib"
 ninja -C build         && \
 ninja -C build install && \ 
 rm -rf build
