@@ -36,17 +36,14 @@ _Other arches will be supported after first successive build._
 </ul>
 
 ## Current Method
-~~Based on Genshen's repo(github.com/genshen/docker-clang-toolchain)~~
-_Final clang binary will not compile and links to host's runtime libc_
 
-
-Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile clang ~~to not link against host's runtime libc~~. This clang will still link to `libgcc_s` but will later be used to build a clang free of `libbgcc_s`
+Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile stage0 clang. This stage0 clang will still link to `libgcc_s` but will later be used to build a stage1 clang free of `libbgcc_s`. The goal is to build clang+friends with clang and not GCC.
 <ol>
-<li>Stage 0: Build `cross-tools` with GCC</li>
-<li>Stage 1: Build clang with GCC libraries with `cross-tools`... build clang via llvm source with cland+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
-<li>Stage 2: Build libunwind, libcxxabi and libcxx with stage 1 clang. </li>
-<li>Stage 3: Build new clang with stage1 clang. This new clang will not have GCC libraries</li>
-<li>Stage 4: Build final root filesystem in chroot</li>
+<li>Build `cross-tools` with GCC</li>
+<li>Build a stage0 clang with GCC libraries with `cross-tools`: build clang via llvm source with clang+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
+<li>Build individually in LLVm source tree libunwind, libcxxabi and libcxx with stage0 clang. </li>
+<li>Build a new stage1 clang with stage0 clang. This new stage1 clang will not have GCC libraries</li>
+<li>Build final root filesystem in chroot with stage1 clang</li>
 </ol>
 
 ## Issues
