@@ -1,4 +1,4 @@
-# Build stage1 clang/clang++ with compiler-rt, lld, libunwind, libcxxabi, and libcxx
+# Build stage0 clang/clang++ with compiler-rt, lld, libunwind, libcxxabi, and libcxx
 
 cd ${LLVMSRC}
 # make sure compiler-rt, libcxx, libcxxabi, libunwind are unpacked in ${{LLVMSRC}/projects
@@ -65,14 +65,16 @@ cmake -B build -G Ninja  \
       -DLLVM_ENABLE_LIBCXX=ON \
       -DCLANG_DEFAULT_LINKER="/cgnutools/bin/ld.lld" \
       -DBacktrace_HEADER="/cgnutools/include/execinfo.h" \
-      -DCMAKE_EXE_LINKER_FLAGS="--sysroot="/cgnutools" -Wl,-rpath,/cgnutools/lib" \
-      -DCMAKE_SHARED_LINKER_FLAGS="--sysroot="/cgnutools" -Wl,-rpath,/cgnutools/lib"
+      -DCMAKE_EXE_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
+      -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
+      -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1"
 
-# For some reason, execinfo.h cannot be found. Hard code it [for now]
-# from #include <execinfo.h> to #include "/cgnutools/include/execinfo.h"
-# vi build/include/llvm/Config/config.h
-# ^ fixed with -DBacktrace_HEADER
+# Add libraries from /cross-tools as stage0 clang will depend on GCC
+cp -v  /cross-tools/x86_64-mlfs-linux-musl/lib/libstdc++.so.6.0.28 /cgnutools/lib/
+ln -sv libstdc++.so.6.0.28 /cgnutools/lib/libstdc++.so.6
+cp -v  /cross-tools/x86_64-mlfs-linux-musl/lib/libgcc_s.so.1 /cgnutools/lib/
 
+# Now ready to build
 ninja -C build         && \
 ninja -C build install && \ 
 rm -rf build
