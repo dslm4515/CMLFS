@@ -1,33 +1,7 @@
-# Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
-# of /lib/ld-musl-x86_64.so.1 or /cgnutools/lib/ld-musl-x86_64.so.1
-# This is similar in Musl-LFS/LFS when gcc specs file is modified to use the
-# dynamic linker in /tools instead of host's /lib
-#ln -sv clang-11   /cgnutools/bin/x86_64-clang
-#ln -sv clang-11   /cgnutools/bin/x86_64-clang++
-#cat > /cgnutools/bin/x86_64.cfg << "EOF"
-#-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
-#EOF
-#
-# Configuring clang causes clang to use g++/gcc. Link g++/gcc back
-# to clang-11
-#ln -sv clang-11 /cgnutools/bin/g++
-#ln -sv clang-11 /cgnutools/bin/gcc
-
-# Set CC and CXX compiler with recently built stage1 clang (cgnutools)
-# BUT build binaries with dynamic linker in /llvmtools
-#export CXX=/cgnutools/bin/x86_64-clang++
-#export  CC=/cgnutools/bin/x86_64-clang
-# ^ will try this later when building stage3 clang
-
 cd ${LLVMSRC}
 # make sure compiler-rt are unpacked in ${{LLVMSRC}/projects
 # and clang & lld in ${LLVMSRC}/tools. No need to unpack libunwind,
 # libcxxabi and libcxxabi as all 3 are installed in /llvmtools
-
-# Fix typo in libcxx
-#cd projects/libcxx
-#patch -Np1 -i  ../../../patches/libcxx/strtoll_fix.patch
-#cd -
 
 # Apply patches from void linux
 patch -Np1 -i ../patches/llvm11-void/llvm-001-musl.patch
@@ -100,9 +74,16 @@ cmake -B build -G Ninja \
       -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
       -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
       -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so" 
-      -DCMAKE_EXE_LINKER_FLAGS="--sysroot="/llvmtools" -Wl,-rpath,/llvmtools/lib" \
-      _DCMAKE_SHARED_LINKER_FLAGS="--sysroot="/llvmtools" -Wl,-rptah,/llvmtools/lib"
+
 ninja -C build         && \
 ninja -C build install && \ 
 rm -rf build
 
+# Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
+# of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
+# file is modified to use the  dynamic linker in /tools instead of host's /lib
+ln -sv clang-11   /llvmtools/bin/x86_64-pc-linux-musl-clang
+ln -sv clang-11   /llvmtools/bin/x86_64-pc-linux-musl-clang++
+cat > /llvmtools/bin/x86_64-pc-linux-musl.cfg << "EOF"
+-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
+EOF
