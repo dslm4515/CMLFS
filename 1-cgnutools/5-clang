@@ -74,6 +74,15 @@ ninja -C build         && \
 ninja -C build install && \ 
 rm -rf build
 
+# Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
+# of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
+# file is modified to use the  dynamic linker in /tools instead of host's /lib
+ln -sv clang-11   /cgnutools/bin/x86_64-pc-linux-musl-clang
+ln -sv clang-11   /cgnutools/bin/x86_64-pc-linux-musl-clang++
+cat > /cgnutools/bin/x86_64-pc-linux-musl.cfg << "EOF"
+-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
+EOF
+
 export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
 # Build options:
