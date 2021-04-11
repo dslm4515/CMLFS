@@ -69,11 +69,6 @@ cmake -B build -G Ninja  \
       -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
       -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1"
 
-# Add libraries from /cross-tools as stage0 clang will depend on GCC
-cp -v  /cross-tools/x86_64-mlfs-linux-musl/lib/libstdc++.so.6.0.28 /cgnutools/lib/
-ln -sv libstdc++.so.6.0.28 /cgnutools/lib/libstdc++.so.6
-cp -v  /cross-tools/x86_64-mlfs-linux-musl/lib/libgcc_s.so.1 /cgnutools/lib/
-
 # Now ready to build
 ninja -C build         && \
 ninja -C build install && \ 
