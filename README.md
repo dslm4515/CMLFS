@@ -21,6 +21,7 @@ This is based on Linux From Scratch (www.linuxfromscratch.org) but with the goal
 ## Supported Architectures
 
 AMD64/x86_64
+
 _Other arches will be supported after first successive build._
 
 ## Goals
@@ -41,7 +42,7 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 <ol>
 <li>Build `cross-tools` with GCC</li>
 <li>Build a stage0 clang with GCC libraries with `cross-tools`: build clang via llvm source with clang+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
-<li>Build individually in LLVm source tree libunwind, libcxxabi and libcxx with stage0 clang. </li>
+<li>Build individually in LLVM source tree libunwind, libcxxabi and libcxx with stage0 clang. </li>
 <li>Build a new stage1 clang with stage0 clang. This new stage1 clang will not have GCC libraries</li>
 <li>Build final root filesystem in chroot with stage1 clang</li>
 </ol>
@@ -49,14 +50,13 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 ## Issues
 <ul>
 <li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
-<li>Building clang fails with missing execinfo.h - Hard coded by hand</li>
-<li>Stage 1 clang is broken...Perhaps libunwind, libcxxabi, & libcxx should not have been built seperately?
 </ul>
 
 ## Change log
 
-<ul
-<li>0.1.2: [ pending ] Use stage0 to build a stage1 clang...Stage1 clang will be used in chroot</li>
+<ul>
+<li>0.1.3: configure Stage1 clang correctly with x86_64-pc-linux-mul.cfg.
+<li>0.1.2: Use stage0 to build a stage1 clang...Stage1 clang will be used in chroot. Stage1 clang fails to compile</li>
 <li>0.1.1: Build stage0 clang by building clang, lld, compiler-rt, libunwind, libcxxabi, libcxx together in llvm source tree. Stage0 builds binaries with host's dynamic linker in /lib</li>
 <li>0.1.0: Build cross-tools with GCC to build stage 1 clang... first build libunwind, libcxxabi & libcxx - stage1 Clang broken</li>
 <li>0.0.0: First attempt, modeled afer Genshen's repo: Stage 2 clang fails to build.</li>
