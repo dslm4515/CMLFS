@@ -1,0 +1,23 @@
+# Toolchain: Findutils - 4.7.0
+# Source: http://ftp.gnu.org/gnu/findutils/findutils-4.7.0.tar.xz
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+sed -i 's/IO_ftrylockfile/IO_EOF_SEEN/' gl/lib/*.c
+sed -i '/unistd/a #include <sys/sysmacros.h>' gl/lib/mountlist.c
+echo "#define _IO_IN_BACKUP 0x100" >> gl/lib/stdio-impl.h
+
+# Configure source
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE} \
+            --prefix=/llvmtools
+
+# Build and install to toolchain
+make && make install

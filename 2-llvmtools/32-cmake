@@ -1,0 +1,30 @@
+# Toolchain: CMake 3.19.6
+# Source: https://cmake.org/files/v3.19/cmake-3.19.6.tar.gz
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
+
+# Configure source
+./bootstrap --prefix=/llvmtools \
+            --mandir=/share/man \
+            --docdir=/share/doc/cmake-3.19.6 \
+            --no-system-jsoncpp  \
+            --no-system-librhash \
+            --no-system-curl \
+            --no-system-libarchive \
+            --no-system-nghttp2 \
+            --no-system-expat \
+            --no-system-zlib \
+            --no-system-zstd \
+            -- -DCMAKE_USE_OPENSSL=OFF
+
+# Build and install to toolchain
+make && make install

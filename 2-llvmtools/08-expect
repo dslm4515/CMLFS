@@ -1,0 +1,36 @@
+# Toolchain: Expect-5.45.3
+# Source: https://sourceforge.net/projects/expect/files/Expect/5.45.3/expect5.45.3.tar.gz
+# Build and install as mlfs
+# Can be optional: Package used for testing final system packages
+# *No need to use latest version, so far. If so, patches need updating.*
+
+# Set the environment to use stage1 clang & friends if not done already.
+export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+# Patch source to run with musl libc
+patch -Np1 -i ../patches/expect-5.45.3/dont-put-toolchain-in-libpath.patch
+patch -Np1 -i ../patches/expect-5.45.3/dont-configure-testsuites.patch
+patch -Np1 -i ../patches/expect-5.45.3/allow-cross-compile.patch
+
+# Update files to support Musl Libc for configure
+cp -v ../files/config.guess-musl tclconfig/config.guess
+cp -v ../files/config.sub-musl tclconfig/config.sub
+cp -v configure{,.orig}
+sed 's:/usr/local/bin:/bin:' configure.orig > configure
+
+# Configure source
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE} \
+            --prefix=/llvmtools \
+            --with-tcl=/llvmtools/lib \
+            --with-tclinclude=/llvmtools/include
+
+# Build and install to toolchain
+make && make SCRIPTS="" install
+

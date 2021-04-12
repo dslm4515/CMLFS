@@ -1,0 +1,34 @@
+# Toolchain: Perl 5.32.1
+# Source: https://www.cpan.org/src/5.0/perl-5.32.1.tar.xz
+# Source: https://github.com/arsv/perl-cross/releases/download/1.3.5/perl-cross-1.3.5.tar.gz
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+# Use perl-cross, by copying over perl source
+cd .. &&
+tar xf perl-cross-1.3.5.tar.gz
+cd perl-5.32.1 &&
+cp -vrf ../perl-cross-1.3.5/* ./
+cp -vrf ../perl-cross-1.3.5/utils/* utils/
+
+# Configure source
+READELF=llvm-readelf OBJDUMP=llvm-objdump \
+./configure --target=${TARGET_TRUPLE} \
+            --build=${TARGET_TRUPLE} \
+            --prefix=/llvmtools
+
+# Build
+make
+
+# Only a few of the utilities and libraries need to be installed to toolchain
+cp -v perl cpan/podlators/scripts/pod2man /llvmtools/bin
+mkdir -pv /llvmtools/lib/perl5/5.32.1
+cp -Rv lib/* /llvmtools/lib/perl5/5.32.1
+

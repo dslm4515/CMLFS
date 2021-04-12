@@ -1,0 +1,20 @@
+# Toolchain: Make 4.3
+# Source: http://ftp.gnu.org/gnu/make/make-4.3.tar.gz 
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+# Configure source
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE} \
+            --prefix=/llvmtools \
+            --without-guile
+
+# Build and install to toolchain
+make && make install

@@ -1,0 +1,26 @@
+# Toolchain: Ninja 1.10.2
+# Source: https://github.com/ninja-build/ninja/archive/v1.10.2/ninja-1.10.2.tar.gz
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+ If desired, add the capability to use the
+# environment variable NINJAJOBS
+sed -i '/int Guess/a \
+  int   j = 0;\
+  char* jobs = getenv( "NINJAJOBS" );\
+  if ( jobs != NULL ) j = atoi( jobs );\
+  if ( j > 0 ) return j;\
+' src/ninja.cc
+
+# Configure & compile source
+python3 configure.py --bootstrap
+
+# Install to toolchain
+install -vm755 ninja /llvmtools/bin/

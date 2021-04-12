@@ -1,0 +1,27 @@
+# Toolchain: Nano 5.1
+# Source: https://www.nano-editor.org/dist/v5/nano-5.1.tar.xz 
+# Build and install as mlfs
+# Optional package: Text editor for convenience or trouble shooting
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+# Set flags, so ncurses header can be found in /tools/include
+export LDFLAGS="-L/llvmtools/lib"
+export CPPFLAGS="-I/llvmtools/include"
+
+# Configure source
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE} \
+            --prefix=/llvmtools \
+            --enable-tiny
+
+# Build and install to toolchain
+make && make install
+
+unset LDFLAGS CPPFLAGS

@@ -1,0 +1,19 @@
+# Toolchain: Diffutils 3.7
+# Source: http://ftp.gnu.org/gnu/diffutils/diffutils-3.7.tar.xz
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+# Configure source
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE} \
+            --prefix=/llvmtools
+
+# Build and install to toolchain
+make && make install

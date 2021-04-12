@@ -1,0 +1,25 @@
+# Toolchain: libuv 1.39.0
+# Source: https://dist.libuv.org/dist/v1.39.0/libuv-v1.39.0.tar.gz
+# Build and install as cmlfs
+
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+export LDFLAGS=" -pthread"
+NOCONFIGURE=1 ./autogen.sh
+
+# Configure source
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE}  \
+            --prefix=/llvmtools      \
+            --disable-static
+
+# Build and install to toolchain
+make && make install
+
+unset LDFLAGS

@@ -77,8 +77,12 @@ cmake -B build -G Ninja \
 
 ninja -C build         && \
 ninja -C build install && \ 
-# install llvm-as
-cp -v build/bin/llvm-as /llvmtools/bin/
+
+# Some binaries were not installed
+cp -v build/bin/llvm-as       /llvmtools/bin/
+cp -v build/bin/llvm-readobj  /llvmtools/bin/
+ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
+
 rm -rf build
 
 # Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
