@@ -77,6 +77,8 @@ cmake -B build -G Ninja \
 
 ninja -C build         && \
 ninja -C build install && \ 
+# install llvm-as
+cp -v build/bin/llvm-as /llvmtools/bin/
 rm -rf build
 
 # Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
@@ -87,3 +89,9 @@ ln -sv clang-11   /llvmtools/bin/x86_64-pc-linux-musl-clang++
 cat > /llvmtools/bin/x86_64-pc-linux-musl.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
 EOF
+
+# Unset these flags
+unset CFLAGS CXXFLAGS
+
+# Cross-tools and cgnutools no longer needed:
+export PATH=/llvmtools/bin:/usr/bin:/bin
