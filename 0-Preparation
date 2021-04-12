@@ -54,7 +54,7 @@ set +h
 umask 022
 CMLFS=/mnt/cmlfs
 LC_ALL=POSIX
-PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
+PATH=/cross-tools/bin:/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 export CMLFS LC_ALL PATH
 EOF
 
@@ -71,14 +71,11 @@ EOF
 
 # Set build paths:
 cat >> ~/.bashrc << EOF
-export CLANG_GNU_INSTALL_PATH=/cgnutools
-export LIBUNWIND_GNU_INSTALL_PATH=/cgnutools
-export LIBCXXABI_GNU_INSTALL_PATH=/cgnutools
-export LIBCXX_GNU_INSTALL_PATH=/cgnutools
-export LLVMSRC="/mnt/cmlfs/sources/llvm-project-llvmorg-11.0.0"
+export LLVMSRC="/mnt/cmlfs/sources/llvm"
 EOF
 
 export CMLFS_TARGET="x86_64-cmlfs-linux-musl"
+export TARGET_TRUPLE="x86_64-pc-linux-musl"
 export CMLFS_ARCH="x86"
 export CMLFS_CPU="x86-64"
 export MLFS_HOST="$(echo $MACHTYPE | \
@@ -89,6 +86,7 @@ export CMLFS_HOST="${CMLFS_HOST}"
 export CMLFS_TARGET="${CMLFS_TARGET}"
 export CMLFS_ARCH="${CMLFS_ARCH}"
 export CMLFS_CPU="${CMLFS_CPU}"
+export TARGET_TRUPLE="${TARGET_TRUPLE}"
 EOF
 source ~/.bashrc
 
