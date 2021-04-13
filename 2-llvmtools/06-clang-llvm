@@ -83,6 +83,13 @@ cp -v build/bin/llvm-as       /llvmtools/bin/
 cp -v build/bin/llvm-readobj  /llvmtools/bin/
 ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
 
+# Since binutils will not be used, create the symlinks to the
+# llvm counterparts
+for t in as ar ranlib readelf nm objcopy objdump size strip
+do
+  ln -sv llvm-$t /llvmtools/bin/$t
+done
+
 rm -rf build
 
 # Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
