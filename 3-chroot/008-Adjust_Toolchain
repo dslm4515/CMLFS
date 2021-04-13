@@ -1,0 +1,54 @@
+# Final System - Adjust Tool Chain
+# This section is done in Chroot environment
+
+# Re-configure clang to use new sysroot (/usr)
+cat >/llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg << "EOF"
+--sysroot=/usr -L/lib -L/usr/lib
+EOF
+
+export CC=$(uname -m)-cmlfs-linux-musl-clang
+export CXX=$(uname -m)-cmlfs-linux-musl-clang++
+
+ln -sv x86_64-cmlfs-linux-musl-clang   /llvmtools/bin/cc
+ln -sv x86_64-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
+
+
+# Check the basic functions (compiling and linking) of 
+# the adjusted toolchain are working as expected. To do 
+# this, perform the following sanity checks:
+echo 'int main(){}' > dummy.c
+$CC dummy.c -v -Wl,--verbose &> dummy.log
+llvm-readelf -l a.out | grep ': /lib'
+# Should output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-i386.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-arm.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-arch64.so.1]
+
+# Make sure that we're setup to use the correct start files: 
+grep 'ld.lld:' dummy.log | grep 'crt[1in]'
+#ld.lld: /usr/lib/Scrt1.o
+#ld.lld: /usr/lib/crti.o
+#ld.lld: /usr/lib/crtn.o
+
+# Verify that the compiler is searching for the correct 
+# header files: 
+grep -B1 '^ /usr/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+# /usr/include
+
+# Verify that the new linker is being used with the 
+# correct search paths: 
+grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
+#-L/usr/lib
+#-L/usr/lib
+#-L/lib
+
+# Once everything is working correctly, clean up 
+# the test files:
+rm -v dummy.c a.out dummy.log
+
