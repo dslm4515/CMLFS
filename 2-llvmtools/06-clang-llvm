@@ -90,6 +90,9 @@ do
   ln -sv llvm-$t /llvmtools/bin/$t
 done
 
+# Make lld as default linker
+ln -sv lld /llvmtools/bin/ld
+
 rm -rf build
 
 # Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
