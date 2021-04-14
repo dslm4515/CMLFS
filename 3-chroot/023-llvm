@@ -39,13 +39,19 @@ export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1"
 
 cmake -B build -Wno-dev -G Ninja \
+      -DCMAKE_BUILD_TYPE=MinSizeRel             \ 
       -DCMAKE_INSTALL_PREFIX=/usr               \
       -DLLVM_ENABLE_FFI=ON                      \
-      -DCMAKE_BUILD_TYPE=Release                \
       -DLLVM_BUILD_LLVM_DYLIB=ON                \
       -DLLVM_LINK_LLVM_DYLIB=ON                 \
       -DLLVM_ENABLE_RTTI=ON                     \
-      -DLLVM_BUILD_TESTS=ON                     \
+      -DLLVM_ENABLE_LIBCXX=ON \
+      -DLLVM_BUILD_TESTS=OFF                     \
+      -DLLVM_INCLUDE_GO_TESTS=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF \
+      -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
       -DLLVM_INSTALL_UTILS=ON                   \
       -DLLVM_TARGET_ARCH=X86                    \
       -DBacktrace_HEADER="/usr/include/execinfo.h" \
@@ -53,7 +59,65 @@ cmake -B build -Wno-dev -G Ninja \
       -DLLVM_TARGETS_TO_BUILD="host;BPF;X86;AMDGPU"    \
       -DLLVM_HOST_TRIPLE="${TRUPLE}"                   \
       -DLLVM_DEFAULT_TARGET_TRIPLE="${TRUPLE}"         \
-      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${TRUPLE}"    
+      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${TRUPLE}"  \
+      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+      -DCLANG_DEFAULT_RTLIB=compiler-rt \
+      -DCLANG_DEFAULT_LINKER="/usr/bin/ld.lld" \
+      -DLLVM_ENABLE_LLD=ON \
+      -DICONV_LIBRARY_PATH="/usr/lib/libc.so" 
 
 ninja -C build
-ninja -C build install 
+ninja -C build install
+
+# Unset these flags
+unset CFLAGS CXXFLAGS
+
+# Set lld as default system linker
+ln -sv lld /usr/bin/ld
+
+# Some packages will expect binutils:
+for t in as ar ranlib readelf nm objcopy objdump size strip
+do
+  ln -sv llvm-$t /usr/bin/$t
+done 
+
+# Many packages use the name cc to call the C compiler. To 
+# satisfy those packages, create a symlink
+ln -sv clang-11 /usr/bin/cc
+
+# Test final system's toolchain:
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+# Should output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-i386.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-arm.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-aarch64.so.1]
+
+grep 'ld.lld:' dummy.log | grep 'crt[1in]'
+#ld.lld: /usr/lib/Scrt1.o
+#ld.lld: /usr/lib/crti.o
+#ld.lld: /usr/lib/crtn.o
+
+# Verify that the compiler is searching for the correct 
+# header files: 
+grep -B1 '^ /usr/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+# /usr/include
+
+# Verify that the new linker is being used with the 
+# correct search paths: 
+grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
+#-L/usr/lib
+#-L/usr/lib
+#-L/lib
+
+# Once everything is working correctly, clean up 
+# the test files:
+rm -v dummy.c a.out dummy.log
