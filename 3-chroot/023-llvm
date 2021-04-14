@@ -1,0 +1,59 @@
+# Final System: LLVM
+# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/llvm-11.0.0.src.tar.xz
+# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang-11.0.0.src.tar.xz
+# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/compiler-rt-11.0.0.src.tar.xz
+# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/lld-11.0.0.src.tar.xz 
+#
+# This section is done in Chroot environment
+
+cd ${LLVMSRC}
+
+patch -Np1 -i ../patches/llvm11-void/llvm-001-musl.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-002-ppcle.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-002-musl-ppc64-elfv2.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-003-ppc-secureplt.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-004-override-opt.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-005-ppc-bigpic.patch
+patch -Np1 -i ../patches/llvm11-void/llvm-006-aarch64-mf_exec.patch
+
+tar -xf ../pkgs/compiler-rt-11.0.0.src.tar.xz  -C projects &&
+mv -v projects/compiler-rt-11.0.0.src  projects/compiler-rt
+
+tar -xf ../pkgs/clang-11.0.0.src.tar.xz -C tools &&
+mv -v tools/clang-11.0.0.src tools/clang && cd tools/clang
+patch -Np1 -i ../../../patches/llvm11-void/clang-001-fix-unwind-chain-inclusion.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-001-ppcle.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-002-add-musl-triples.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-003-ppc64-dynamic-linker-path.patch
+patch -Np1 -i ../../../patches/llvm11-void/clang-004-ppc64-musl-elfv2.patch
+cd -
+
+tar -xf ../pkgs/lld-11.0.0.src.tar.xz -C tools &&
+mv -v tools/lld-11.0.0.src tools/lld
+
+# Disable sanitizers for musl-based systems
+sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake 
+
+# Vastly reduce size of debugging symbols:
+export CFLAGS=" -g -g1"
+export CXXFLAGS=" -g -g1"
+
+cmake -B build -Wno-dev -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=/usr               \
+      -DLLVM_ENABLE_FFI=ON                      \
+      -DCMAKE_BUILD_TYPE=Release                \
+      -DLLVM_BUILD_LLVM_DYLIB=ON                \
+      -DLLVM_LINK_LLVM_DYLIB=ON                 \
+      -DLLVM_ENABLE_RTTI=ON                     \
+      -DLLVM_BUILD_TESTS=ON                     \
+      -DLLVM_INSTALL_UTILS=ON                   \
+      -DLLVM_TARGET_ARCH=X86                    \
+      -DBacktrace_HEADER="/usr/include/execinfo.h" \
+      -DBacktrace_LIBRARY="/usr/lib/libexecinfo.so.1" \
+      -DLLVM_TARGETS_TO_BUILD="host;BPF;X86;AMDGPU"    \
+      -DLLVM_HOST_TRIPLE="${TRUPLE}"                   \
+      -DLLVM_DEFAULT_TARGET_TRIPLE="${TRUPLE}"         \
+      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${TRUPLE}"    
+
+ninja -C build
+ninja -C build install 

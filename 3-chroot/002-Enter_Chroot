@@ -1,0 +1,22 @@
+# Enter the Chroot Environment
+# This section is done by root
+
+chroot "$CMLFS" /llvmtools/bin/env -i \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PS1='(cmlfs chroot) \u:\w\$ ' \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
+    /llvmtools/bin/bash --login +h
+
+# Establish variables for build
+case $(uname -m) in
+     i686)    export TRUPLE="i686-pc-linux-musl"       ;;
+     x86_64)  export TRUPLE="x86_64-pc-linux-musl"     ;;
+     aarch64) export TRUPLE="aarch64-linux-musleabihf" ;;
+     armv7*)  export TRUPLE="armv7l-linux-musleabihf"  ;;
+     armv6*)  export TRUPLE="armv6l-linux-musleabihf"  ;;
+esac
+
+# Use the configured clang until Musl is built
+export CC=${TRUPLE}-clang CXX=${TRUPLE}-clang++
+

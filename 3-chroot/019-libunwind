@@ -1,0 +1,13 @@
+# Final System: Libunwind
+# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/libunwind-11.0.0.src.tar.xz
+# This section is done in Chroot environment
+
+# Configure
+cmake -B build -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DLIBUNWIND_ENABLE_SHARED=ON \
+      -DCMAKE_C_FLAGS="-fPIC" \
+      -DCMAKE_CXX_FLAGS="-fPIC" \
+      -DLIBUNWIND_USE_COMPILER_RT=ON
+ninja -C build
+ninja -C build install

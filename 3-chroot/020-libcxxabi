@@ -1,0 +1,32 @@
+# Final System: Libcxxabi
+# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/libcxxabi-11.0.0.src.tar.xz
+# This section is done in Chroot environment
+
+# libcxxabi & libcxx have to be built in llvm source tree (llvm/projects)
+cd /sources                        &&
+tar xf pkgs/llvm-11.0.0.src.tar.xz &&
+mv llvm-11.0.0.src llvm            &&
+export LLVMSRC=/sources/llvm       &&
+
+cd ${LLVMSRC}/projects                         &&
+tar xf ../../pkgs/libcxxabi-11.0.0.src.tar.xz  &&
+tar xf ../../pkgs/libcxx-11.0.0.src.tar.xz     &&
+mv libcxxabi-11.0.0.src libcxxabi              &&
+mv libcxx-11.0.0.src    libcxx                 &&
+
+cd libcxxabi
+
+cmake -B build -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DLIBCXXABI_ENABLE_STATIC=ON \
+      -DLIBCXXABI_USE_COMPILER_RT=ON \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+      -DLIBCXXABI_LIBUNWIND_PATH="/usr/lib" \
+      -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/projects/libcxx/include" \
+      -DLLVM_PATH="${LLVMSRC}"
+
+ninja -C build
+ninja -C build install
+cp -v include/*.h /usr/include/
+rm -rf build
+
