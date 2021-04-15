@@ -101,6 +101,9 @@ unset CFLAGS CXXFLAGS
 # Set lld as default system linker
 ln -sv lld /usr/bin/ld
 
+# Install additional tools
+cp -vn bin/llvm-* /usr/bin/
+
 # Many packages use the name cc to call the C compiler. To 
 # satisfy those packages, create a symlink
 ln -sv clang-11 /usr/bin/cc
