@@ -38,34 +38,59 @@ sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZ
 export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1"
 
-cmake -B build -Wno-dev -G Ninja \
-      -DCMAKE_BUILD_TYPE=MinSizeRel             \ 
-      -DCMAKE_INSTALL_PREFIX=/usr               \
-      -DLLVM_ENABLE_FFI=ON                      \
-      -DLLVM_BUILD_LLVM_DYLIB=ON                \
-      -DLLVM_LINK_LLVM_DYLIB=ON                 \
-      -DLLVM_ENABLE_RTTI=ON                     \
+cmake -B build -G Ninja \
+      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+      -DLLVM_LINK_LLVM_DYLIB=ON \
+      -DLLVM_BUILD_LLVM_DYLIB=ON \
+      -DLLVM_BUILD_TESTS=OFF \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
       -DLLVM_ENABLE_LIBCXX=ON \
-      -DLLVM_BUILD_TESTS=OFF                     \
       -DLLVM_INCLUDE_GO_TESTS=OFF \
       -DLLVM_INCLUDE_TESTS=OFF \
       -DLLVM_INCLUDE_DOCS=OFF \
       -DLLVM_INCLUDE_EXAMPLES=OFF \
       -DLLVM_INCLUDE_BENCHMARKS=OFF \
-      -DLLVM_INSTALL_UTILS=ON                   \
-      -DLLVM_TARGET_ARCH=X86                    \
-      -DBacktrace_HEADER="/usr/include/execinfo.h" \
-      -DBacktrace_LIBRARY="/usr/lib/libexecinfo.so.1" \
-      -DLLVM_TARGETS_TO_BUILD="host;BPF;X86;AMDGPU"    \
-      -DLLVM_HOST_TRIPLE="${TRUPLE}"                   \
-      -DLLVM_DEFAULT_TARGET_TRIPLE="${TRUPLE}"         \
-      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="${TRUPLE}"  \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
+      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
+      -DLLVM_TARGET_ARCH="X86" \
+      -DLLVM_TARGETS_TO_BUILD="host;AMDGPU;X86" \
+      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
+      -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+      -DCOMPILER_RT_BUILD_XRAY=OFF \
+      -DCOMPILER_RT_BUILD_PROFILE=OFF \
+      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+      -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
       -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
       -DCLANG_DEFAULT_UNWINDLIB=libunwind \
       -DCLANG_DEFAULT_RTLIB=compiler-rt \
       -DCLANG_DEFAULT_LINKER="/usr/bin/ld.lld" \
+      -DDEFAULT_SYSROOT="/llvmtools" \
       -DLLVM_ENABLE_LLD=ON \
-      -DICONV_LIBRARY_PATH="/usr/lib/libc.so" 
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_ZLIB=OFF \
+      -DBacktrace_INCLUDE_DIR="/usr/include" \
+      -DBacktrace_LIBRARY="/usr/lib/libexecinfo.so" \
+      -DCMAKE_AR="/llvmtools/bin/llvm-ar" \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR="/usr/include" \
+      -DCMAKE_LINKER="/llvmtools/bin/ld.lld" \
+      -DCMAKE_AR="/llvmtools/bin/llvm-ar" \
+      -DCMAKE_LINKER="/llvmtools/bin/ld.lld" \
+      -DCMAKE_NM="/llvmtools/bin/llvm-nm" \
+      -DCMAKE_OBJCOPY="/llvmtools/bin/llvm-objcopy" \
+      -DCMAKE_OBJDUMP="/llvmtools/bin/llvm-objdump" \
+      -DCMAKE_RANLIB="/llvmtools/bin/llvm-ranlib" \
+      -DCMAKE_READELF="/llvmtools/bin/llvm-readelf" \
+      -DCMAKE_STRIP="/llvmtools/bin/llvm-strip" \
+      -DICONV_LIBRARY_PATH="/usr/lib/libc.so" \
+      -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+      -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON  \
+      -DLLVM_INSTALL_UTILS=ON \
+      -DLLVM_ENABLE_BINDINGS=OFF \
+      -DLLVM_ENABLE_IDE=OFF \
+      -DLLVM_ENABLE_UNWIND_TABLES=OFF
 
 ninja -C build
 ninja -C build install
@@ -76,15 +101,24 @@ unset CFLAGS CXXFLAGS
 # Set lld as default system linker
 ln -sv lld /usr/bin/ld
 
-# Some packages will expect binutils:
-for t in as ar ranlib readelf nm objcopy objdump size strip
-do
-  ln -sv llvm-$t /usr/bin/$t
-done 
-
 # Many packages use the name cc to call the C compiler. To 
 # satisfy those packages, create a symlink
 ln -sv clang-11 /usr/bin/cc
+
+# Create a symlink required by the FHS for "historical" reasons
+ln -sv ../usr/bin/clang-11 /lib/cpp
+
+# Build useful utilities.. according to Adelie Linux, these are for BSD-Compatibility.
+# It may be done seperately as a package in the future. 
+cc -fpie ../../files/musl/getent.c -o getent
+cc -fpie ../../files/musl/getconf.c -o getconf
+cc -fpie ../../files/musl/iconv.c -o iconv
+
+install -v -D -m755  getent  /usr/bin/
+install -v -D -m755  getconf /usr/bin/
+install -v -D -m755  iconv   /usr/bin/
+install -v -D -m644  ../../files/musl/getent.1   /usr/share/man/man1/
+install -v -D -m644  ../../files/musl/getconf.1  /usr/share/man/man1/
 
 # Test final system's toolchain:
 echo 'int main(){}' > dummy.c
