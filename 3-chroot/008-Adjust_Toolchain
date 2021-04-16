@@ -3,7 +3,7 @@
 
 # Re-configure clang to use new sysroot (/usr)
 cat >/llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg << "EOF"
---sysroot=/usr -isysroot/ -isystem/usr/include -L/lib -Wl,-dynamic-linker /lib/ld-musl-x86_64.so.1
+--sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-x86_64.so.1
 EOF
 
 export CC=$(uname -m)-cmlfs-linux-musl-clang
