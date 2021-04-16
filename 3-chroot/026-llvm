@@ -56,7 +56,7 @@ cmake -B build -G Ninja \
       -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
       -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
       -DLLVM_TARGET_ARCH="X86" \
-      -DLLVM_TARGETS_TO_BUILD="host;AMDGPU;X86" \
+      -DLLVM_TARGETS_TO_BUILD="host;BPF;AMDGPU;X86" \
       -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
       -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
       -DCOMPILER_RT_BUILD_XRAY=OFF \
@@ -96,14 +96,14 @@ cmake -B build -G Ninja \
 ninja -C build
 ninja -C build install
 
+# Install additional binaries that where built, but not installed by ninja -C build install:
+cp -vn build/bin/* /usr/bin/
+
 # Unset these flags
-unset CFLAGS CXXFLAGS
+unset CFLAGS CXXFLAGS CC CXX
 
 # Set lld as default system linker
 ln -sv lld /usr/bin/ld
-
-# Install additional tools
-cp -vn bin/llvm-* /usr/bin/
 
 # Many packages use the name cc to call the C compiler. To 
 # satisfy those packages, create a symlink
@@ -114,15 +114,15 @@ ln -sv ../usr/bin/clang-11 /lib/cpp
 
 # Build useful utilities.. according to Adelie Linux, these are for BSD-Compatibility.
 # It may be done seperately as a package in the future. 
-cc -fpie ../../files/musl/getent.c -o getent
-cc -fpie ../../files/musl/getconf.c -o getconf
-cc -fpie ../../files/musl/iconv.c -o iconv
+cc -fpie ../files/musl/getent.c -o getent
+cc -fpie ../files/musl/getconf.c -o getconf
+cc -fpie ../files/musl/iconv.c -o iconv
 
 install -v -D -m755  getent  /usr/bin/
 install -v -D -m755  getconf /usr/bin/
 install -v -D -m755  iconv   /usr/bin/
-install -v -D -m644  ../../files/musl/getent.1   /usr/share/man/man1/
-install -v -D -m644  ../../files/musl/getconf.1  /usr/share/man/man1/
+install -v -D -m644  ../files/musl/getent.1   /usr/share/man/man1/
+install -v -D -m644  ../files/musl/getconf.1  /usr/share/man/man1/
 
 # Test final system's toolchain:
 echo 'int main(){}' > dummy.c
@@ -151,10 +151,8 @@ grep -B1 '^ /usr/include' dummy.log
 
 # Verify that the new linker is being used with the 
 # correct search paths: 
-grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
+grep -o -- -L/usr/lib dummy.log 
 #-L/usr/lib
-#-L/usr/lib
-#-L/lib
 
 # Once everything is working correctly, clean up 
 # the test files:
