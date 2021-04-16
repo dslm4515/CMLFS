@@ -90,7 +90,8 @@ cmake -B build -G Ninja \
       -DLLVM_INSTALL_UTILS=ON \
       -DLLVM_ENABLE_BINDINGS=OFF \
       -DLLVM_ENABLE_IDE=OFF \
-      -DLLVM_ENABLE_UNWIND_TABLES=OFF
+      -DLLVM_ENABLE_UNWIND_TABLES=OFF \
+      -DDEFAULT_SYSROOT="/usr"       
 
 ninja -C build
 ninja -C build install
