@@ -1,0 +1,7 @@
+# Final System: Autoconf 2.71
+# Source: http://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.xz
+# This section is done in Chroot environment
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr 
+make && make install
