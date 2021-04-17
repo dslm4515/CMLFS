@@ -29,10 +29,10 @@ _Other arches will be supported after first successive build._
 <ul>
 <li> [x] Build a toolchain (llvmtools) with LLVM but without GCC</li>
 <li> [ ] Build final root filesystem with LLVM</li>
-<li> [ ] Set default linker as lld(LLVM)</li>
-<li> [ ] Set default C++ standard library as libcxx(LLVM)</li>
-<li> [ ] Set default C++ ABI library as libcxxabi(LLVM)</li>
-<li> [ ] Set default stack unwinding library as libunwind(LLVM)</li>
+<li> [x] Set default linker as lld(LLVM)</li>
+<li> [x] Set default C++ standard library as libcxx(LLVM)</li>
+<li> [x] Set default C++ ABI library as libcxxabi(LLVM)</li>
+<li> [x] Set default stack unwinding library as libunwind(LLVM)</li>
 <li> [ ] Eliminate dependacy on GCC's libgcc_s</li>
 </ul>
 
@@ -51,6 +51,8 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 ## Issues
 <ul>
 <li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
+<li>libcap still expects gcc - Temp-fix: `ln -sv clang /usr/bin/gcc`</li>
+
 </ul>
 
 ## Change log
