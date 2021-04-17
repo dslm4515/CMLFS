@@ -1,0 +1,29 @@
+# Final System: GMP 6.2.1
+# Source: http://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz
+# // Part of the mini GCC-toolchain for packages that will not build with LLVM:
+# // /opt/gnu
+# This section is done in Chroot environment
+
+ By default, GMP configures to optimize for the
+# host CPU. If building for a less capable than 
+# the host's CPU, then:
+# cp -v configfsf.guess config.guess
+# cp -v configfsf.sub   config.sub
+
+# Configure source
+CC=clang CXX=clang++            \
+./configure --prefix=/opt/gnu   \
+            --enable-cxx        \
+            --disable-static    \
+            --docdir=/opt/gnu/share/doc/gmp-6.2.1
+
+# Build
+make
+
+# Test if desired:
+make check 2>&1 | tee gmp-check-log
+# Make sure all 197 tests pass:
+awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
+
+# Install
+make install

@@ -1,0 +1,92 @@
+# Final System: Binutils
+# Source: http://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.xz
+# // Part of the mini GCC-toolchain for packages that will not build with LLVM:
+# // /opt/gnu
+# This section is done in Chroot environment
+
+# Apply security fixes from Adelie Linux
+patch -Np1 -i ../patches/binutils-adelie/BTS-170.patch
+patch -Np1 -i ../patches/binutils-adelie/BTS-196.patch
+patch -Np1 -i ../patches/binutils-adelie/binutils-ld-fix-static-linking.patch
+patch -Np1 -i ../patches/binutils-adelie/disable-preinit-array-tests.patch
+patch -Np1 -i ../patches/binutils-adelie/remove-pr19553c-test.patch
+patch -Np1 -i ../patches/binutils-adelie/remove-pr19719-test.patch
+patch -Np1 -i ../patches/binutils-adelie/remove-pr2404-tests.patch
+
+# Create build directory
+mkdir -v build && cd build
+
+# -z separate-code is currently causing kernel miscompiles on x86*
+case $(uname -m) in
+  x86_64)  export EXTRA_CONFIG=" --enable-targets=x86_64-pep --enable-64-bit-bfd --disable-separate-code"
+           ;;
+  i686)    export EXTRA_CONFIG=" --disable-separate-code --enable-64-bit-bfd --enable-targets=x86_64-linux-gnu,x86_64-pep"
+           ;;
+esac
+
+# Configure
+CC=clang CXX=clang++            \
+../configure --prefix=/opt/gnu   \
+             --enable-gold       \
+             --enable-ld=default \
+             --enable-plugins    \
+             --enable-shared     \
+             --disable-werror    \
+             --with-system-zlib  \
+             --enable-relro \
+             --enable-lto \
+             --disable-nls \
+             --enable-deterministic-archives \
+             --enable-default-hash-style=gnu \
+             --enable-threads \
+             --disable-multilib \
+             --disable-compressed-debug-sections \
+             --with-mmap $EXTRA_CONFIG 
+
+# Build
+make tooldir=/opt/gnu
+
+# Rebuild libiberty.a with -fPIC
+cp -a libiberty libiberty-pic
+make -C libiberty-pic clean
+make CFLAGS="$CFLAGS -fPIC" -C libiberty-pic
+
+# Rebuild libbfd.a with -fPIC
+# hidden visability prevent 3rd party shared libraries exporting bfd non-stable API
+cp -a bfd bfd-pic
+make -C bfd-pic clean
+make CFLAGS="$CFLAGS -fPIC -fvisibility=hidden" -C bfd-pic
+
+# Rebuild libopcodes.a with -fPIC
+cp -a opcodes opcodes-pic
+make -C opcodes-pic clean
+make CFLAGS="$CFLAGS -fPIC" -C opcodes-pic
+
+# Install
+make tooldir=/opt/gnu install
+
+# Remove ld (hardlink) and make a symlink to ld.bfd.
+rm -fv   /opt/gnu/bin/ld
+ln -sfrv /opt/gnu/bin/ld.bfd /opt/gnu/bin/ld
+
+# Add some useful headers
+cd ..
+install -v -m 644 include/libiberty.h /opt/gnu/include
+install -v -m 644 include/demangle.h  /opt/gnu/include
+
+# install libraries rebuilt with -fPIC
+cd build
+install -v -m 644 libiberty-pic/libiberty.a /opt/gnu/lib
+install -v -m 644 bfd-pic/libbfd.a          /opt/gnu/lib
+install -v -m 644 opcodes-pic/libopcodes.a  /opt/gnu/lib
+
+# Remove these symlinks, they are not ABI stable.
+# Programs should compile static to the .a file.
+rm -fv /usr/lib/lib{bfd,opcodes}.so
+echo "INPUT ( /opt/gnu/lib/libbfd.a -liberty -lz )"  > /opt/gnu/lib/libbfd.so
+echo "INPUT ( /opt/gnu/lib/libopcodes.a -lbfd )"     > /opt/gnu/lib/libopcodes.so
+
+# Remove useless manpages.
+for f in dlltool nlmconv windres windmc; do
+ rm -fv /opt/gnu/share/man/man1/${f}.1
+done

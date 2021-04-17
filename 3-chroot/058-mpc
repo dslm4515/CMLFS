@@ -1,0 +1,19 @@
+# Final System: MPC 1.2.1
+# Source: https://ftp.gnu.org/gnu/mpc/mpc-1.2.1.tar.gz
+# // Part of the mini GCC-toolchain for packages that will not build with LLVM:
+# // /opt/gnu
+# This section is done in Chroot environment
+
+# Configure source
+CC=clang CXX=clang++              \
+./configure --prefix=/opt/gnu     \
+            --disable-static      \
+            --with-gmp=/opt/gnu/  \
+            --with-mpfr=/opt/gnu/ \
+            --docdir=/opt/gnu/share/doc/mpc-1.2.1
+
+# Build
+make
+
+# Install
+make install
