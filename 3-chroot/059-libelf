@@ -12,6 +12,14 @@ tar xf crosstools-gcc-$(uname -m).tar.xz
 echo "/usr/lib" >> /cross-tools/etc/ld-musl-x86_64.path
 echo "/lib"     >> /cross-tools/etc/ld-musl-x86_64.path
 
+# Add cross-tools to PATH
+export OLD_PATH=$PATH
+export PATH=$PATH:/cross-tools/bin
+
+# Disable symlinks for gcc and cc
+mv /usr/bin/gcc /usr/bin/gcc.clang
+mv /usr/bin/cc /usr/bin/cc.clang
+
 # Return to elfutils source
 cd /sources/elfutils-0.183
 
@@ -43,3 +51,7 @@ make -C libelf install
 
 # Install pkgconfig file for library
 install -vm644 config/libelf.pc /usr/lib/pkgconfig
+
+# Restore the symlinks for gcc & cc and remove cross-tools from PATH
+export PATH=$OLD_PATH
+unset OLD_PATH
