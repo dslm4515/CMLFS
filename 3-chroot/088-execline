@@ -1,0 +1,11 @@
+# Final System: Execline 
+# Source: https://skarnet.org/software/execline/execline-2.6.1.1.tar.gz
+# This section is done in Chroot environment
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr                        \
+            --with-lib=/usr/lib/skalibs          \
+            --bindir=/bin                        \
+            --enabled-shared
+make
+make install
