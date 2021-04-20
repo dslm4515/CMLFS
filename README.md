@@ -1,6 +1,6 @@
 # CMLFS - Clang Musl Linux From Scratch
 
-This is based on Linux From Scratch (www.linuxfromscratch.org) but with the goal of building a system with clang & friends from LLVM and Musl Libc.
+CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary. This is based on Linux From Scratch (www.linuxfromscratch.org) and my previous work MLFS (https://github.com/dslm4515/Musl-LFS)
 
 ## Specification
 <ul>
@@ -8,6 +8,7 @@ This is based on Linux From Scratch (www.linuxfromscratch.org) but with the goal
 <li>Default C Compiler: clang (LLVM)</li>
 <li>Default C++ compiler: clang++ (LLVM)</li>
 <li>Default linker: lld (LLVM)</li>
+<li>Default binary tools: (LLVM)</li>
 <li>C++ standard library: libcxx (LLVM)</li>
 <li>C++ ABI library: libcxxabi (LLVM)</li>
 <li>Unwinding Library: libunwind (LLVM)</li>
@@ -28,12 +29,13 @@ _Other arches will be supported after first successive build._
 
 <ul>
 <li> [x] Build a toolchain (llvmtools) with LLVM but without GCC</li>
-<li> [ ] Build final root filesystem with LLVM</li>
+<li> [x] Build final root filesystem with LLVM</li>
 <li> [x] Set default linker as lld(LLVM)</li>
 <li> [x] Set default C++ standard library as libcxx(LLVM)</li>
 <li> [x] Set default C++ ABI library as libcxxabi(LLVM)</li>
 <li> [x] Set default stack unwinding library as libunwind(LLVM)</li>
-<li> [ ] Eliminate dependacy on GCC's libgcc_s</li>
+<li> [x] Eliminate dependacy on GCC's libgcc_s</li>
+<li> [ ] Build GCC as a secondary compiler system. </li>
 </ul>
 
 ## Current Method
@@ -45,14 +47,14 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 <li>Build individually in LLVM source tree libunwind, libcxxabi and libcxx with stage0 clang. </li>
 <li>Build a new stage1 clang with stage0 clang. This new stage1 clang will not have GCC libraries</li>
 <li>Using stage1 clang, build toolchain for use in chroot</li>
-<li>Build final root filesystem in chroot with stage1 clang</li>
+<li>Build final root filesystem in chroot with stage1 clang and toolchain</li>
 </ol>
 
 ## Issues
 <ul>
 <li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
 <li>libcap still expects gcc - Temp-fix: `ln -sv clang /usr/bin/gcc`</li>
-
+<li>libelf(elfutils) requires a compiler with GNU99 support. Clang doe not have true GNU99 support. Compiles fine with GCC from cross-tools</li> 
 </ul>
 
 ## Change log
