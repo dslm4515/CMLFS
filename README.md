@@ -1,6 +1,6 @@
 # CMLFS - Clang Musl Linux From Scratch
 
-CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary. This is based on Linux From Scratch (www.linuxfromscratch.org) and my previous work MLFS (https://github.com/dslm4515/Musl-LFS)
+CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on Linux From Scratch (www.linuxfromscratch.org) and my previous work MLFS (https://github.com/dslm4515/Musl-LFS).
 
 ## Specification
 <ul>
@@ -9,6 +9,10 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li>Default C++ compiler: clang++ (LLVM)</li>
 <li>Default linker: lld (LLVM)</li>
 <li>Default binary tools: (LLVM)</li>
+<li>Secondary C Compiler: GCC</li>
+<li>Secondary C++ compiler: GCC</li>
+<li>Secondary binary tools: GNU Binutils</li>
+<li>Secondary linker(s): bfd, gold</li>
 <li>C++ standard library: libcxx (LLVM)</li>
 <li>C++ ABI library: libcxxabi (LLVM)</li>
 <li>Unwinding Library: libunwind (LLVM)</li>
@@ -21,21 +25,25 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 
 ## Supported Architectures
 
-AMD64/x86_64
-
-_Other arches will be supported after first successive build._
+<ul>
+<li>AMD64/x86_64: Toolchain and final system build sucessfully.</li>
+<li>i686: Pending</li>
+<li>AARCH64/ARM64: Pending</li>
+<li>ARMV7L: Pending</li>
+</ul>
 
 ## Goals
 
 <ul>
-<li> [x] Build a toolchain (llvmtools) with LLVM but without GCC</li>
+<li> [x] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
 <li> [x] Build final root filesystem with LLVM</li>
 <li> [x] Set default linker as lld(LLVM)</li>
 <li> [x] Set default C++ standard library as libcxx(LLVM)</li>
 <li> [x] Set default C++ ABI library as libcxxabi(LLVM)</li>
 <li> [x] Set default stack unwinding library as libunwind(LLVM)</li>
 <li> [x] Eliminate dependacy on GCC's libgcc_s</li>
-<li> [x] Build GCC as a secondary compiler system. </li>
+<li> [x] Build GCC as a secondary systen compiler. </li>
+<li> [ ] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 </ul>
 
 ## Current Method
