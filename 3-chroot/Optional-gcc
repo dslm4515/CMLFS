@@ -90,10 +90,10 @@ esac &&
 # Create symlinks as GCC is not the primary system compiler
 ln -sv /usr/include/zconf.h /opt/gnu/include/
 ln -sv /usr/include/zlib .h /opt/gnu/include/
-ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/
-ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so
-ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so.1
-ln -sv  /usr/lib/libc.so /opt/gnu/lib/libc.musl-x86_64.so.1
+#ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/
+#ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so
+#ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so.1
+#ln -sv  /usr/lib/libc.so /opt/gnu/lib/libc.musl-x86_64.so.1
 
 # Re-use the cross-toolchain used to build libelf.
 # Make sure cross-tools' linker can find libraries in: 
@@ -154,7 +154,7 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-sjlj-exceptions \
 	     --disable-werror $EXTRA_CONFIG \
              --with-mpc=/opt/gnu --with-gmp=/opt/gnu --with-mpfr=/opt/gnu \
-             --with-ld=/opt/gnu/bin/ld \
+             --with-ld=/opt/gnu/bin/ld --with-build-time-tools=/opt/gnu/bin \
              --with-pkgversion="CMLFS 1.0" &&
 
 make 
