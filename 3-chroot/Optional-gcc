@@ -4,7 +4,7 @@
 # This section is done in Chroot environment
 
 # GCC source tarball is a snapshot from Alpine Linux
-# **Install GCC is optional as most packages can be built with clang.**
+# **Installing GCC is optional as most packages can be built with clang.**
 
 case $(uname -m) in
   x86_64) export TRUPLE="x86_64-linux-musl"
@@ -95,10 +95,23 @@ ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so
 ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so.1
 ln -sv  /usr/lib/libc.so /opt/gnu/lib/libc.musl-x86_64.so.1
 
+# Re-use the cross-toolchain used to build libelf.
+# Make sure cross-tools' linker can find libraries in: 
+#  o /opt/gnu/lib
+#  o /usr/lib
+#  o /lib
+cat "/opt/gnu/lib" >> /cross-tools/etc/ld-musl-x86_64.path
+
+# Make sure cross-tools is in PATH:
+export OLD_PATH=$PATH
+export PATH=$PATH:/cross-tools/bin
+
 # Build in a dedicated directory
 mkdir -v build && cd build
 
 # Configure source to use binary tools in /cross-tools
+# * may need to add  --wth-build-time-tools=/opt/gnu/bin
+#   to specify GNU binutils like ar and ranlib
 CC=x86_64-mlfs-linux-musl-gcc \
 CXX=x86_64-mlfs-linux-musl-g++ \
 AR=x86_64-mlfs-linux-musl-ar \
@@ -141,23 +154,42 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-sjlj-exceptions \
 	     --disable-werror $EXTRA_CONFIG \
              --with-mpc=/opt/gnu --with-gmp=/opt/gnu --with-mpfr=/opt/gnu \
+             --with-ld=/opt/gnu/bin/ld \
              --with-pkgversion="CMLFS 1.0" &&
 
-# modify build/gcc/MakeFile
+make 
+
+# Build's collect2 fails to find -lz (zlib in /lib)
+# * May need to add to configure command to fix error:
+#   o --with-stage1-ldflags="-L/lib"
+#   o --with-boot-ldflags="-L/lib"
+# For now, manually fix build by modifying ${GCC_SRC}/build/gcc/Makefile:
 # Add -L/lib so linker can find libz.so in /lib
 #T_CFLAGS = -L/lib
 #TCFLAGS = -L/lib
 
 make && make install
 
-mkdir -pv /opt/gnu/lib
+# Create a symlink required by the FHS for 'historical' reasons
 ln -sv ../bin/cpp /opt/gnu/lib/cpp
+
+# Many packages use the name cc to call the C compiler. Satisfy
+# those pacakges with a symlink:
 ln -sv gcc /opt/gnu/bin/cc
+
+# Create a compatibility symlink to enable building programs with
+# LTO (Link Time Optimization)
 install -v -dm755 /opt/gnu/lib/bfd-plugins
 ln -sv  ../../libexec/gcc/x86_64-pc-linux-musl/10.2.1/liblto_plugin.so \
         /opt/gnu/lib/bfd-plugins/
 mkdir -pv /opt/gnu/share/gdb/auto-load/usr/lib
 mv -v /opt/gnu/lib/*gdb.py /opt/gnu/share/gdb/auto-load/usr/lib
-unset LIBITM
+
+# Add /opt/gnu/lib to system's dynamic linker paths
+cat "/opt/gnu/lib" >> /etc/ld-musl-x86_64.path
+
+# Remove cross-tools from PATH as built GCC can be used as secondary system compiler
+export PATH=$OLD_PATH
+unset LIBITM OLD_PATH
 
 

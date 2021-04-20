@@ -35,7 +35,7 @@ _Other arches will be supported after first successive build._
 <li> [x] Set default C++ ABI library as libcxxabi(LLVM)</li>
 <li> [x] Set default stack unwinding library as libunwind(LLVM)</li>
 <li> [x] Eliminate dependacy on GCC's libgcc_s</li>
-<li> [ ] Build GCC as a secondary compiler system. </li>
+<li> [x] Build GCC as a secondary compiler system. </li>
 </ul>
 
 ## Current Method
