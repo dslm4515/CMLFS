@@ -63,12 +63,14 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 <li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
 <li>libcap still expects gcc - Temp-fix: `ln -sv clang /usr/bin/gcc`</li>
 <li>libelf(elfutils) requires a compiler with GNU99 support. Clang doe not have true GNU99 support. Compiles fine with GCC from cross-tools</li> 
+<li>Diskboot.img of grub is not correctly built with clang. Grub needs to be built with GCC </li>
 </ul>
 
 ## Change log
 
 <ul>
-<li>0.1.3: configure Stage1 clang correctly with x86_64-pc-linux-musl.cfg.
+<li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu.
+<li>0.1.3: Configure Stage1 clang correctly with x86_64-pc-linux-musl.cfg.
 <li>0.1.2: Use stage0 to build a stage1 clang...Stage1 clang will be used in chroot. Stage1 clang fails to compile</li>
 <li>0.1.1: Build stage0 clang by building clang, lld, compiler-rt, libunwind, libcxxabi, libcxx together in llvm source tree. Stage0 builds binaries with host's dynamic linker in /lib</li>
 <li>0.1.0: Build cross-tools with GCC to build stage 1 clang... first build libunwind, libcxxabi & libcxx - stage1 Clang broken</li>
