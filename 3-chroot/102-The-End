@@ -1,0 +1,32 @@
+# The End
+
+# It may be a good idea to create an /etc/lfs-release file. By having this 
+# file, it is very easy for you (and for us if you need to ask for help at 
+# some point) to find out which LFS version is installed on the system. 
+# Create this file by running: 
+echo 1.0 > /etc/cmlfs-release
+
+# It is also a good idea to create a file to show the status of your new 
+# system with respect to the Linux Standards Base (LSB). To create this file, run: 
+cat > /etc/lsb-release << "EOF"
+DISTRIB_ID="Clang Musl Linux From Scratch"
+DISTRIB_RELEASE="1.0"
+DISTRIB_CODENAME="<your name here>"
+DISTRIB_DESCRIPTION="Clang Musl Linux From Scratch"
+EOF
+
+## Rebooting the System 
+
+# Exit chroot and unmount CMLFS
+logout
+umount -v $CMLFS/dev/pts
+umount -v $CMLFS/dev
+umount -v $CMLFS/run
+umount -v $CMLFS/proc
+umount -v $CMLFS/sys
+
+# Unmount if CMLFS is on a seperate partition or HDD/SDD/device
+umount -v $CMLFS
+
+# You may reboot your machine [if host and target are the same]
+
