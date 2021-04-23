@@ -7,8 +7,7 @@
 
 # As root, backup the tool-chain for later use
 cd $CMLFS
-tar -Jcf crosstools-gcc-$(uname -m).tar.xz cross-tools
+tar -cf - cross-tools | xz -c - > crosstools-gcc-$(uname -m).tar.xz 
 
 # Do not remove cross-tools at this time. It will 
 # be used to build /cgnutools and /llvmtools
-

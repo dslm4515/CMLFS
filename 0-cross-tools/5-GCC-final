@@ -2,15 +2,15 @@
 # Build and install as cmlfs
 
 # Additional sources to add as GCC requires them 
-tar -xf ../pkgs/mpfr-4.1.0.tar.xz
+xz -cd ../pkgs/mpfr-4.1.0.tar.xz | tar -xf - 
 mv -v mpfr-4.1.0 mpfr
-tar -xf ../pkgs/gmp-6.2.1.tar.xz
+xz -cd ../pkgs/gmp-6.2.1.tar.xz | tar -xf - 
 mv -v gmp-6.2.1 gmp
-tar -xf ../pkgs/mpc-1.2.1.tar.gz
+gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
 mv -v mpc-1.2.1 mpc
 
 # Apply patches [from Alpine-linux]
-or p in 0001-posix_memalign.patch \
+for p in 0001-posix_memalign.patch \
         0002-gcc-poison-system-directories.patch \
         0003-Turn-on-Wl-z-relro-z-now-by-default.patch \
         0004-Turn-on-D_FORTIFY_SOURCE-2-by-default-for-C-C-ObjC-O.patch \
