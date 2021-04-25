@@ -78,7 +78,7 @@ export CMLFS_TARGET="x86_64-cmlfs-linux-musl"
 export TARGET_TRUPLE="x86_64-pc-linux-musl"
 export CMLFS_ARCH="x86"
 export CMLFS_CPU="x86-64"
-export MLFS_HOST="$(echo $MACHTYPE | \
+export CMLFS_HOST="$(echo $MACHTYPE | \
     sed "s/$(echo $MACHTYPE | cut -d- -f2)/cross/")"
 
 cat >> ~/.bashrc << EOF
