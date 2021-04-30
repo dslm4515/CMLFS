@@ -27,6 +27,9 @@ export CXXFLAGS=" -g -g1"
 # Update host/target triple detection
 cp -v ../files/config.guess cmake/
 
+# Remember to use the configured stage0 clang
+CC=x86_64-pc-linux-musl-clang\
+CXX=x86_64-pc-linux-musl-clang++ \
 cmake -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=MinSizeRel \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
