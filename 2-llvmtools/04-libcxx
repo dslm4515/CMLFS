@@ -1,4 +1,4 @@
-# Set CC and CXX compiler with recently built clang (cgnutools)
+# Set CC and CXX compiler with recently built stage0 clang (cgnutools)
 export CXX=/cgnutools/bin/clang++
 export  CC=/cgnutools/bin/clang
 

@@ -1,4 +1,4 @@
-# Set CC and CXX compiler with stage 1 clang
+# Set CC and CXX compiler with stage0 clang
 export CXX=clang++
 export  CC=clang
 
