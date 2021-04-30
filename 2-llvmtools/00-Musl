@@ -1,18 +1,30 @@
-# Set CC and CXX compiler with stage0 clang
+# llvmtools: Musl Libc
+# Build and install as mlfs
+
+# Make sure PATH is set ...
+export PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/in
+
+# and ... set C and C++ compilers with stage0 clang
 export CXX=clang++
 export  CC=clang
 
-cd /mnt/cmlfs/sources/musl-1.2.2
-
+# Configure
 ./configure --prefix=/ 
 
+# Build and install to llvmtools
 make && make DESTDIR=/llvmtools install
 
+# fix a symlink
 rm -v /llvmtools/lib/ld-musl-x86_64.so.1
 ln -sv libc.so /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Create a symlink to make a tool that can print the 
+# shared objects (shared libraries) required by each 
+# program or shared object (i.e. library)
 mkdir /llvmtools/{bin,etc}
 ln -sv ../lib/libc.so /llvmtools/bin/ldd
 
+# Configure dynamic linker
 cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
 /llvmtools/lib
 EOF
