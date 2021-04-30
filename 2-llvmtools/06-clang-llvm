@@ -1,3 +1,6 @@
+# llvmtools: LLVM+clang
+# Build and install as cmlfs
+
 cd ${LLVMSRC}
 # make sure compiler-rt are unpacked in ${{LLVMSRC}/projects
 # and clang & lld in ${LLVMSRC}/tools. No need to unpack libunwind,
@@ -17,7 +20,7 @@ patch -Np1 -i ../../../patches/llvm11-void/clang-001-ppcle.patch
 patch -Np1 -i ../../../patches/llvm11-void/clang-002-add-musl-triples.patch
 patch -Np1 -i ../../../patches/llvm11-void/clang-003-ppc64-dynamic-linker-path.patch
 patch -Np1 -i ../../../patches/llvm11-void/clang-004-ppc64-musl-elfv2.patch
-cd -
+cd ${LLVMSRC}
 
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
 
@@ -28,7 +31,7 @@ export CXXFLAGS=" -g -g1"
 cp -v ../files/config.guess cmake/
 
 # Remember to use the configured stage0 clang
-CC=x86_64-pc-linux-musl-clang\
+CC=x86_64-pc-linux-musl-clang    \
 CXX=x86_64-pc-linux-musl-clang++ \
 cmake -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=MinSizeRel \
@@ -65,19 +68,19 @@ cmake -B build -G Ninja \
       -DLLVM_ENABLE_ZLIB=OFF \
       -DBacktrace_INCLUDE_DIR="/llvmtools/include" \
       -DBacktrace_LIBRARY="/llvmtools/lib/libexecinfo.so" \
-      -DCMAKE_AR="/cgnutools/bin/llvm-ar" \
+      -DCMAKE_CXX_COMPILER_AR="/cgnutools/bin/llvm-ar" \
+      -DCMAKE_C_COMPILER_AR="/cgnutools/bin/llvm-ar" \
+      -DCMAKE_CXX_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib" \
+      -DCMAKE_C_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib" \
       -DCMAKE_INSTALL_OLDINCLUDEDIR="/llvmtools/include" \
-      -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
-      -DCMAKE_AR="/cgnutools/bin/llvm-ar" \
       -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
       -DCMAKE_NM="/cgnutools/bin/llvm-nm" \
       -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy" \
-      -DCMAKE_OBJDUMP="/cgnutools/bin/llvm-objdump" \
-      -DCMAKE_RANLIB="/cgnutools/bin/llvm-ranlib" \
       -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
       -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
       -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so" 
 
+# Compile then install
 ninja -C build         && \
 ninja -C build install && \ 
 
