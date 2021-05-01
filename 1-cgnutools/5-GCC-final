@@ -53,6 +53,7 @@ do
         patch -Np1 -i ../patches/gcc-alpine-10.2.1p2/$p
 done
 
+# For 64-bit systems, fix a file so GCC installs libraries in 'lib' and not 'lib64'
 case $(uname -m) in
   x86_64)
     sed -e '/m64=/s/lib64/lib/' \
@@ -88,3 +89,22 @@ make AS_FOR_TARGET="${CMLFS_TARGET}-as" \
 
 # Install
 make install
+
+# Now adjust GCC to produce programs and libraries that will use musl libc in /cgnutools...
+export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
+${CMLFS_TARGET}-gcc -dumpspecs > specs
+sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/cgnutools\/lib\/ld-musl-x86_64.so.1/g' specs
+
+# Check specs file
+grep "/cgnutools/lib/ld-musl-x86_64.so.1" specs  --color=auto
+
+# Install specs file
+mv -v specs $SPECFILE
+unset SPECFILE
+
+# Check if GCC compiles as intended:
+echo "int main(){}" > dummy.c
+${CMLFS_TARGET}-gcc dummy.c
+readelf -l a.out | grep Requesting
+# Should output:
+# [Requesting program interpreter: /cgnutools/lib/ld-musl-x86_64.so.1]
