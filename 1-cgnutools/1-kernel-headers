@@ -1,6 +1,14 @@
+# cgnutools: Kernel Headers
+# Build as cmlfs user
+
+# Clean the source
 make mrproper
+
+# Build the headers
 ARCH=${CMLFS_ARCH} make headers
 
+# Install the headers
 find usr/include \( -name .install -o -name ..install.cmd \) -delete
-cp -rv usr/include/* /cgnutools/include/
-rm -v /cgnutools/include/Makefile
+mkdir -pv /cgnutools/${CMLFS_TARGET}/include
+cp -rv usr/include/* /cgnutools/${CMLFS_TARGET}/include/
+rm -v /cgnutools/${CMLFS_TARGET}/include/Makefile
