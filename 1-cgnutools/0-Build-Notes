@@ -1,4 +1,24 @@
-# Build Notes for cgnutools
+# General Build Notes for cgnutools
+
+# Builds for cgnutools assume the following:
+# o bash is the shell in use
+# o sh is a symbolic link to bash
+# o /usr/bin/awk is a symbolic link to gawk
+# o /usr/bin/yacc is a symbolic link to bison
+#   or a script that executes bison
+
+echo $SHELL
+file /bin/sh
+file /usr/bin/awk
+file /usr/binyacc
+
+# Make sure building cgnutools as cmlfs
+
+whoami
+
+# Make sure PATH is set correctly:
+
+export PATH=/cgnutools/bin:/usr/bin:/bin
 
 # Each package should be unpacked in /mnt/cmlfs/source and change 
 # to the unpacked source directory. For example:
@@ -8,3 +28,9 @@ tar xf pkgs/foo-1.2.3.tar.gz
 cd foo-1.2.3
 
 # Then patch and compile per instruction
+
+# After the package is installed, change directories and remove
+# unpacked source directory unless instructed:
+
+cd ..
+rm -rf foo-1.2.3
