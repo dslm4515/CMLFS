@@ -79,6 +79,7 @@ cmake -B build -G Ninja  \
 # Now ready to build
 LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
 ninja -C build         && \
+LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
 ninja -C build install && \ 
 rm -rf build
 
