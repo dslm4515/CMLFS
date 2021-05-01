@@ -84,7 +84,7 @@ ninja -C build install && \
 rm -rf build
 
 # Set LLD as default toolchain linker
-ln -sv lld //cgnutools/bin/ld
+ln -sv lld /cgnutools/bin/ld
 
 # Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
 # of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
