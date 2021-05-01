@@ -1,7 +1,14 @@
 # Cgnutools: File
 # Build and install as cmlfs
 
-# Configure source
+# Configure source with freshly built GCC
+CC="${CMLFS_TARGET}-gcc"         \
+CXX="${CMLFS_TARGET}-g++"        \
+AR="${CMLFS_TARGET}-ar"          \
+AS="${CMLFS_TARGET}-as"          \
+RANLIB="${CMLFS_TARGET}-ranlib"  \
+LD="${CMLFS_TARGET}-ld"          \
+STRIP="${CMLFS_TARGET}-strip"    \
 ./configure --prefix=/cgnutools --disable-libseccomp
 
 # Build and install
