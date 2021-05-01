@@ -1,0 +1,10 @@
+# Build Notes for cgnutools
+
+# Each package should be unpacked in /mnt/cmlfs/source and change 
+# to the unpacked source directory. For example:
+
+cd /mnt/cmlfs/sources
+tar xf pkgs/foo-1.2.3.tar.gz
+cd foo-1.2.3
+
+# Then patch and compile per instruction
