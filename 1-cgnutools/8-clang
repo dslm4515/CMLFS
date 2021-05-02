@@ -86,15 +86,63 @@ rm -rf build
 # Set LLD as default toolchain linker
 ln -sv lld /cgnutools/bin/ld
 
+# Since LLVM+clang still have GCC dependancies, add the GCC libraries in the search
+# paths of the toolchain's dynamic linker:
+echo "/cgnutools/${CMLFS_TARGET}/lib" >> /cgnutools/etc/ld-musl-$(uname -m).path
+
 # Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
 # of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
 # file is modified to set the dynamic linker in /tools instead of host's /lib
-ln -sv clang-11   /cgnutools/bin/x86_64-pc-linux-musl-clang
-ln -sv clang-11   /cgnutools/bin/x86_64-pc-linux-musl-clang++
-cat > /cgnutools/bin/x86_64-pc-linux-musl.cfg << "EOF"
+ln -sv clang-11   /cgnutools/bin/${CMLFS_TARGET}-clang
+ln -sv clang-11   /cgnutools/bin/${CMLFS_TARGET}-clang++
+cat > /cgnutools/bin/${CMLFS_TARGET}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
 EOF
+
+# Configure cross-GCC of cgnutools to match the same output as clang
+# Dump current specs 
+export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
+${CMLFS_TARGET}-gcc -dumpspecs > specs
+
+# Modify dumped specs file 
+sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/llvmtools\/lib\/ld-musl-x86_64.so.1/g' specs
+
+# Check:
+grep "/llvmtools/lib/ld-musl-x86_64.so.1" specs  --color=auto
+
+# Install modified specs to the cgnutools toolchain
+mv -v specs $SPECFILE
+unset SPECFILE
 
 # Set the PATH
 export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
+# Test the cgnutools toolchain:
+echo "int main(){}" > dummy.c
+${CMLFS_TARGET}-clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]
+
+# Check if the correct start files are used
+grep 'ld.lld:' dummy.log | grep crt[1in]
+# Should output:
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../Scrt1.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crti.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crtn.o
+
+# If all is well, remove output files;
+rm -v a.out dummy.log
+
+# Test GCC of cgnutools toolchain:
+${CMLFS_TARGET}-gcc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]
+
+# Check if the correct start files are used
+grep  'lib.*/crt[1in].*succeeded' dummy.log | cut -d ' ' -f 4-5 | cut -b 5-
+# Should output:
+# /cmlfs/cgnutools/bin/../../cgnutools/lib/../lib/crt1.o succeeded
+# /cmlfs/cgnutools/bin/../../cgnutools/lib/../lib/crti.o succeeded
+# /cmlfs/cgnutools/bin/../../cgnutools/lib/../lib/crtn.o succeeded
