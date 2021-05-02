@@ -43,8 +43,8 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [x] Set default stack unwinding library as libunwind(LLVM)</li>
 <li> [x] Eliminate dependacy on GCC's libgcc_s</li>
 <li> [x] Build GCC as a secondary systen compiler. </li>
-<li> [ ] Build toolchain (llvmtools) with GCC as secondary compiler</li>
-<li> [ ] Skip cross-tools build and use host's GCC </li>
+<li> [x] Build toolchain (llvmtools) with GCC as secondary compiler</li>
+<li> [x] Merge cross-tools build with cgnutools </li>
 <li> [ ] Build on aarch64</li>
 </ul>
 
@@ -66,12 +66,13 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 <li>libcap still expects gcc - Temp-fix: `ln -sv clang /usr/bin/gcc`</li>
 <li>libelf(elfutils) requires a compiler with GNU99 support. Clang doe not have true GNU99 support. Compiles fine with GCC from cross-tools</li> 
 <li>Diskboot.img of grub is not correctly built with clang. Grub needs to be built with GCC </li>
-<li>Cannot build cgnutools with host's LLVM/Clang. Has to be complied with Host's GCC or cross-tools toolchain.
+<li>Cannot build cgnutools with host's LLVM/Clang. Has to be complied with Host's GCC or previously built cross-tools toolchain.
 </ul>
 
 ## Change log
 
 <ul>
+<li>1.1.0: Sucessfully merged cross-tools and cgnutools to include GCC & binutils.
 <li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu.
 <li>0.1.3: Configure Stage1 clang correctly with x86_64-pc-linux-musl.cfg.
 <li>0.1.2: Use stage0 to build a stage1 clang...Stage1 clang will be used in chroot. Stage1 clang fails to compile</li>
