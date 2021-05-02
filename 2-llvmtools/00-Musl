@@ -2,7 +2,7 @@
 # Build and install as mlfs
 
 # Make sure PATH is set ...
-export PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/in
+export PATH=/llvmtools/bin:/llvmtools/gnu/bin:/cgnutools/bin:/usr/bin:/bin
 
 # and ... set C and C++ compilers with stage0 clang
 export CXX=clang++
@@ -27,4 +27,5 @@ ln -sv ../lib/libc.so /llvmtools/bin/ldd
 # Configure dynamic linker
 cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
 /llvmtools/lib
+/llvmtools/gnu/lib
 EOF
