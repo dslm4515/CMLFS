@@ -4,7 +4,7 @@
 # This section is done in Chroot environment
 
 # Clean source tree
-make CC=x86_64-pc-linux-musl-clang mrproper
+LLVM=1 LLVM_IAS=1 make CC=x86_64-pc-linux-musl-clang mrproper
 
 # Extract headers
 # !! The recommended make target “headers_install” cannot 
@@ -15,6 +15,7 @@ make CC=x86_64-pc-linux-musl-clang mrproper
 #make INSTALL_HDR_PATH=dest headers_install
 
 # For kernels 5.3.x and newer:
+LLVM=1 LLVM_IAS=1 \
 make     CC=x86_64-pc-linux-musl-clang \
      HOSTCC=x86_64-pc-linux-musl-clang headers
 
