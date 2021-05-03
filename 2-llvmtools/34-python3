@@ -25,6 +25,7 @@ sed -i '/def add_multiarch_paths/a \        return' setup.py
 ./configure --build=${TARGET_TRUPLE} \
             --host=${TARGET_TRUPLE}  \
             --prefix=/llvmtools      \
+            --enable-shared          \
             --without-ensurepip 
 
 # Build and install to toolchain
