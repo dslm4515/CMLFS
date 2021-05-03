@@ -1,0 +1,28 @@
+# Llvmtools toolchain: Vim
+# Source: http://anduin.linuxfromscratch.org/LFS/vim-8.2.2433.tar.gz 
+# Build and install as cmlfs
+# Optional package: Text editor for convenience or trouble shooting
+
+# Set the environment to use stage1 clang & friends if not done already.
+export CC=${TARGET_TRUPLE}-clang
+export CXX=${TARGET_TRUPLE}-clang++
+export AR=llvm-ar
+export AS=llvm-as
+export RANLIB=llvm-ranlib
+export LD=ld.lld
+export STRIP=llvm-strip
+
+# Modify source for vim's configuration
+echo '#define SYS_VIMRC_FILE "/llvmtools/etc/vimrc"' >> src/feature.h
+sed -i '/call/{s/split/xsplit/;s/303/492/}' src/testdir/test_recover.vim
+
+#Configure
+./configure --build=${TARGET_TRUPLE} \
+            --host=${TARGET_TRUPLE} \
+            --prefix=/llvmtools  \
+            --disable-gui \
+            --without-x
+
+# Build and install to toolchain
+make && make install
+
