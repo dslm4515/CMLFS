@@ -2,16 +2,19 @@
 # This section is done in Chroot environment
 
 # Re-configure clang to use new sysroot (/usr)
-cat >/llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg << "EOF"
---sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-x86_64.so.1
-EOF
+echo " --sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-$(uname -m).so.1" > \
+     /llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg
 
+ln -sv clang-11 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang
+ln -sv clang-11 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang++
+
+# Update the build environment
 export CC=$(uname -m)-cmlfs-linux-musl-clang
 export CXX=$(uname -m)-cmlfs-linux-musl-clang++
 
-ln -sv x86_64-cmlfs-linux-musl-clang   /llvmtools/bin/cc
-ln -sv x86_64-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
-
+# Create links to make sure clang is used and not GCC
+ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
+ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
 
 # Check the basic functions (compiling and linking) of 
 # the adjusted toolchain are working as expected. To do 
@@ -45,8 +48,6 @@ grep -B1 '^ /usr/include' dummy.log
 # correct search paths: 
 grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
 #-L/usr/lib
-#-L/usr/lib
-#-L/lib
 
 # Once everything is working correctly, clean up 
 # the test files:
