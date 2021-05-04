@@ -1,8 +1,9 @@
-# Toolchain: Gzip 1.10
+# Llvmtools toolchain: Gzip 1.10
 # Source: http://ftp.gnu.org/gnu/gzip/gzip-1.10.tar.xz
 # Build and install as cmlfs
 
-# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
+# Set the environment to use stage1 clang & friends if not done already.
+export CC=${TARGET_TRUPLE}-clang
 export CXX=${TARGET_TRUPLE}-clang++
 export AR=llvm-ar
 export AS=llvm-as
