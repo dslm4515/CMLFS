@@ -90,3 +90,6 @@ echo "INPUT ( /opt/gnu/lib/libopcodes.a -lbfd )"     > /opt/gnu/lib/libopcodes.s
 for f in dlltool nlmconv windres windmc; do
  rm -fv /opt/gnu/share/man/man1/${f}.1
 done
+
+# Add to system dynamic linker search paths
+echo "/opt/gnu/lib" >> /etc/ld-musl-$(uname -m).path
