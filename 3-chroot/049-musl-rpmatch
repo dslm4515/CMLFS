@@ -3,6 +3,6 @@
 # This section is done in Chroot environment
 
 ./bootstrap.sh
-cc=clang CXX=clang++ CFLAGS=" -fPIC" \
+CC=clang CXX=clang++ CFLAGS=" -fPIC" \
 ./configure --prefix=/usr --enable-shared --enable-static --sysconfdir=/etc --localstatedir=/var
 make && make install
