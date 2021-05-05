@@ -3,10 +3,11 @@
 # This section is done in Chroot environment
 
 sed -i 's,ncursesw/ncurses.h,ncurses.h,g' watch.c
+sed -i '1i#include <langinfo.h>' proc/escape.c
 
 autoreconf -fiv
 
-patch -Np1 -i ../patches/procps-adelie/use-utmpx.patch
+patch -Np1 -i ../patches/procps-mlfs/use_utmpx.patch 
 
 CC=clang CXX=clang++             \
 LIBS="$LIBS -lutmps -lskarnet"   \
