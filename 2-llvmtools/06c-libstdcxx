@@ -1,0 +1,32 @@
+# Llvmtools Chain: GCC's libstdc++
+# Build and install as cmlfs
+
+# Set the environment for cross-compiling if not done already.
+export CC="${CMLFS_TARGET}-gcc"
+export CXX="${CMLFS_TARGET}-g++"
+export AR="${CMLFS_TARGET}-ar"
+export AS="${CMLFS_TARGET}-as"
+export RANLIB="${CMLFS_TARGET}-ranlib"
+export LD="${CMLFS_TARGET}-ld"
+export STRIP="${CMLFS_TARGET}-strip"
+
+# Build in a dedicated directory
+mkdir -v build && cd build          
+
+# Configure the source
+../libstdc++-v3/configure           \
+    --target=${CMLFS_TARGET}         \
+    --build=${CMLFS_HOST}            \
+    --host=${CMLFS_TARGET}           \
+    --prefix=/llvmtools/gnu          \
+    --disable-multilib              \
+    --disable-nls                   \
+    --disable-libstdcxx-threads     \
+    --disable-libstdcxx-pch         \
+    --with-gxx-include-dir=/llvmtools/gnu/include/c++/10.2.1
+
+make  && 
+# Add an absolue path for ranlib in build/libtool script:
+#RANLIB="/cgnutools/bin/x86_64-cmlfs-linux-musl-ranlib"
+
+make install 

@@ -12,16 +12,12 @@ sed -i '/int Guess/a \
 ' src/ninja.cc
 
 
-# First create a symlink for c++
-ln -sv clang-11 /usr/bin/c++
-
 # Now configure and build
-python3 configure.py --bootstrap
+#python3 configure.py --bootstrap
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=MinSizeRel
+make -C build
 
 # Install
-install -vm755 ninja /usr/bin/
+install -vm755 build/ninja /usr/bin/
 install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja
 install -vDm644 misc/zsh-completion /usr/share/zsh/site-functions/_ninja
-
-# Remove symlink
-rm -v /usr/bin/c++
