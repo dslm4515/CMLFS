@@ -1,16 +1,13 @@
 # Final System: MPFR 4.1.0
 # Souce: http://www.mpfr.org/mpfr-4.1.0/mpfr-4.1.0.tar.xz
-# // Part of the mini GCC-toolchain for packages that will not build with LLVM:
-# // /opt/gnu
 # This section is done in Chroot environment
 
 # Configure source
 CC=clang CXX=clang++             \
-./configure --prefix=/opt/gnu    \
+./configure --prefix=/usr        \
             --disable-static     \
             --enable-thread-safe \
-            --with-gmp=/opt/gnu/ \
-            --docdir=/opt/gnu/share/doc/mpfr-4.1.0
+            --docdir=/usr/share/doc/mpfr-4.1.0
 
 # Build
 make

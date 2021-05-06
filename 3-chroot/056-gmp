@@ -1,7 +1,6 @@
 # Final System: GMP 6.2.1
 # Source: http://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz
-# // Part of the mini GCC-toolchain for packages that will not build with LLVM:
-# // /opt/gnu
+# GCC and other packages requires this library to build
 # This section is done in Chroot environment
 
  By default, GMP configures to optimize for the
@@ -12,10 +11,10 @@
 
 # Configure source
 CC=clang CXX=clang++            \
-./configure --prefix=/opt/gnu   \
+./configure --prefix=/usr   \
             --enable-cxx        \
             --disable-static    \
-            --docdir=/opt/gnu/share/doc/gmp-6.2.1
+            --docdir=/usr/share/doc/gmp-6.2.1
 
 # Build
 make
