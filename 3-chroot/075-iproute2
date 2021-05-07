@@ -2,11 +2,13 @@
 # Source: https://www.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.10.0.tar.xz
 # This section is done in Chroot environment
 
-#patch -Np0 -i ../patches/iproute2-void/fix-musl-devlink.patch
+# gcc is hard-coded in Makefile. Create a link to clang for gcc:
+#ln -sv clang-11 /usr/bin/gcc
 
 sed -i /ARPD/d Makefile
 rm -fv man/man8/arpd.8
 sed -i 's/.m_ipt.o//' tc/Makefile
 
-CC=clang CXX=clang++ make && 
-CC=clang CXX=clang++ make DOCDIR=/usr/share/doc/iproute2-5.10.0 install
+# Build and install
+make && 
+make DOCDIR=/usr/share/doc/iproute2-5.10.0 install
