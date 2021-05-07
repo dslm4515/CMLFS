@@ -4,17 +4,44 @@
 
 # Requires the as[sembler] from binutils, otherwise using llvm-as:
 # checking for options to compile assembly... configure: error: could not compile assembly
+# use cgnutools's cross-gcc
 
 # for BIOS-based PCs:
-# CC=clang CXX=clang++ CFLAGS="-Wno-error" \
-#./configure --prefix=/usr          \
-#            --sbindir=/sbin        \
-#            --sysconfdir=/etc      \
-#            --disable-efiemu       \
-#            --disable-werror
+PATH=/cgnutools/bin:$PATH \
+CC=x86_64-cmlfs-linux-musl-gcc \
+CXX=x86_64-cmlfs-linux-musl-g++ \
+AR=x86_64-cmlfs-linux-musl-ar \
+AS=x86_64-cmlfs-linux-musl-as \
+RANLIB=x86_64-cmlfs-linux-musl-ranlib \
+LD=x86_64-cmlfs-linux-musl-ld \
+STRIP=x86_64-cmlfs-linux-musl-strip \
+BUILD_CC=x86_64-cmlfs-linux-musl-gcc \
+CFLAGS="-Wno-error" \
+./configure --prefix=/usr          \
+            --sbindir=/sbin        \
+            --sysconfdir=/etc      \
+            --disable-efiemu       \
+            --disable-werror
 
 # for UEFI-based PCs:
-CC=clang CXX=clang++ CFLAGS="-Wno-error" \
+# Configure scripts expect x86_64-gcc.
+# Add links for configure strip to see cross tools in cgnutools:
+for b in gcc objcopy strip nm ranlib
+do 
+  ln -sv  x86_64-cmlfs-linux-musl-$b     /cgnutools/bin/x86_64-$b
+done
+
+# Now configure
+PATH=/cgnutools/bin:$PATH \
+CC=x86_64-gcc \
+CXX=x86_64-cmlfs-linux-musl-g++ \
+AR=x86_64-cmlfs-linux-musl-ar \
+AS=x86_64-cmlfs-linux-musl-as \
+RANLIB=x86_64-ranlib \
+LD=x86_64-cmlfs-linux-musl-ld \
+STRIP=x86_64-strip \
+BUILD_CC=x86_64-cmlfs-linux-musl-gcc \
+CFLAGS="-Wno-error" \
 ./configure --prefix=/usr          \
             --target=x86_64        \
             --with-platform=efi    \
@@ -22,5 +49,7 @@ CC=clang CXX=clang++ CFLAGS="-Wno-error" \
             --sysconfdir=/etc      \
             --disable-werror
 
-make && make install
+# Build and install
+PATH=/cgnutools/bin:$PATH make && 
+make install
 
