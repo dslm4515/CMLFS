@@ -22,4 +22,4 @@ rm -fv /usr/lib/libfl.a
 rm -fv /usr/lib/libz.a
 find /usr/lib /usr/libexec -name \*.la -delete
 
-# It is also safe to remove /llvmtools and /cross-tools directories as they're not required anymore
+# It is also safe to remove /llvmtools and /cgnutools directories as they're not required anymore
