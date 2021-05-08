@@ -15,6 +15,7 @@ export CFLAGS="-D_DIRENT_HAVE_D_TYPE"
 
 NOCONFIGURE=1 ./autogen.sh
 
+CC=clang CXX=clang++    \
 LIBS="-lutmps -lskarnet" \
 ./configure ADJTIME_PATH=/var/lib/hwclock/adjtime   \
             --docdir=/usr/share/doc/util-linux-2.36 \
