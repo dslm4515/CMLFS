@@ -3,9 +3,13 @@
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++ \
-./configure --prefix=/usr                        \
-            --with-lib=/usr/lib/skalibs          \
-            --bindir=/bin                        \
-            --enabled-shared
+./configure --enable-shared       \
+            --enable-static       \
+            --enable-allstatic    \
+            --enable-static-libc  \
+            --libdir=/usr/lib     \
+            --with-dynlib=/lib    \
+            --enable-pedantic-posix 
+
 make
 make install
