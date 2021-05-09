@@ -113,6 +113,18 @@ rm -rf /cgnutools/lib/gcc/$(uname -m)-cmlfs-linux-musl/10.2.1/specs
 # Build in a dedicated directory
 mkdir -v build && cd build
 
+# Set linker flag
+export LDFLAGS="-Wl,-rpath,/opt/gnu/lib"
+
+# Create temporary links for build
+for L in libgcc_s.so.1 libcc1.so.0.0.0 
+do
+ ln -sv /llvmtools/gnu/lib/$L /opt/gnu/lib/
+done
+ln -sv /llvmtools/gnu/lib/libstdc++.so.6.0.28 \
+       /opt/gnu/lib/libstdc++.so.6
+
+
 # Configure source to use binary tools in /cross-tools
 # * may need to add  --wth-build-time-tools=/opt/gnu/bin
 #   to specify GNU binutils like ar and ranlib
@@ -175,12 +187,13 @@ make
 # Build will stop again, unable to link unresolved symbols from gmp, mpfr, mpc.
 # Just set the LD_LIBRARY_PATH
 
-LD_LIBRARY_PATH=/lib:/usr/lib:/cgnutools/lib:/llvmtools/gnu/lib make
+LD_LIBRARY_PATH=/lib:/usr/lib:/opt/gnu/lib make
 
 # Install!
-LD_LIBRAY_PATH=/lib:/usr/lib:/llvmtools/gnu/lib make install
+make install
 
-# Use patchelf to fix rpaths of built libraries and executables:
+# Use patchelf to fix rpath of libcc1.so
+patchelf --set-rpath /opt/gnu/lib /opt/gnu/lib/libcc1.so.0.0.0
 
 
 # Create a symlink required by the FHS for 'historical' reasons
