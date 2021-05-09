@@ -89,7 +89,7 @@ esac &&
 
 # Create symlinks as GCC is not the primary system compiler
 ln -sv /usr/include/zconf.h /opt/gnu/include/
-ln -sv /usr/include/zlib .h /opt/gnu/include/
+ln -sv /usr/include/zlib.h  /opt/gnu/include/
 #ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/
 #ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so
 #ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so.1
@@ -100,11 +100,11 @@ ln -sv /usr/include/zlib .h /opt/gnu/include/
 #  o /opt/gnu/lib
 #  o /usr/lib
 #  o /lib
-cat "/opt/gnu/lib" >> /cross-tools/etc/ld-musl-x86_64.path
+echo "/opt/gnu/lib" >> /cgnutools/etc/ld-musl-x86_64.path
 
 # Make sure cross-tools is in PATH:
 export OLD_PATH=$PATH
-export PATH=$PATH:/cross-tools/bin
+export PATH=$PATH:/cgnutools/bin
 
 # Build in a dedicated directory
 mkdir -v build && cd build
@@ -112,13 +112,13 @@ mkdir -v build && cd build
 # Configure source to use binary tools in /cross-tools
 # * may need to add  --wth-build-time-tools=/opt/gnu/bin
 #   to specify GNU binutils like ar and ranlib
-CC=x86_64-mlfs-linux-musl-gcc \
-CXX=x86_64-mlfs-linux-musl-g++ \
-AR=x86_64-mlfs-linux-musl-ar \
-AS=x86_64-mlfs-linux-musl-as \
-RANLIB=x86_64-mlfs-linux-musl-ranlib \
-LD=x86_64-mlfs-linux-musl-ld \
-STRIP=x86_64-mlfs-linux-musl-strip \
+CC=x86_64-cmlfs-linux-musl-gcc \
+CXX=x86_64-cmlfs-linux-musl-g++ \
+AR=x86_64-cmlfs-linux-musl-ar \
+AS=x86_64-cmlfs-linux-musl-as \
+RANLIB=x86_64-cmlfs-linux-musl-ranlib \
+LD=x86_64-cmlfs-linux-musl-ld \
+STRIP=x86_64-cmlfs-linux-musl-strip \
 CFLAGS="-L/lib -L/usr/lib -L/opt/gnu/lib -I/opt/gnu/include" \
 CXFLAGS="-L/lib -L/usr/lib -L/opt/gnu/lib -I/opt/gnu/include" \
 SED=sed  libat_cv_have_ifunc=no       \
@@ -153,9 +153,9 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-fixed-point \
 	     --disable-sjlj-exceptions \
 	     --disable-werror $EXTRA_CONFIG \
-             --with-mpc=/opt/gnu --with-gmp=/opt/gnu --with-mpfr=/opt/gnu \
+             --with-mpc=/usr --with-gmp=/usr --with-mpfr=/usr \
              --with-ld=/opt/gnu/bin/ld --with-build-time-tools=/opt/gnu/bin \
-             --with-pkgversion="CMLFS 1.0" &&
+             --with-pkgversion="CMLFS 1.1" &&
 
 make 
 
@@ -168,7 +168,13 @@ make
 #T_CFLAGS = -L/lib
 #TCFLAGS = -L/lib
 
-make && make install
+# Build will stop again, unable to link unresolved symbols from gmp, mpfr, mpc.
+# Just set the LD_LIBRARY_PATH
+
+LD_LIBRARY_PATH=/lib:/usr/lib:/cgnutools/lib make
+
+# Install!
+make install
 
 # Create a symlink required by the FHS for 'historical' reasons
 ln -sv ../bin/cpp /opt/gnu/lib/cpp
