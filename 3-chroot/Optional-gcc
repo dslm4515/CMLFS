@@ -102,9 +102,13 @@ ln -sv /usr/include/zlib.h  /opt/gnu/include/
 #  o /lib
 echo "/opt/gnu/lib" >> /cgnutools/etc/ld-musl-x86_64.path
 
-# Make sure cross-tools is in PATH:
+# Make sure cgnutools is in PATH:
 export OLD_PATH=$PATH
 export PATH=$PATH:/cgnutools/bin
+
+# Remove the specs file so that cgnutools builds
+# binaries with /lib/ld-musl-x86_64.so.1 as dynamic linker:
+rm -rf /cgnutools/lib/gcc/$(uname -m)-cmlfs-linux-musl/10.2.1/specs
 
 # Build in a dedicated directory
 mkdir -v build && cd build
@@ -155,7 +159,7 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-werror $EXTRA_CONFIG \
              --with-mpc=/usr --with-gmp=/usr --with-mpfr=/usr \
              --with-ld=/opt/gnu/bin/ld --with-build-time-tools=/opt/gnu/bin \
-             --with-pkgversion="CMLFS 1.1" &&
+             --with-pkgversion="CMLFS 1.1" --with-stage1-ldflags="-L/lib" &&
 
 make 
 
@@ -171,10 +175,13 @@ make
 # Build will stop again, unable to link unresolved symbols from gmp, mpfr, mpc.
 # Just set the LD_LIBRARY_PATH
 
-LD_LIBRARY_PATH=/lib:/usr/lib:/cgnutools/lib make
+LD_LIBRARY_PATH=/lib:/usr/lib:/cgnutools/lib:/llvmtools/gnu/lib make
 
 # Install!
-make install
+LD_LIBRAY_PATH=/lib:/usr/lib:/llvmtools/gnu/lib make install
+
+# Use patchelf to fix rpaths of built libraries and executables:
+
 
 # Create a symlink required by the FHS for 'historical' reasons
 ln -sv ../bin/cpp /opt/gnu/lib/cpp
