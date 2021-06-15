@@ -77,11 +77,16 @@ cmake -B build  \
       -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1"
 
 # Now ready to build
-LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
-ninja -C build         && \
-LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
-ninja -C build install && \ 
-rm -rf build
+#LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
+#ninja -C build         && \
+#LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
+#ninja -C build install && \ 
+make -C build && \
+
+# Install to cgnutools
+cd build && cmake -DCMAKE_INSTALL_PREFIX=/cgnutools -P cmake_install.cmake
+
+cd .. && rm -rf build
 
 # Set LLD as default toolchain linker
 ln -sv lld /cgnutools/bin/ld
