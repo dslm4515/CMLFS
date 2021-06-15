@@ -6,11 +6,13 @@
 # o /usr/bin/awk is a symbolic link to gawk
 # o /usr/bin/yacc is a symbolic link to bison
 #   or a script that executes bison
+# o flex is required when building source snapshots of GCC
 
 echo $SHELL
 file /bin/sh
 file /usr/bin/awk
-file /usr/binyacc
+file /usr/bin/yacc
+which flex
 
 # Make sure building cgnutools as cmlfs
 
