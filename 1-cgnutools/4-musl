@@ -28,4 +28,7 @@ ln -sv ../lib/libc.so /cgnutools/bin/ldd
 # Configure the dynamic linker
 cat > /cgnutools/etc/ld-musl-x86_64.path << "EOF"
 /cgnutools/lib
+/cgnutools/x86_64-cmlfs-linux-musl/lib
+/usr/lib
+/lib
 EOF
