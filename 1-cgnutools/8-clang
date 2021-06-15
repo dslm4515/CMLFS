@@ -1,4 +1,4 @@
-# cgnutools: Stage0 LLVM+clang
+# cgnutools: S	age0 LLVM+clang
 # Build as cmlfs
 #
 # * Build stage0 clang/clang++ with compiler-rt, lld, libunwind, libcxxabi, and libcxx
@@ -37,10 +37,10 @@ export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1" 
 
 # Update host/target triple detection
-cp -v ../files/config.guess cmake/
+cp -v ../files/config.guess-musl cmake/config.guess
 
 # Configure source
-cmake -B build -G Ninja  \
+cmake -B build  \
       -DCMAKE_BUILD_TYPE=MinSizeRel \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
       -DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
