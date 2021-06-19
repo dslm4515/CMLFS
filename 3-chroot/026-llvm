@@ -39,7 +39,7 @@ export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1"
 
 cmake -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
       -DLLVM_LINK_LLVM_DYLIB=ON \
