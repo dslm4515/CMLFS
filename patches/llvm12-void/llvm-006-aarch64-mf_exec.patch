@@ -14,7 +14,7 @@ Upstream-Issue: https://bugs.llvm.org/show_bug.cgi?id=14278#c10
 
 --- a/lib/Support/Unix/Memory.inc
 +++ b/lib/Support/Unix/Memory.inc
-@@ -59,7 +59,7 @@
+@@ -58,7 +58,7 @@ static int getPosixProtectionFlags(unsigned Flags) {
      return PROT_READ | PROT_WRITE | PROT_EXEC;
    case llvm::sys::Memory::MF_EXEC:
  #if (defined(__FreeBSD__) || defined(__POWERPC__) || defined (__ppc__) || \

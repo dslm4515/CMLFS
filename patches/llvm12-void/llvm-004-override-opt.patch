@@ -3,10 +3,10 @@ deal with -O3.
 
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -999,6 +999,12 @@
-     ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/tf_runtime)
+@@ -918,6 +918,12 @@ if( MINGW AND NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" )
+   llvm_replace_compiler_option(CMAKE_CXX_FLAGS_RELEASE "-O3" "-O2")
  endif()
-
+ 
 +set(VOID_CXX_OPT_FLAGS "" CACHE STRING "Optimization level to use")
 +
 +if (NOT VOID_CXX_OPT_FLAGS STREQUAL "")

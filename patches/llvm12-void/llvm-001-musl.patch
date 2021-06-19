@@ -11,7 +11,7 @@ Subject: [PATCH 3/3] musl
  5 files changed, 17 insertions(+), 6 deletions(-)
 
 diff --git a/include/llvm/Analysis/TargetLibraryInfo.h b/include/llvm/Analysis/TargetLibraryInfo.h
-index e0a1ee3..465b65a 100644
+index 34a8a1e3..1214ece5 100644
 --- a/include/llvm/Analysis/TargetLibraryInfo.h
 +++ b/include/llvm/Analysis/TargetLibraryInfo.h
 @@ -18,6 +18,15 @@
@@ -29,22 +29,9 @@ index e0a1ee3..465b65a 100644
 +
  namespace llvm {
  template <typename T> class ArrayRef;
- 
-diff --git a/utils/unittest/googletest/src/gtest.cc b/utils/unittest/googletest/src/gtest.cc
-index 5780764..1d548c1 100644
---- a/utils/unittest/googletest/src/gtest.cc
-+++ b/utils/unittest/googletest/src/gtest.cc
-@@ -128,6 +128,7 @@
- 
- #if GTEST_CAN_STREAM_RESULTS_
- # include <arpa/inet.h>  // NOLINT
-+# include <sys/socket.h>  // NOLINT
- # include <netdb.h>  // NOLINT
- # include <sys/socket.h>  // NOLINT
- # include <sys/types.h>  // NOLINT
--- 
-2.5.1
-
+ class Triple;
+diff --git a/lib/Support/Unix/DynamicLibrary.inc b/lib/Support/Unix/DynamicLibrary.inc
+index a2a37996..2f86c470 100644
 --- a/lib/Support/Unix/DynamicLibrary.inc
 +++ b/lib/Support/Unix/DynamicLibrary.inc
 @@ -102,7 +102,7 @@ static void *DoSearch(const char* SymbolName) {
@@ -56,3 +43,15 @@ index 5780764..1d548c1 100644
  
  // Under glibc we have a weird situation. The stderr/out/in symbols are both
  // macros and global variables because of standards requirements. So, we
+diff --git a/utils/unittest/googletest/src/gtest.cc b/utils/unittest/googletest/src/gtest.cc
+index d882ab2e..f1fb12d0 100644
+--- a/utils/unittest/googletest/src/gtest.cc
++++ b/utils/unittest/googletest/src/gtest.cc
+@@ -128,6 +128,7 @@
+ 
+ #if GTEST_CAN_STREAM_RESULTS_
+ # include <arpa/inet.h>  // NOLINT
++# include <sys/socket.h>  // NOLINT
+ # include <netdb.h>  // NOLINT
+ # include <sys/socket.h>  // NOLINT
+ # include <sys/types.h>  // NOLINT

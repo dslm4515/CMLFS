@@ -8,11 +8,11 @@ Subject: [PATCH] [LLVM][PowerPC] Assume BigPIC if no PIC level is specified
  llvm/lib/Target/PowerPC/PPCMCInstLower.cpp | 2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/llvm/lib/Target/PowerPC/PPCAsmPrinter.cpp b/llvm/lib/Target/PowerPC/PPCAsmPrinter.cpp
-index 269b84b4e8d..03246a5242c 100644
---- llvm/lib/Target/PowerPC/PPCAsmPrinter.cpp
-+++ llvm/lib/Target/PowerPC/PPCAsmPrinter.cpp
-@@ -488,7 +488,7 @@ void PPCAsmPrinter::EmitTlsCall(const MachineInstr *MI,
+diff --git a/lib/Target/PowerPC/PPCAsmPrinter.cpp b/lib/Target/PowerPC/PPCAsmPrinter.cpp
+index cce21f32..87ca5f9b 100644
+--- a/lib/Target/PowerPC/PPCAsmPrinter.cpp
++++ b/lib/Target/PowerPC/PPCAsmPrinter.cpp
+@@ -520,7 +520,7 @@ void PPCAsmPrinter::EmitTlsCall(const MachineInstr *MI,
  
    // Add 32768 offset to the symbol so we follow up the latest GOT/PLT ABI.
    if (Kind == MCSymbolRefExpr::VK_PLT && Subtarget->isSecurePlt() &&
@@ -21,11 +21,11 @@ index 269b84b4e8d..03246a5242c 100644
      TlsRef = MCBinaryExpr::createAdd(
          TlsRef, MCConstantExpr::create(32768, OutContext), OutContext);
    const MachineOperand &MO = MI->getOperand(2);
-diff --git a/llvm/lib/Target/PowerPC/PPCMCInstLower.cpp b/llvm/lib/Target/PowerPC/PPCMCInstLower.cpp
-index 027e6bd1ba0..ae461f4eea9 100644
---- llvm/lib/Target/PowerPC/PPCMCInstLower.cpp
-+++ llvm/lib/Target/PowerPC/PPCMCInstLower.cpp
-@@ -116,7 +116,7 @@ static MCOperand GetSymbolRef(const MachineOperand &MO, const MCSymbol *Symbol,
+diff --git a/lib/Target/PowerPC/PPCMCInstLower.cpp b/lib/Target/PowerPC/PPCMCInstLower.cpp
+index 5cc180d7..a5b02565 100644
+--- a/lib/Target/PowerPC/PPCMCInstLower.cpp
++++ b/lib/Target/PowerPC/PPCMCInstLower.cpp
+@@ -117,7 +117,7 @@ static MCOperand GetSymbolRef(const MachineOperand &MO, const MCSymbol *Symbol,
    const MCExpr *Expr = MCSymbolRefExpr::create(Symbol, RefKind, Ctx);
    // If -msecure-plt -fPIC, add 32768 to symbol.
    if (Subtarget->isSecurePlt() && TM.isPositionIndependent() &&
@@ -34,5 +34,3 @@ index 027e6bd1ba0..ae461f4eea9 100644
        MO.getTargetFlags() == PPCII::MO_PLT)
      Expr =
          MCBinaryExpr::createAdd(Expr, MCConstantExpr::create(32768, Ctx), Ctx);
--- 
-2.23.0
