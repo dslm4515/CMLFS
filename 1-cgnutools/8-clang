@@ -4,32 +4,55 @@
 # * Build stage0 clang/clang++ with compiler-rt, lld, libunwind, libcxxabi, and libcxx
 #   in LLVM source directory
 
+# Truncate directory name for easier typing... 
+cd $CMLFS/sources       && \
+mv llvm-12.0.0-src llvm && \
+export LLVMSRC=${CMLFS}/sources/llvm && \
+
 cd ${LLVMSRC}
 # make sure compiler-rt, libcxx, libcxxabi, libunwind are unpacked in ${{LLVMSRC}/projects
 # and clang & lld in ${LLVMSRC}/tools.
-
-# Fix typo in libcxx
-cd projects/libcxx
-patch -Np1 -i  ../../../patches/libcxx/strtoll_fix.patch
-cd ${LLVMSRC}
+cd projects && \
+tar xf ../../pkgs/compiler-rt-12.0.0.src.tar.xz && \
+mv compiler-rt-12.0.0.src compiler-rt           && \
+tar xf ../../pkgs/libcxx-12.0.0.src.tar.xz      && \
+mv libcxx-12.0.0.src libcxx                     && \
+tar xf ../../pkgs/libcxxabi-12.0.0.src.tar.xz   && \
+mv libcxxabi-12.0.0.src libcxxabi               && \
+tar xf ../../pkgs/libunwind-12.0.0.src.tar.xz   && \
+mv libunwind-12.0.0.src libunwind               && \
+cd ${LLVMSRC}/tools && \
+tar xf ../../pkgs/clang-12.0.0.src.tar.xz 
+mv clang-12.0.0.src clang
+tar xf ../../pkgs/lld-12.0.0.src.tar.xz 
+mv lld-12.0.0.src lld
 
 # Apply patches from void linux
-patch -Np1 -i ../patches/llvm11-void/llvm-001-musl.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-002-ppcle.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-002-musl-ppc64-elfv2.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-003-ppc-secureplt.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-004-override-opt.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-005-ppc-bigpic.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-006-aarch64-mf_exec.patch
-cd tools/clang
-patch -Np1 -i ../../../patches/llvm11-void/clang-001-fix-unwind-chain-inclusion.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-001-ppcle.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-002-add-musl-triples.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-003-ppc64-dynamic-linker-path.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-004-ppc64-musl-elfv2.patch
+cd ${LLVMSRC}/projects/compiler-rt
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-aarch64-ucontext.patch
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-sanitizer-ppc64-musl.patch
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-size_t.patch 
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-xray-ppc64-musl.patch
+cd ${LLVMSRC}/projects/libcxx
+patch -Np1 -i ../../../patches/llvm12-libcxx-void/libcxx-musl.patch 
+patch -Np1 -i ../../../patches/llvm12-libcxx-void/libcxx-ppc.patch 
+patch -Np1 -i ../../../patches/llvm12-libcxx-void/libcxx-ssp-nonshared.patch 
+cd ${LLVMSRC}/projects/libunwind
+patch -Np1 -i ../../../patches/llvm12-libunwind-void/libunwind-ppc32.patch
+cd ${LLVMSRC}/tools/clang
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-001-fix-unwind-chain-inclusion.patch 
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-002-add-musl-triples.patch 
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-003-ppc64-dynamic-linker-path.patch 
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-004-ppc64-musl-elfv2.patch
 cd ${LLVMSRC}
+patch  -Np1 -i ../patches/llvm12-void/llvm-001-musl.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-002-musl-ppc64-elfv2.patch 
+patch  -Np1 -i ../patches/llvm12-void/llvm-003-ppc-secureplt.patch 
+patch  -Np1 -i ../patches/llvm12-void/llvm-004-override-opt.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-005-ppc-bigpic.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-006-aarch64-mf_exec.patch 
 
-# Disable sanitizers for musl systems, per Void Linux
+# Disable sanitizers for musl systems, per Void Linux... fixes early build failure
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
 
 # Set flags to greatly reduce debugging symbols
@@ -41,7 +64,7 @@ cp -v ../files/config.guess-musl cmake/config.guess
 
 # Configure source
 cmake -B build  \
-      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
       -DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
       -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \ 
