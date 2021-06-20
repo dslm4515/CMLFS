@@ -55,6 +55,10 @@ patch  -Np1 -i ../patches/llvm12-void/llvm-006-aarch64-mf_exec.patch
 # Disable sanitizers for musl systems, per Void Linux... fixes early build failure
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
 
+# Fix missing header for lld, https://bugs.llvm.org/show_bug.cgi?id=49228
+mkdir -pv tools/lld/include/mach-o
+cp -v projects/libunwind/include/mach-o/compact_unwind_encoding.h tools/lld/include/mach-o
+
 # Set flags to greatly reduce debugging symbols
 export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1" 
@@ -121,8 +125,8 @@ echo "/cgnutools/${CMLFS_TARGET}/lib" >> /cgnutools/etc/ld-musl-$(uname -m).path
 # Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
 # of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
 # file is modified to set the dynamic linker in /tools instead of host's /lib
-ln -sv clang-11   /cgnutools/bin/${CMLFS_TARGET}-clang
-ln -sv clang-11   /cgnutools/bin/${CMLFS_TARGET}-clang++
+ln -sv clang-12   /cgnutools/bin/${CMLFS_TARGET}-clang
+ln -sv clang-12   /cgnutools/bin/${CMLFS_TARGET}-clang++
 cat > /cgnutools/bin/${CMLFS_TARGET}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
 EOF
@@ -145,23 +149,6 @@ unset SPECFILE
 # Set the PATH
 export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
-# Test the cgnutools toolchain:
-echo "int main(){}" > dummy.c
-${CMLFS_TARGET}-clang dummy.c -v -Wl,--verbose &> dummy.log
-readelf -l a.out | grep ': /llvmtools'
-# Shoud output:
-# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]
-
-# Check if the correct start files are used
-grep 'ld.lld:' dummy.log | grep crt[1in]
-# Should output:
-# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../Scrt1.o
-# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crti.o
-# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crtn.o
-
-# If all is well, remove output files;
-rm -v a.out dummy.log
-
 # Test GCC of cgnutools toolchain:
 ${CMLFS_TARGET}-gcc dummy.c -v -Wl,--verbose &> dummy.log
 readelf -l a.out | grep ': /llvmtools'
@@ -174,3 +161,5 @@ grep  'lib.*/crt[1in].*succeeded' dummy.log | cut -d ' ' -f 4-5 | cut -b 5-
 # /cmlfs/cgnutools/bin/../../cgnutools/lib/../lib/crt1.o succeeded
 # /cmlfs/cgnutools/bin/../../cgnutools/lib/../lib/crti.o succeeded
 # /cmlfs/cgnutools/bin/../../cgnutools/lib/../lib/crtn.o succeeded
+
+rm -v dummy.log dummy.c a.out

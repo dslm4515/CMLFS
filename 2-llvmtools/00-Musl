@@ -29,3 +29,20 @@ cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
 /llvmtools/lib
 /llvmtools/gnu/lib
 EOF
+
+# Test clang of  cgnutools toolchain:
+echo "int main(){}" > dummy.c
+${CMLFS_TARGET}-clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]
+
+# Check if the correct start files are used
+grep 'ld.lld:' dummy.log | grep crt[1in]
+# Should output:
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../Scrt1.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crti.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crtn.o
+
+# If all is well, remove output files;
+rm -v a.out dummy.log
