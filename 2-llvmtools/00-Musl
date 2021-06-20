@@ -1,8 +1,9 @@
 # llvmtools: Musl Libc
-# Build and install as mlfs
+# Build and install as cmlfs
 
 # Make sure PATH is set ...
-export PATH=/llvmtools/bin:/llvmtools/gnu/bin:/cgnutools/bin:/usr/bin:/bin
+#export PATH=/llvmtools/bin:/llvmtools/gnu/bin:/cgnutools/bin:/usr/bin:/bin
+export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
 # and ... set C and C++ compilers with stage0 clang
 export CXX=clang++
@@ -40,9 +41,9 @@ readelf -l a.out | grep ': /llvmtools'
 # Check if the correct start files are used
 grep 'ld.lld:' dummy.log | grep crt[1in]
 # Should output:
-# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../Scrt1.o
-# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crti.o
-# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.2.1/../../../crtn.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/../../../Scrt1.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/../../../crti.o
+# ld.lld: /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/../../../crtn.o
 
 # If all is well, remove output files;
 rm -v a.out dummy.log
