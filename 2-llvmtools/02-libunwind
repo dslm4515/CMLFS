@@ -1,10 +1,10 @@
 # Set CC and CXX compiler with stage0 clang
-export CXX=clang++
-export  CC=clang
+export CXX=${CMLFS_TARGET}-clang++
+export  CC=${CMLFS_TARGET}-clang
 
 cd ${LLVMSRC}/projects/libunwind
 
-cmake -B build -G Ninja \
+cmake -B build \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLIBUNWIND_ENABLE_SHARED=ON \
       -DCMAKE_C_FLAGS="-fPIC" \
@@ -17,7 +17,8 @@ cmake -B build -G Ninja \
       -DCMAKE_RANLIB="/cgnutools/bin/llvm-ranlib" \
       -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
       -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
-      -DLIBUNWIND_USE_COMPILER_RT=ON 
-ninja -C build 
-ninja -C build install
+      -DLIBUNWIND_USE_COMPILER_RT=ON \
+      -DLLVM_PATH=${LLVMSRC} 
+make -C build 
+make -C build install
 rm -rf build       

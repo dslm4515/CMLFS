@@ -1,10 +1,12 @@
 # Set CC and CXX compiler with recently built stage0 clang (cgnutools)
-export CXX=/cgnutools/bin/clang++
-export  CC=/cgnutools/bin/clang
+#export CXX=/cgnutools/bin/clang++
+#export  CC=/cgnutools/bin/clang
+export CXX=${CMLFS_TARGET}-clang++
+export  CC=${CMLFS_TARGET}-clang
 
 cd ${LLVMSRC}/projects/libcxxabi
 
-cmake -B build -G Ninja \
+cmake -B build \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
@@ -12,7 +14,7 @@ cmake -B build -G Ninja \
       -DLIBCXXABI_LIBUNWIND_PATH="/llvmtools/lib" \
       -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/projects/libcxx/include" \
       -DLLVM_PATH="${LLVMSRC}" 
-ninja -C build 
-ninja -C build install
+make -C build 
+make -C build install
 cp -v include/*.h /llvmtools/include/
 rm -rf build       
