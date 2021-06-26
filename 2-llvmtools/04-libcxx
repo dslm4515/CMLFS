@@ -8,6 +8,7 @@ cd ${LLVMSRC}/projects/libcxx
 
 cmake -B build  \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
+      -DCMAKE_CXX_FLAGS="-isystem /llvmtools/include" \
       -DLLVM_PATH="${LLVMSRC}" \
       -DLIBCXX_ENABLE_SHARED=ON \
       -DLIBCXX_ENABLE_STATIC=ON  \
@@ -19,28 +20,8 @@ cmake -B build  \
       -DLIBCXX_CXX_ABI_LIBRARY_PATH=/llvmtools/lib \
       -DLIBCXX_INSTALL_HEADERS=ON \
       -DCMAKE_CXX_FLAGS="-I/llvmtools/include" \
-      -DCMAKE_C_FLAGS="-I/llvmtools/include" 
+
 make -C build
 
-############################# BUILD BREAKS #######################################################
-canning dependencies of target cxx_shared                                                         
-make[2]: Leaving directory '/mnt/cmlfs/sources/llvm/projects/libcxx/build'                         
-make[2]: Entering directory '/mnt/cmlfs/sources/llvm/projects/libcxx/build'                        
-[ 69%] Building CXX object src/CMakeFiles/cxx_shared.dir/algorithm.cpp.o                           
-[ 69%] Building CXX object src/CMakeFiles/cxx_shared.dir/any.cpp.o                                 
-[ 69%] Building CXX object src/CMakeFiles/cxx_shared.dir/atomic.cpp.o                              
-[ 70%] Building CXX object src/CMakeFiles/cxx_shared.dir/barrier.cpp.o                             
-[ 70%] Building CXX object src/CMakeFiles/cxx_shared.dir/bind.cpp.o                                
-[ 70%] Building CXX object src/CMakeFiles/cxx_shared.dir/charconv.cpp.o                            
-In file included from /mnt/cmlfs/sources/llvm/projects/libcxx/src/charconv.cpp:9:                  
-In file included from /mnt/cmlfs/sources/llvm/projects/libcxx/build/include/c++/v1/charconv:79:    /mnt/cmlfs/sources/llvm/projects/libcxx/build/include/c++/v1/cmath:321:9: error: no member named 'signbit' in the global namespace; did you mean '__signbit'?
-using ::signbit;
-      ~~^~~~~~~
-        __signbit
-/llvmtools/include/math.h:93:5: note: '__signbit' declared here
-int __signbit(double);
-    ^
-##################################################################################################
- 
 make -C build install
 rm -rf build       
