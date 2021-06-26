@@ -2,11 +2,13 @@
 export CXX=/cgnutools/bin/clang++
 export  CC=/cgnutools/bin/clang
 
-cd {LLVMSRC}/projects/libcxx
+cd ${LLVMSRC}/projects/libcxx
 
-cmake -B build -G Ninja \
+cmake -B build  \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLLVM_PATH="${LLVMSRC}" \
+      -DCMAKE_BUILD_TYPE="Release" \
+      -DCMAKE_CXX_FLAGS="-isystem /llvmtools/include" \
       -DLIBCXX_ENABLE_SHARED=ON \
       -DLIBCXX_ENABLE_STATIC=ON  \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
@@ -15,7 +17,9 @@ cmake -B build -G Ninja \
       -DLIBCXX_CXX_ABI_INCLUDE_PATHS="/llvmtools/include" \
       -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
       -DLIBCXX_CXX_ABI_LIBRARY_PATH=/llvmtools/lib \
-      -DLIBCXX_INSTALL_HEADERS=ON 
-ninja -C build 
-ninja -C build install
+      -DLIBCXX_INSTALL_HEADERS=ON \
+      -DLIBCXX_INCLUDE_BENCHMARKS=OFF -DLIBCXX_INCLUDE_DOCS=OFF \
+      -DLIBCXX_INCLUDE_TESTS=OFF 
+make -C build 
+make -C build install
 rm -rf build       
