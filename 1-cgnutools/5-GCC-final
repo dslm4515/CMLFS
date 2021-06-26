@@ -67,3 +67,4 @@ ${CMLFS_TARGET}-gcc dummy.c
 readelf -l a.out | grep Requesting
 # Should output:
 # [Requesting program interpreter: /cgnutools/lib/ld-musl-x86_64.so.1]
+rm -v dummy.c a.out
