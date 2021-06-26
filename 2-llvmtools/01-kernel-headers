@@ -1,9 +1,10 @@
+# Clean the source
 make mrproper
 
-# kernel 5.12.x will not build headers with clang
-#ARCH=${CMLFS_ARCH} LLVM=1 CC=clang CXX=clang++ make headers
-ARCH=${CMLFS_ARCH} CC=clang CXX=clang++ make headers
+# Build the headers
+make ARCH=${CMLFS_ARCH} LLVM=1 CC=clang CXX=clang++ HOSTCC=${CMLFS_TARGET}-clang headers
 
+# Install the headers to llvmtools
 find usr/include \( -name .install -o -name ..install.cmd \) -delete
 cp -rv usr/include/* /llvmtools/include/
 rm -v /llvmtools/include/Makefile
