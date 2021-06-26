@@ -4,7 +4,7 @@ export  CC=clang
 
 cd ${LLVMSRC}/projects/libunwind
 
-cmake -B build -G Ninja \
+cmake -B build \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLIBUNWIND_ENABLE_SHARED=ON \
       -DCMAKE_C_FLAGS="-fPIC" \
@@ -18,6 +18,6 @@ cmake -B build -G Ninja \
       -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
       -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
       -DLIBUNWIND_USE_COMPILER_RT=ON 
-ninja -C build 
-ninja -C build install
+make -C build 
+make -C build install
 rm -rf build       
