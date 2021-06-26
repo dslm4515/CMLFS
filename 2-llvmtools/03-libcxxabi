@@ -4,7 +4,7 @@ export  CC=/cgnutools/bin/clang
 
 cd ${LLVMSRC}/projects/libcxxabi
 
-cmake -B build -G Ninja \
+cmake -B build \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLIBCXXABI_ENABLE_STATIC=ON \
       -DLIBCXXABI_USE_COMPILER_RT=ON \
@@ -12,7 +12,7 @@ cmake -B build -G Ninja \
       -DLIBCXXABI_LIBUNWIND_PATH="/llvmtools/lib" \
       -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/projects/libcxx/include" \
       -DLLVM_PATH="${LLVMSRC}" 
-ninja -C build 
-ninja -C build install
+make -C build 
+make -C build install
 cp -v include/*.h /llvmtools/include/
 rm -rf build       
