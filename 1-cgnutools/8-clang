@@ -4,12 +4,31 @@
 # * Build stage0 clang/clang++ with compiler-rt, lld, libunwind, libcxxabi, and libcxx
 #   in LLVM source directory
 
+# Truncate directory name for easier typing... 
+cd $CMLFS/sources       && \
+mv llvm-11.0.0.src llvm && \
+export LLVMSRC=${CMLFS}/sources/llvm 
+
 cd ${LLVMSRC}
 # make sure compiler-rt, libcxx, libcxxabi, libunwind are unpacked in ${{LLVMSRC}/projects
 # and clang & lld in ${LLVMSRC}/tools.
+cd projects && \
+tar xf ../../pkgs/compiler-rt-11.0.0.src.tar.xz && \
+mv compiler-rt-11.0.0.src compiler-rt           && \
+tar xf ../../pkgs/libcxx-11.0.0.src.tar.xz      && \
+mv libcxx-11.0.0.src libcxx                     && \
+tar xf ../../pkgs/libcxxabi-11.0.0.src.tar.xz   && \
+mv libcxxabi-11.0.0.src libcxxabi               && \
+tar xf ../../pkgs/libunwind-11.0.0.src.tar.xz   && \
+mv libunwind-11.0.0.src libunwind               && \
+cd ${LLVMSRC}/tools && \
+tar xf ../../pkgs/clang-11.0.0.src.tar.xz && \
+mv clang-11.0.0.src clang                 && \
+tar xf ../../pkgs/lld-11.0.0.src.tar.xz   && \
+mv lld-11.0.0.src lld
 
 # Fix typo in libcxx
-cd projects/libcxx
+cd $LLMVSRC/projects/libcxx
 patch -Np1 -i  ../../../patches/libcxx/strtoll_fix.patch
 cd ${LLVMSRC}
 
@@ -21,7 +40,8 @@ patch -Np1 -i ../patches/llvm11-void/llvm-003-ppc-secureplt.patch
 patch -Np1 -i ../patches/llvm11-void/llvm-004-override-opt.patch
 patch -Np1 -i ../patches/llvm11-void/llvm-005-ppc-bigpic.patch
 patch -Np1 -i ../patches/llvm11-void/llvm-006-aarch64-mf_exec.patch
-cd tools/clang
+
+cd ${LLVMSRC}/tools/clang
 patch -Np1 -i ../../../patches/llvm11-void/clang-001-fix-unwind-chain-inclusion.patch
 patch -Np1 -i ../../../patches/llvm11-void/clang-001-ppcle.patch
 patch -Np1 -i ../../../patches/llvm11-void/clang-002-add-musl-triples.patch
@@ -41,7 +61,7 @@ cp -v ../files/config.guess-musl cmake/config.guess
 
 # Configure source
 cmake -B build  \
-      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
       -DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
       -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \ 
