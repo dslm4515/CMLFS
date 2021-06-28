@@ -6,8 +6,8 @@
 # of unneeded debugging symbols. 
 
 # Remove debug symbols with: 
-strip --strip-debug /llvmtools/lib/*
-/usr/bin/strip --strip-unneeded /llvmtools/bin/*
+find /llvmtools/lib/ -maxdepth 1 -type f -exec strip --strip-debug {} \;
+find /llvmtools/bin/ -maxdepth 1 -type f -exec /cgnutools/bin/llvm-strip --strip-unneeded {} \;
 
 # Remove the documentation:
 rm -rf /llvmtools/{,share}/{info,man,doc}
