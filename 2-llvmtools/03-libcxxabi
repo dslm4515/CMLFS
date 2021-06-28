@@ -1,11 +1,17 @@
+# llvmtools: libcxx-abi
+
 # Set CC and CXX compiler with recently built stage0 clang (cgnutools)
-#export CXX=/cgnutools/bin/clang++
-#export  CC=/cgnutools/bin/clang
 export CXX=${CMLFS_TARGET}-clang++
 export  CC=${CMLFS_TARGET}-clang
 
+# Extract and truncate directory name
+cd ${LLVMSRC}/projects
+tar xf ../../pkgs/libcxxabi-12.0.0.src.tar.xz 
+mv libcxxabi-12.0.0.src libcxxabi
+
 cd ${LLVMSRC}/projects/libcxxabi
 
+# Configure
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
       -DLIBCXXABI_ENABLE_STATIC=ON \
@@ -14,7 +20,23 @@ cmake -B build \
       -DLIBCXXABI_LIBUNWIND_PATH="/llvmtools/lib" \
       -DLIBCXXABI_LIBCXX_INCLUDES="${LLVMSRC}/projects/libcxx/include" \
       -DLLVM_PATH="${LLVMSRC}" 
+
+# Build
 make -C build 
+
+# Make sure built library has no GCC dependancies
+readelf -d build/lib/libc++abi.so.1.0 
+#Dynamic section at offset 0x586c0 contains 19 entries:
+#  Tag        Type                         Name/Value
+# 0x0000000000000001 (NEEDED)             Shared library: [libunwind.so.1]
+# 0x0000000000000001 (NEEDED)             Shared library: [libc.so]
+# 0x000000000000000e (SONAME)             Library soname: [libc++abi.so.1]
+
+# If good, install to llvmtools
 make -C build install
+
+# Install headers too
 cp -v include/*.h /llvmtools/include/
+
+# Remove build.
 rm -rf build       
