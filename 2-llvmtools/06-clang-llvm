@@ -100,9 +100,12 @@ cmake -B build \
     -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so"
 
 
-# Compile then install
-make -C build         && \
-make -C build install && \ 
+# Compile 
+make -C build
+
+# Install
+cd build && \
+cmake -DCMAKE_INSTALL_PREFIX="/llvmtools" -P cmake_install.cmake
 
 # Some binaries were not installed
 cp -v build/bin/llvm-as       /llvmtools/bin/
