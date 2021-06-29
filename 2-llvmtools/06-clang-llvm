@@ -137,4 +137,4 @@ EOF
 unset CFLAGS CXXFLAGS
 
 # Cross-tools and cgnutools no longer needed:
-export PATH=/llvmtools/bin:/usr/bin:/bin
+#export PATH=/llvmtools/bin:/usr/bin:/bin
