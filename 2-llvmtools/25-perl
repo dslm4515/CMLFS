@@ -3,6 +3,8 @@
 # Source: https://github.com/arsv/perl-cross/releases/download/1.3.5/perl-cross-1.3.5.tar.gz
 # Build and install as cmlfs
 
+# ** Perl 5.34.0 + perl-cross-1.3.6 fail to build. Perl 5.34.0 will compile in chroot **
+
 # Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
 export CXX=${TARGET_TRUPLE}-clang++
 export AR=llvm-ar
