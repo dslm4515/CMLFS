@@ -5,84 +5,104 @@ cd ${LLVMSRC}
 # make sure compiler-rt are unpacked in ${{LLVMSRC}/projects
 # and clang & lld in ${LLVMSRC}/tools. No need to unpack libunwind,
 # libcxxabi and libcxxabi as all 3 are installed in /llvmtools
+rm -rf projects/{libunwind,libcxx,libcxxabi}
+tar xf ../pkgs/compiler-rt-12.0.0.src.tar.xz 
+mv compiler-rt-12.0.0.src projects/compiler-rt
+tar xf ../pkgs/clang-12.0.0.src.tar.xz 
+tar xf ../pkgs/lld-12.0.0.src.tar.xz
+mv clang-12.0.0.src tools/clang
+mv lld-12.0.0.src   tools/lld
 
 # Apply patches from void linux
-patch -Np1 -i ../patches/llvm11-void/llvm-001-musl.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-002-ppcle.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-002-musl-ppc64-elfv2.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-003-ppc-secureplt.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-004-override-opt.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-005-ppc-bigpic.patch
-patch -Np1 -i ../patches/llvm11-void/llvm-006-aarch64-mf_exec.patch
-cd tools/clang
-patch -Np1 -i ../../../patches/llvm11-void/clang-001-fix-unwind-chain-inclusion.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-001-ppcle.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-002-add-musl-triples.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-003-ppc64-dynamic-linker-path.patch
-patch -Np1 -i ../../../patches/llvm11-void/clang-004-ppc64-musl-elfv2.patch
+cd ${LLVMSRC}/projects/compiler-rt
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-aarch64-ucontext.patch
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-sanitizer-ppc64-musl.patch
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-size_t.patch
+patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-xray-ppc64-musl.patch
+cd ${LLVMSRC}/tools/clang
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-001-fix-unwind-chain-inclusion.patch
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-002-add-musl-triples.patch
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-003-ppc64-dynamic-linker-path.patch
+patch -Np1 -i ../../../patches/llvm12-clang-void/clang-004-ppc64-musl-elfv2.patch
 cd ${LLVMSRC}
+patch  -Np1 -i ../patches/llvm12-void/llvm-001-musl.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-002-musl-ppc64-elfv2.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-003-ppc-secureplt.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-004-override-opt.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-005-ppc-bigpic.patch
+patch  -Np1 -i ../patches/llvm12-void/llvm-006-aarch64-mf_exec.patch
 
+# Disable sanitizers for musl systems, per Void Linux... fixes early build failure
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
 
+# Fix missing header for lld, https://bugs.llvm.org/show_bug.cgi?id=49228
+tar xf ../pkgs/libunwind-12.0.0.src.tar.xz libunwind-12.0.0.src/include/mach-o/compact_unwind_encoding.h
+mv libunwind-12.0.0.src/include/mach-o tools/lld/include/
+rm -rf libunwind-12.0.0.src/
+
+# Set flags to greatly reduce debugging symbols
 export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1" 
 
 # Update host/target triple detection
-cp -v ../files/config.guess cmake/
+cp -v ../files/config.guess-musl cmake/config.guess
 
 # Remember to use the configured stage0 clang
-CC=x86_64-pc-linux-musl-clang    \
-CXX=x86_64-pc-linux-musl-clang++ \
-cmake -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=MinSizeRel \
-      -DCMAKE_INSTALL_PREFIX=/llvmtools \
-      -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-      -DLLVM_LINK_LLVM_DYLIB=ON \
-      -DLLVM_BUILD_LLVM_DYLIB=ON \
-      -DLLVM_BUILD_TESTS=OFF \
-      -DLLVM_ENABLE_LIBEDIT=OFF \
-      -DLLVM_ENABLE_LIBXML2=OFF \
-      -DLLVM_ENABLE_LIBCXX=ON \
-      -DLLVM_INCLUDE_GO_TESTS=OFF \
-      -DLLVM_INCLUDE_TESTS=OFF \
-      -DLLVM_INCLUDE_DOCS=OFF \
-      -DLLVM_INCLUDE_EXAMPLES=OFF \
-      -DLLVM_INCLUDE_BENCHMARKS=OFF \
-      -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
-      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
-      -DLLVM_TARGET_ARCH="X86" \
-      -DLLVM_TARGETS_TO_BUILD="X86" \
-      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
-      -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-      -DCOMPILER_RT_BUILD_XRAY=OFF \
-      -DCOMPILER_RT_BUILD_PROFILE=OFF \
-      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-      -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \ 
-      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-      -DCLANG_DEFAULT_RTLIB=compiler-rt \
-      -DCLANG_DEFAULT_LINKER="/llvmtools/bin/ld.lld" \
-      -DDEFAULT_SYSROOT="/llvmtools" \
-      -DLLVM_ENABLE_LLD=ON \
-      -DLLVM_ENABLE_RTTI=ON \
-      -DLLVM_ENABLE_ZLIB=OFF \
-      -DBacktrace_INCLUDE_DIR="/llvmtools/include" \
-      -DBacktrace_LIBRARY="/llvmtools/lib/libexecinfo.so" \
-      -DCMAKE_CXX_COMPILER_AR="/cgnutools/bin/llvm-ar" \
-      -DCMAKE_C_COMPILER_AR="/cgnutools/bin/llvm-ar" \
-      -DCMAKE_CXX_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib" \
-      -DCMAKE_C_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib" \
-      -DCMAKE_INSTALL_OLDINCLUDEDIR="/llvmtools/include" \
-      -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
-      -DCMAKE_NM="/cgnutools/bin/llvm-nm" \
-      -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy" \
-      -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
-      -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
-      -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so" 
+CC=x86_64-cmlfs-linux-musl-clang    
+CXX=x86_64-cmlfs-linux-musl-clang++ 
+
+# Configure
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release                                  \
+    -DCMAKE_INSTALL_PREFIX="/llvmtools"                         \
+    -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON                            \
+    -DLLVM_LINK_LLVM_DYLIB=ON                                   \
+    -DLLVM_BUILD_LLVM_DYLIB=ON                                  \
+    -DLLVM_BUILD_TESTS=OFF                                      \
+    -DLLVM_ENABLE_LIBEDIT=OFF                                   \
+    -DLLVM_ENABLE_LIBXML2=OFF                                   \
+    -DLLVM_ENABLE_LIBCXX=ON                                     \
+    -DLLVM_INCLUDE_GO_TESTS=OFF                                 \
+    -DLLVM_INCLUDE_TESTS=OFF                                    \
+    -DLLVM_INCLUDE_DOCS=OFF                                     \
+    -DLLVM_INCLUDE_EXAMPLES=OFF                                 \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF                               \
+    -DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl"         \
+    -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl"                   \
+    -DLLVM_TARGET_ARCH="X86"                                    \
+    -DLLVM_TARGETS_TO_BUILD="X86"                               \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl"  \
+    -DCOMPILER_RT_BUILD_SANITIZERS=OFF                          \
+    -DCOMPILER_RT_BUILD_XRAY=OFF                                \
+    -DCOMPILER_RT_BUILD_PROFILE=OFF                             \
+    -DCOMPILER_RT_BUILD_LIBFUZZER=OFF                           \
+    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON                       \
+    -DCLANG_DEFAULT_CXX_STDLIB=libc++                           \
+    -DCLANG_DEFAULT_UNWINDLIB=libunwind                         \
+    -DCLANG_DEFAULT_RTLIB=compiler-rt                           \
+    -DCLANG_DEFAULT_LINKER="/llvmtools/bin/ld.lld"              \
+    -DDEFAULT_SYSROOT="/llvmtools"                              \
+    -DLLVM_ENABLE_LLD=ON                                        \
+    -DLLVM_ENABLE_RTTI=ON                                       \
+    -DLLVM_ENABLE_ZLIB=OFF                                      \
+    -DBacktrace_INCLUDE_DIR="/llvmtools/include"                \
+    -DBacktrace_LIBRARY="/llvmtools/lib/libexecinfo.so"         \
+    -DCMAKE_CXX_COMPILER_AR="/cgnutools/bin/llvm-ar"            \
+    -DCMAKE_C_COMPILER_AR="/cgnutools/bin/llvm-ar"              \
+    -DCMAKE_CXX_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib"    \
+    -DCMAKE_C_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib"      \
+    -DCMAKE_INSTALL_OLDINCLUDEDIR="/llvmtools/include"          \
+    -DCMAKE_LINKER="/cgnutools/bin/ld.lld"                      \
+    -DCMAKE_NM="/cgnutools/bin/llvm-nm"                         \
+    -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy"               \
+    -DCMAKE_READELF="/cgnutools/bin/llvm-readelf"               \
+    -DCMAKE_STRIP="/cgnutools/bin/llvm-strip"                   \
+    -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so"
+
 
 # Compile then install
-ninja -C build         && \
-ninja -C build install && \ 
+make -C build         && \
+make -C build install && \ 
 
 # Some binaries were not installed
 cp -v build/bin/llvm-as       /llvmtools/bin/
