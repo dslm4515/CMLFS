@@ -18,7 +18,7 @@ https://ftp.gnu.org/gnu/mpc/mpc-1.2.1.tar.gz
 https://github.com/shadow-maint/shadow/releases/download/4.8.1/shadow-4.8.1.tar.xz
 https://dev.alpinelinux.org/~nenolod/gcc-10.3.1_git20210424.tar.xz 
 http://isl.gforge.inria.fr/isl-0.23.tar.bz2
-http://anduin.linuxfromscratch.org/LFS/bzip2-1.0.8.tar.gz
+https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
 https://distfiles.dereferenced.org/pkgconf/pkgconf-1.7.4.tar.xz
 http://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
 https://download.savannah.gnu.org/releases/attr/attr-2.5.1.tar.gz
