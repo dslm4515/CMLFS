@@ -5,14 +5,16 @@
 echo " --sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-$(uname -m).so.1" > \
      /llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg
 
-ln -sv clang-11 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang
-ln -sv clang-11 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang++
+ln -sv clang-12 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang
+ln -sv clang-12 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang++
 
 # Update the build environment
 export CC=$(uname -m)-cmlfs-linux-musl-clang
 export CXX=$(uname -m)-cmlfs-linux-musl-clang++
 
 # Create links to make sure clang is used and not GCC
+mv /llvmtools/bin/cc  /llvmtools/bin/cc.gnu
+mv /llvmtools/bin/g++ /llvmtools/bin/g++.gnu
 ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
 ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
 
