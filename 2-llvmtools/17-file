@@ -1,5 +1,4 @@
-# Toolchain: File 5.39
-# Source: ftp://ftp.astron.com/pub/file/file-5.39.tar.gz
+# Toolchain: File 5.40
 # Build and install as cmlfs
 # Must use same version for cross-tools, cgnutools, 
 # and final system. 
@@ -17,6 +16,7 @@ export STRIP=llvm-strip
 ./configure --build=${TARGET_TRUPLE} \
             --host=${TARGET_TRUPLE} \
             --prefix=/llvmtools
+            --disable-libseccomp
 
 # Build and install to toolchain
 make && make install
