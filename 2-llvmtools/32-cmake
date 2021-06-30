@@ -1,5 +1,4 @@
-# Llvmtools Toolchain: CMake 3.19.6
-# Source: https://cmake.org/files/v3.19/cmake-3.19.6.tar.gz
+# Llvmtools Toolchain: CMake 
 # Build and install as cmlfs
 
 # Set the environment to use stage1 clang & friends if not done already.
@@ -16,7 +15,7 @@ sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
 # Configure source
 ./bootstrap --prefix=/llvmtools \
             --mandir=/share/man \
-            --docdir=/share/doc/cmake-3.19.6 \
+            --docdir=/share/doc/cmake-3.20.4 \
             --no-system-jsoncpp  \
             --no-system-librhash \
             --no-system-curl \
