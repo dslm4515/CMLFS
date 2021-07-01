@@ -27,5 +27,7 @@ ninja -C build
 # Install
 ninja -C build install
 
-# Save LLVM tree for later.
-rm -rf build
+# Save LLVM tree for later. But libunwind
+# tree can be removed
+cd ${LLVMSRC}/projects
+rm -rf libunwind
