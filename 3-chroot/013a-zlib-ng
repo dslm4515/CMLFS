@@ -15,6 +15,6 @@ ln -sv ../../lib/libz-ng.so.2.0.5 /usr/lib/libz-ng.so.2
 ln -sv ../../lib/libz-ng.so.2.0.5 /usr/lib/libz-ng.so.2.0.5
 
 # Compatibility for zlib
-ln -sv libz-ng.so.2.0.5 lib/libz.so
-ln -sv libz-ng.so.2.0.5 lib/libz.so.2
-ln -sv libz-ng.so.2.0.5 lib/libz.so.2.0.5
+ln -sv libz-ng.so.2.0.5 /lib/libz.so
+ln -sv libz-ng.so.2.0.5 /lib/libz.so.2
+ln -sv libz-ng.so.2.0.5 /lib/libz.so.2.0.5
