@@ -30,5 +30,5 @@ install -Dm755 posixtz-0.5/posixtz /usr/bin/posixtz
 unset timezones
 
 # use tzselect to determine <xxx>
-cp -v /usr/share/zoneinfo/<xxx> /etc/localtime
+ln -sv /usr/share/zoneinfo/<xxx> /etc/localtime
 
