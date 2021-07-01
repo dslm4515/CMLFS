@@ -1,10 +1,9 @@
 # Final System: Utmps
-# Source: https://skarnet.org/software/utmps/utmps-0.0.3.2.tar.gz
 # This section is done in Chroot environment
 
 # Configure source
 cp -v ../files/utmps-alpine/*.pc /tmp/
-sed -i -e "s/@@VERSION@@/0.0.3.2/g" -- /tmp/*.pc 
+sed -i -e "s/@@VERSION@@/0.1.0.2/g" -- /tmp/*.pc 
 ./configure --enable-shared      \
             --enable-static      \
             --disable-allstatic  \
@@ -17,6 +16,9 @@ sed -i -e "s/@@VERSION@@/0.0.3.2/g" -- /tmp/*.pc
 # Build and Install
 make
 make install
+
+# Some packages look for utmpx.h in /usr/include
+ln -sv utmps/utmpx.h /usr/include/utmpx.h
 
 # Install pkgconfig
 install -v -D -m644 /tmp/utmps.pc /usr/lib/pkgconfig
