@@ -1,0 +1,20 @@
+# Final System: Zlib-ng 2.0.5
+# Source: https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.5.tar.gz
+# This section is done in Chroot environment
+
+# Configure source
+CC=$CC ./configure  --prefix=/usr --libdir=/lib 
+
+# Build and Install
+make 
+make install
+
+# Add links for /usr/lib
+ln -sv ../../libz-ng.so.2.0.5 /usr/lib/libz-ng.so
+ln -sv ../../libz-ng.so.2.0.5 /usr/lib/libz-ng.so.2
+ln -sv ../../libz-ng.so.2.0.5 /usr/lib/libz-ng.so.2.0.5
+
+# Compatibility for zlib
+ln -sv libz-ng.so.2.0.5 lib/libz.so
+ln -sv libz-ng.so.2.0.5 lib/libz.so.2
+ln -sv libz-ng.so.2.0.5 lib/libz.so.2.0.5
