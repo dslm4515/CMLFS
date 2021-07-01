@@ -10,17 +10,15 @@ patch -Np1 -i ../patches/binutils-alpine/ld-bfd-mips.patch
 # Create build directory
 mkdir -v build && cd build
 
-# -z separate-code is currently causing kernel miscompiles on x86*
 case $(uname -m) in
-  x86_64)  export EXTRA_CONFIG=" --enable-targets=x86_64-pep --enable-64-bit-bfd --disable-separate-code"
+  x86_64)  export EXTRA_CONFIG=" --enable-targets=x86_64-pep --enable-64-bit-bfd"
            ;;
   i686)    export EXTRA_CONFIG=" --disable-separate-code --enable-64-bit-bfd --enable-targets=x86_64-linux-gnu,x86_64-pep"
            ;;
 esac
 
 # Configure
-CC=clang CXX=clang++            \
-../configure --prefix=/opt/gnu   \
+../configure --prefix=/usr   \
              --enable-gold       \
              --enable-ld=default \
              --enable-plugins    \
@@ -38,7 +36,7 @@ CC=clang CXX=clang++            \
              --with-mmap $EXTRA_CONFIG 
 
 # Build
-make tooldir=/opt/gnu
+make tooldir=/usr
 
 # Rebuild libiberty.a with -fPIC
 cp -a libiberty libiberty-pic
@@ -57,33 +55,30 @@ make -C opcodes-pic clean
 make CFLAGS="$CFLAGS -fPIC" -C opcodes-pic
 
 # Install
-make tooldir=/opt/gnu install
+make tooldir=/usr install
 
-# Remove ld (hardlink) and make a symlink to ld.bfd.
-rm -fv   /opt/gnu/bin/ld
-ln -sfrv /opt/gnu/bin/ld.bfd /opt/gnu/bin/ld
+# Remove ld as lld will be built and the default.
+rm -fv   /usr/bin/ld
 
 # Add some useful headers
 cd ..
-install -v -m 644 include/libiberty.h /opt/gnu/include
-install -v -m 644 include/demangle.h  /opt/gnu/include
+install -v -m 644 include/libiberty.h /usr/include
+install -v -m 644 include/demangle.h  /usr/include
 
 # install libraries rebuilt with -fPIC
 cd build
-install -v -m 644 libiberty-pic/libiberty.a /opt/gnu/lib
-install -v -m 644 bfd-pic/libbfd.a          /opt/gnu/lib
-install -v -m 644 opcodes-pic/libopcodes.a  /opt/gnu/lib
+install -v -m 644 libiberty-pic/libiberty.a /usr/lib
+install -v -m 644 bfd-pic/libbfd.a          /usr/lib
+install -v -m 644 opcodes-pic/libopcodes.a  /usr/lib
 
 # Remove these symlinks, they are not ABI stable.
 # Programs should compile static to the .a file.
 rm -fv /usr/lib/lib{bfd,opcodes}.so
-echo "INPUT ( /opt/gnu/lib/libbfd.a -liberty -lz )"  > /opt/gnu/lib/libbfd.so
-echo "INPUT ( /opt/gnu/lib/libopcodes.a -lbfd )"     > /opt/gnu/lib/libopcodes.so
+echo "INPUT ( /usr/lib/libbfd.a -liberty -lz )"  > /usr/lib/libbfd.so
+echo "INPUT ( /usr/lib/libopcodes.a -lbfd )"     > /usr/lib/libopcodes.so
 
 # Remove useless manpages.
 for f in dlltool nlmconv windres windmc; do
- rm -fv /opt/gnu/share/man/man1/${f}.1
+ rm -fv /usr/share/man/man1/${f}.1
 done
 
-# Add to system dynamic linker search paths
-echo "/opt/gnu/lib" >> /etc/ld-musl-$(uname -m).path
