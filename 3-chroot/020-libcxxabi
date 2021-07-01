@@ -27,7 +27,6 @@ ninja -C build install
 # Install headers required by libcxx
 cp -v include/*.h /usr/include/
 
-# Remove source
-cd ${LLVMSRC}/projects
-rm -rf libcxxabi
+# Don't remove source:
+# libc++ now requires being built in a monorepo layout with libcxxabi
 
