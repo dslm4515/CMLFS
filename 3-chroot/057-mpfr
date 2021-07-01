@@ -1,9 +1,7 @@
 # Final System: MPFR 4.1.0
-# Souce: http://www.mpfr.org/mpfr-4.1.0/mpfr-4.1.0.tar.xz
 # This section is done in Chroot environment
 
 # Configure source
-CC=clang CXX=clang++             \
 ./configure --prefix=/usr        \
             --disable-static     \
             --enable-thread-safe \

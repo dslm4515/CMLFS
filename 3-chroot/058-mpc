@@ -1,9 +1,7 @@
 # Final System: MPC 1.2.1
-# Source: https://ftp.gnu.org/gnu/mpc/mpc-1.2.1.tar.gz
 # This section is done in Chroot environment
 
 # Configure source
-CC=clang CXX=clang++              \
 ./configure --prefix=/usr         \
             --disable-static      \
             --docdir=/usr/share/doc/mpc-1.2.1
