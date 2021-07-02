@@ -1,5 +1,4 @@
 # Final System: Libcap
-# Source: https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.45.tar.xz
 # This section is done in Chroot environment
 
 # Temporarily make a gcc link
@@ -12,7 +11,7 @@ make lib=lib \
      PKGCONFIGDIR=/usr/lib/pkgconfig install
 
 for libname in cap psx; do
-    chmod -v 755 /lib/lib${libname}.so.2.45
+    chmod -v 755 /lib/lib${libname}.so.2.50
     rm -v /lib/lib${libname}.so
     ln -sfv ../../lib/lib${libname}.so.2 /usr/lib/lib${libname}.so
 done
