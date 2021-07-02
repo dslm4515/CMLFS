@@ -1,9 +1,11 @@
 # Final System: Inetutils 2.0
-# Source: http://ftp.gnu.org/gnu/inetutils/inetutils-2.0.tar.xz
 # This section is done in Chroot environment
 
 # Apply patch for utmpx support
-patch -Np1 -i ../patches/inetutils-mlfs/logwtmp.patch
+patch -Np1 -i ../patches/inetutils-mlfs/logwtmp.patch &&
+sed -i 's|_GL_WARN_ON_USE (gets|//_GL_WARN_ON_USE (gets|' lib/stdio.in.h
+echo '#define PATH_PROCNET_DEV "/proc/net/dev"' >> ifconfig/system/linux.h
+sed -i 's|port : "whois"|port : "nicname"|' whois/whois.c
 
 CC=clang CXX=clang++             \
 ./configure --prefix=/usr        \
