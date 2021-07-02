@@ -1,9 +1,8 @@
 # Final System: Expat
-# Source: https://prdownloads.sourceforge.net/expat/expat-2.2.10.tar.xz
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++         \
 ./configure --prefix=/usr    \
             --disable-static \
-            --docdir=/usr/share/doc/expat-2.2.10
+            --docdir=/usr/share/doc/expat-2.4.1
 make && make install
