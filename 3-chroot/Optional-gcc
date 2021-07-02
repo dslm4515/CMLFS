@@ -94,12 +94,19 @@ make
 # Install!
 make install
 
+# Make clang the primary compiler system
+for b in gcc cpp g++ c++
+do
+  mv -v /usr/bin/{$b,$b.gnu}
+  ln -sv clang-12 /usr/bin/$b
+done  
+
 # Create a symlink required by the FHS for 'historical' reasons
-#ln -sv ../bin/cpp /opt/gnu/lib/cpp
+ln -sv ../bin/cpp /usr/lib/cpp
 
 # Many packages use the name cc to call the C compiler. Satisfy
 # those pacakges with a symlink:
-#ln -sv gcc /opt/gnu/bin/cc
+ln -sv gcc /usr/bin/cc
 
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)
