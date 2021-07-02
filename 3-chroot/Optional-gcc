@@ -1,6 +1,4 @@
 # Final System: GCC (optional)
-# Source: https://dev.alpinelinux.org/~nenolod/gcc-10.2.1_pre2.tar.xz
-# Source: http://isl.gforge.inria.fr/isl-0.23.tar.bz2
 # This section is done in Chroot environment
 
 # GCC source tarball is a snapshot from Alpine Linux
@@ -32,49 +30,8 @@ esac &&
 tar -xf ../pkgs/isl-0.23.tar.xz &&
 mv -v isl-0.23 isl         &&
 
-for p in 0001-posix_memalign.patch \
-        0002-gcc-poison-system-directories.patch \
-        0003-Turn-on-Wl-z-relro-z-now-by-default.patch \
-        0004-Turn-on-D_FORTIFY_SOURCE-2-by-default-for-C-C-ObjC-O.patch \
-        0005-On-linux-targets-pass-as-needed-by-default-to-the-li.patch \
-        0006-Enable-Wformat-and-Wformat-security-by-default.patch \
-        0007-Enable-Wtrampolines-by-default.patch \
-        0008-Disable-ssp-on-nostdlib-nodefaultlibs-and-ffreestand.patch \
-        0009-Ensure-that-msgfmt-doesn-t-encounter-problems-during.patch \
-        0010-Don-t-declare-asprintf-if-defined-as-a-macro.patch \
-        0011-libiberty-copy-PIC-objects-during-build-process.patch \
-        0012-libitm-disable-FORTIFY.patch \
-        0013-libgcc_s.patch \
-        0014-nopie.patch \
-        0015-libffi-use-__linux__-instead-of-__gnu_linux__-for-mu.patch \
-        0016-dlang-update-zlib-binding.patch \
-        0017-dlang-fix-fcntl-on-mips-add-libucontext-dep.patch \
-        0018-ada-fix-shared-linking.patch \
-        0019-build-fix-CXXFLAGS_FOR_BUILD-passing.patch \
-        0020-add-fortify-headers-paths.patch \
-        0021-Alpine-musl-package-provides-libssp_nonshared.a.-We-.patch \
-        0022-DP-Use-push-state-pop-state-for-gold-as-well-when-li.patch \
-        0023-Pure-64-bit-MIPS.patch \
-        0024-use-pure-64-bit-configuration-where-appropriate.patch \
-        0025-always-build-libgcc_eh.a.patch \
-        0026-ada-libgnarl-compatibility-for-musl.patch \
-        0027-ada-musl-support-fixes.patch \
-        0028-gcc-go-Use-_off_t-type-instead-of-_loff_t.patch \
-        0029-gcc-go-Don-t-include-sys-user.h.patch \
-        0030-gcc-go-Fix-ucontext_t-on-PPC64.patch \
-        0031-gcc-go-Fix-handling-of-signal-34-on-musl.patch \
-        0032-gcc-go-Use-int64-type-as-offset-argument-for-mmap.patch \
-        0033-gcc-go-Fix-st_-a-m-c-tim-fields-in-generated-sysinfo.patch \
-        0034-gcc-go-signal-34-is-special-on-musl-libc.patch \
-        0035-gcc-go-Prefer-_off_t-over-_off64_t.patch \
-        0036-gcc-go-undef-SETCONTEXT_CLOBBERS_TLS-in-proc.c.patch \
-        0037-gcc-go-link-to-libucontext.patch \
-        0038-gcc-go-Disable-printing-of-unaccessible-ppc64-struct.patch \
-        0039-CRuntime_Musl-Support-v1.2.0-for-32-bits.patch \
-        0040-configure-Add-enable-autolink-libatomic-use-in-LINK_.patch
-do
-        patch -Np1 -i ../patches/gcc-alpine-10.2.1p2/$p
-done && \
+# Apply patches from Alpine Linux
+bash ../patches/gcc-10.3.1_git20210424-alpine/apply_patches.sh
 
 case $(uname -m) in
   x86_64)
@@ -87,58 +44,18 @@ case $(uname -m) in
   ;;
 esac &&
 
-# Create symlinks as GCC is not the primary system compiler
-ln -sv /usr/include/zconf.h /opt/gnu/include/
-ln -sv /usr/include/zlib.h  /opt/gnu/include/
-#ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/
-#ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so
-#ln -sv /lib/libz.so.1.2.11 /opt/gnu/lib/libz.so.1
-#ln -sv  /usr/lib/libc.so /opt/gnu/lib/libc.musl-x86_64.so.1
-
-# Re-use the cross-toolchain used to build libelf.
-# Make sure cross-tools' linker can find libraries in: 
-#  o /opt/gnu/lib
-#  o /usr/lib
-#  o /lib
-echo "/opt/gnu/lib" >> /cgnutools/etc/ld-musl-x86_64.path
-
-# Make sure cgnutools is in PATH:
-export OLD_PATH=$PATH
-export PATH=$PATH:/cgnutools/bin
-
-# Remove the specs file so that cgnutools builds
-# binaries with /lib/ld-musl-x86_64.so.1 as dynamic linker:
-rm -rf /cgnutools/lib/gcc/$(uname -m)-cmlfs-linux-musl/10.2.1/specs
-
 # Build in a dedicated directory
 mkdir -v build && cd build
 
-# Set linker flag
-export LDFLAGS="-Wl,-rpath,/opt/gnu/lib"
+# Create temporary links for llvmtool's gcc
+ln -sv /llvmtools/lib/libgcc_s.so{,.1}       /usr/lib
+ln -sv /llvmtools/lib/libstdc++.{a,so{,.6}}  /usr/lib
 
-# Create temporary links for build
-for L in libgcc_s.so.1 libcc1.so.0.0.0 
-do
- ln -sv /llvmtools/gnu/lib/$L /opt/gnu/lib/
-done
-ln -sv /llvmtools/gnu/lib/libstdc++.so.6.0.28 \
-       /opt/gnu/lib/libstdc++.so.6
-
-
-# Configure source to use binary tools in /cross-tools
-# * may need to add  --wth-build-time-tools=/opt/gnu/bin
-#   to specify GNU binutils like ar and ranlib
-CC=x86_64-cmlfs-linux-musl-gcc \
-CXX=x86_64-cmlfs-linux-musl-g++ \
-AR=x86_64-cmlfs-linux-musl-ar \
-AS=x86_64-cmlfs-linux-musl-as \
-RANLIB=x86_64-cmlfs-linux-musl-ranlib \
-LD=x86_64-cmlfs-linux-musl-ld \
-STRIP=x86_64-cmlfs-linux-musl-strip \
-CFLAGS="-L/lib -L/usr/lib -L/opt/gnu/lib -I/opt/gnu/include" \
-CXFLAGS="-L/lib -L/usr/lib -L/opt/gnu/lib -I/opt/gnu/include" \
+# Configure source
+CC=cc.gnu   \
+CXX=g++.gnu \
 SED=sed  libat_cv_have_ifunc=no       \
-../configure --prefix=/opt/gnu            \
+../configure --prefix=/usr            \
              --build="${TRUPLE}"\
              --with-system-zlib       \
              --with-isl \
@@ -169,53 +86,27 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-fixed-point \
 	     --disable-sjlj-exceptions \
 	     --disable-werror $EXTRA_CONFIG \
-             --with-mpc=/usr --with-gmp=/usr --with-mpfr=/usr \
-             --with-ld=/opt/gnu/bin/ld --with-build-time-tools=/opt/gnu/bin \
-             --with-pkgversion="CMLFS 1.1" --with-stage1-ldflags="-L/lib" &&
+             --with-pkgversion="CMLFS 3.0"
 
+# Compile
 make 
-
-# Build's collect2 fails to find -lz (zlib in /lib)
-# * May need to add to configure command to fix error:
-#   o --with-stage1-ldflags="-L/lib"
-#   o --with-boot-ldflags="-L/lib"
-# For now, manually fix build by modifying ${GCC_SRC}/build/gcc/Makefile:
-# Add -L/lib so linker can find libz.so in /lib
-#T_CFLAGS = -L/lib
-#TCFLAGS = -L/lib
-
-# Build will stop again, unable to link unresolved symbols from gmp, mpfr, mpc.
-# Just set the LD_LIBRARY_PATH
-
-LD_LIBRARY_PATH=/lib:/usr/lib:/opt/gnu/lib make
 
 # Install!
 make install
 
-# Use patchelf to fix rpath of libcc1.so
-patchelf --set-rpath /opt/gnu/lib /opt/gnu/lib/libcc1.so.0.0.0
-
-
 # Create a symlink required by the FHS for 'historical' reasons
-ln -sv ../bin/cpp /opt/gnu/lib/cpp
+#ln -sv ../bin/cpp /opt/gnu/lib/cpp
 
 # Many packages use the name cc to call the C compiler. Satisfy
 # those pacakges with a symlink:
-ln -sv gcc /opt/gnu/bin/cc
+#ln -sv gcc /opt/gnu/bin/cc
 
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)
-install -v -dm755 /opt/gnu/lib/bfd-plugins
-ln -sv  ../../libexec/gcc/x86_64-pc-linux-musl/10.2.1/liblto_plugin.so \
-        /opt/gnu/lib/bfd-plugins/
-mkdir -pv /opt/gnu/share/gdb/auto-load/usr/lib
-mv -v /opt/gnu/lib/*gdb.py /opt/gnu/share/gdb/auto-load/usr/lib
-
-# Add /opt/gnu/lib to system's dynamic linker paths
-cat "/opt/gnu/lib" >> /etc/ld-musl-x86_64.path
-
-# Remove cross-tools from PATH as built GCC can be used as secondary system compiler
-export PATH=$OLD_PATH
-unset LIBITM OLD_PATH
+install -v -dm755 /usr/lib/bfd-plugins
+ln -sv  ../../libexec/gcc/x86_64-pc-linux-musl/10.3.1/liblto_plugin.so \
+        /usr/lib/bfd-plugins/
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
 
 
