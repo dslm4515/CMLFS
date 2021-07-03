@@ -3,13 +3,13 @@
 # This section is done in Chroot environment
 
 # Apply patches
-patch -Np0 -i ../patches/coreutils-void/0001-ls-restore-8.31-behavior-on-removed-directories.patch
+patch -Np1 -i ../patches/coreutils-alpine/ls.patch
 
 # Recreate configure script
-#autoreconf -vfi
+autoreconf -vfi
 # Sometimes, gettext-tiny causes autoreconf to fail. If so,
 # apply this patch in place of autoreconf -vfi:
-xzcat ../patches/coreutils-mlfs/coreutils-autoconf.patch.xz | patch -Np1
+#xzcat ../patches/coreutils-mlfs/coreutils-autoconf.patch.xz | patch -Np1
 
 # Suppress a test which on some machines can loop forever
 sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
