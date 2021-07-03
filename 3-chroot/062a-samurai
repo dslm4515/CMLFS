@@ -1,0 +1,14 @@
+# Final System: Samurai
+# Source: https://github.com/michaelforney/samurai
+# This section is done in Chroot environment
+
+# Build 
+CC=clang make PREFIX=/usr 
+
+# Install
+make PREFIX=/usr install
+
+# In case, ninja is invoked
+ln -sv samu /usr/bin/ninja
+
+
