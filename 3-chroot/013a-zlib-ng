@@ -2,6 +2,9 @@
 # Source: https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.5.tar.gz
 # This section is done in Chroot environment
 
+# Apply patch since perl fails due to use of undefined types.
+patch -Np1 -i ../patches/zlib-ng-openmandriva/0001-Fix-Z_SOLO-mode.patch 
+
 # Configure source
 CC=$CC ./configure  --prefix=/usr --libdir=/lib --zlib-compat
 
@@ -13,4 +16,7 @@ make install
 ln -sv ../../lib/libz.so.1.2.11.zlib-ng /usr/lib/libz.so
 ln -sv ../../lib/libz.so.1.2.11.zlib-ng /usr/lib/libz.so.1
 ln -sv ../../lib/libz.so.1.2.11.zlib-ng /usr/lib/libz.so.1.2.11
+
+# Move pkconfig to correct location:
+mv lib/pkgconfig/* /usr/lib/pkgconfig/
 

@@ -1,0 +1,48 @@
+From 24098a6918877ef2e49ee6f3998f28dd9f9d469d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@lindev.ch>
+Date: Sun, 27 Jun 2021 14:31:54 +0200
+Subject: [PATCH] Fix Z_SOLO mode
+
+Without this patch, #include <zlib.h> with Z_SOLO defined
+(e.g. while building perl 5.34.0) fails because of use of
+undefined types.
+---
+ zlib.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/zlib.h b/zlib.h
+index cddf92a..a1adb9b 100644
+--- a/zlib.h
++++ b/zlib.h
+@@ -1766,6 +1766,7 @@ Z_EXTERN int Z_EXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned
+                         inflateBackInit_((strm), (windowBits), (window), ZLIB_VERSION, (int)sizeof(z_stream))
+ 
+ 
++#ifndef Z_SOLO
+ /* gzgetc() macro and its supporting function and exposed data structure.  Note
+  * that the real internal state is much larger than the exposed structure.
+  * This abbreviated structure exposes just enough for the gzgetc() macro.  The
+@@ -1796,6 +1797,7 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
+    Z_EXTERN unsigned long Z_EXPORT crc32_combine64(unsigned long, unsigned long, z_off64_t);
+    Z_EXTERN void Z_EXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
+ #endif
++#endif
+ 
+ #if !defined(Z_INTERNAL) && defined(Z_WANT64)
+ #    define gzopen gzopen64
+@@ -1834,10 +1836,12 @@ Z_EXTERN unsigned long    Z_EXPORT inflateCodesUsed (z_stream *);
+ Z_EXTERN int              Z_EXPORT inflateResetKeep (z_stream *);
+ Z_EXTERN int              Z_EXPORT deflateResetKeep (z_stream *);
+ 
++#ifndef Z_SOLO
+ #if defined(_WIN32)
+     Z_EXTERN gzFile Z_EXPORT gzopen_w(const wchar_t *path, const char *mode);
+ #endif
+ Z_EXTERN int Z_EXPORTVA gzvprintf(gzFile file, const char *format, va_list va);
++#endif
+ 
+ #ifdef __cplusplus
+ }
+-- 
+2.32.0
+
