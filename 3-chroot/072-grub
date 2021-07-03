@@ -2,20 +2,22 @@
 # Source: https://ftp.gnu.org/gnu/grub/grub-2.04.tar.xz
 # This section is done in Chroot environment
 
-# Requires the as[sembler] from binutils, otherwise using llvm-as:
-# checking for options to compile assembly... configure: error: could not compile assembly
-# use cgnutools's cross-gcc
+# Grub has to be compiled with GCC and binutils, not LLVM
+
+# Apply fixes
+patch -Np1 -i ../patches/grub-alpine/lang-C.UTF-8.patch         && \
+patch -Np1 -i ../patches/grub-alpine/fix-gcc-no-pie-specs.patch && \
+patch -Np1 -i ../patches/grub-alpine/alpine-mkconfig.patch
+
+# Re-Generate configure script
+PYTHON=python3 ./autogen.sh
+
+# Build still tries to use clang. Temprarily switch to GCC
+mv -v /usr/bin/{gcc,gcc.clang}
+ln -sv gcc.gnu /usr/bin/gcc
 
 # for BIOS-based PCs:
-PATH=/cgnutools/bin:$PATH \
-CC=x86_64-cmlfs-linux-musl-gcc \
-CXX=x86_64-cmlfs-linux-musl-g++ \
-AR=x86_64-cmlfs-linux-musl-ar \
-AS=x86_64-cmlfs-linux-musl-as \
-RANLIB=x86_64-cmlfs-linux-musl-ranlib \
-LD=x86_64-cmlfs-linux-musl-ld \
-STRIP=x86_64-cmlfs-linux-musl-strip \
-BUILD_CC=x86_64-cmlfs-linux-musl-gcc \
+CC=gcc.gnu CXX=g++.gnu \
 CFLAGS="-Wno-error" \
 ./configure --prefix=/usr          \
             --sbindir=/sbin        \
@@ -25,22 +27,9 @@ CFLAGS="-Wno-error" \
 
 # for UEFI-based PCs:
 # Configure scripts expect x86_64-gcc.
-# Add links for configure strip to see cross tools in cgnutools:
-for b in gcc objcopy strip nm ranlib
-do 
-  ln -sv  x86_64-cmlfs-linux-musl-$b     /cgnutools/bin/x86_64-$b
-done
 
 # Now configure
-PATH=/cgnutools/bin:$PATH \
-CC=x86_64-gcc \
-CXX=x86_64-cmlfs-linux-musl-g++ \
-AR=x86_64-cmlfs-linux-musl-ar \
-AS=x86_64-cmlfs-linux-musl-as \
-RANLIB=x86_64-ranlib \
-LD=x86_64-cmlfs-linux-musl-ld \
-STRIP=x86_64-strip \
-BUILD_CC=x86_64-cmlfs-linux-musl-gcc \
+CC=gcc.gnu CXX=g++.gnu \
 CFLAGS="-Wno-error" \
 ./configure --prefix=/usr          \
             --target=x86_64        \
@@ -50,6 +39,10 @@ CFLAGS="-Wno-error" \
             --disable-werror
 
 # Build and install
-PATH=/cgnutools/bin:$PATH make && 
+make
 make install
+
+# Restore links from earlier:
+rm -v /usr/bin/gcc
+mv -v /usr/bin/{gcc.clang,gcc}
 
