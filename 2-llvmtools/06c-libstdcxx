@@ -17,12 +17,12 @@ STRIP="${CMLFS_TARGET}-strip"       \
     --target=${CMLFS_TARGET}        \
     --build=${CMLFS_HOST}           \
     --host=${CMLFS_TARGET}          \
-    --prefix=/llvmtools/gnu         \
+    --prefix=/llvmtools             \
     --disable-multilib              \
     --disable-nls                   \
     --disable-libstdcxx-threads     \
     --disable-libstdcxx-pch         \
-    --with-gxx-include-dir=/llvmtools/gnu/include/c++/10.3.1
+    --with-gxx-include-dir=/llvmtools/include/c++/10.3.1
 
 make  && 
 # Add an absolue path for ranlib in build/libtool script:
