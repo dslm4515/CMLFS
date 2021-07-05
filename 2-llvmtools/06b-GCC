@@ -47,9 +47,9 @@ CXXFLAGS='-g0 -O0' \
     --target=${CMLFS_TARGET}                        \
     --build=${CMLFS_HOST}                           \
     --host=${CMLFS_TARGET}                          \
-    --prefix=/llvmtools/gnu                         \
-    --with-local-prefix=/llvmtools/gnu              \
-    --with-native-system-header-dir=/llvmtools/gnu/include \
+    --prefix=/llvmtools                             \
+    --with-local-prefix=/llvmtools                  \
+    --with-native-system-header-dir=/llvmtools/include \
     --enable-languages=c,c++                       \
     --disable-libstdcxx-pch                        \
     --disable-multilib                             \
@@ -63,8 +63,8 @@ CXXFLAGS='-g0 -O0' \
     --disable-libsanitizer
 
 # Build - Set the PATHs for binaries and PATHs for libraries
-PATH=/llvmtools/bin:/llvmtools/gnu/bin:/cgnutools/bin:/usr/bin:/bin \
-LD_LIBRARY_PATH=/llvmtools/lib:/llvmtools/gnu/lib:/cgnutools/x86_64-cmlfs-linux-musl/lib:/cgnutools/lib:/usr/lib:/lib \
+PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/bin \
+LD_LIBRARY_PATH=/llvmtools/lib:/cgnutools/x86_64-cmlfs-linux-musl/lib:/cgnutools/lib:/usr/lib:/lib \
 make
 
 # Install
@@ -73,13 +73,13 @@ make install
 # Re-create internal header for GCC installed in llvmtools/gnu since
 # the internal header that has just been installed is a partial, 
 # self-contained file and does not include the extended features of the system header
-cp -v /llvmtools/gnu/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h \
-      /llvmtools/gnu/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h.old
+cp -v /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h \
+      /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h.old
 cat ../gcc/limitx.h ../gcc/glimits.h ../gcc/limity.h > \
-    /llvmtools/gnu/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h
+    /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h
 
 # Many programs and scripts run cc instead of gcc, provide a link
-ln -sv gcc /llvmtools/gnu/bin/cc
+ln -sv gcc /llvmtools/bin/cc
 
 # Can't remember why this was done
 #GCC_INCLUDEDIR=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/include &&
@@ -89,7 +89,7 @@ ln -sv gcc /llvmtools/gnu/bin/cc
 
 # Test GCC portion of the toolchain
 echo 'int main(){}' > dummy.c &&
-/llvmtools/gnu/bin/cc dummy.c
+/llvmtools/bin/cc dummy.c
 readelf -l a.out | grep ': /llvmtools'
 
 # Should output:
