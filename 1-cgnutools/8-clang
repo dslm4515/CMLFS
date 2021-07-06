@@ -122,7 +122,7 @@ ln -sv lld /cgnutools/bin/ld
 
 # Since LLVM+clang still have GCC dependancies, add the GCC libraries in the search
 # paths of the toolchain's dynamic linker:
-echo "/cgnutools/${CMLFS_TARGET}/lib" >> /cgnutools/etc/ld-musl-$(uname -m).path
+# echo "/cgnutools/${CMLFS_TARGET}/lib" >> /cgnutools/etc/ld-musl-$(uname -m).path
 
 # Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
 # of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
@@ -152,6 +152,7 @@ unset SPECFILE
 export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
 # Test GCC of cgnutools toolchain:
+echo "int main(){}" > dummy.c
 ${CMLFS_TARGET}-gcc dummy.c -v -Wl,--verbose &> dummy.log
 readelf -l a.out | grep ': /llvmtools'
 # Shoud output:
