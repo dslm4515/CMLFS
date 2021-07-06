@@ -1,6 +1,9 @@
 # cgnutools: Kernel Headers
 # Build as cmlfs user
 
+# Kernel version greater than 5.9.16 will not compile under musl 
+patch -Np1 -i ../patches/kernel/include-uapi-linux-swab-Fix-potentially-missing-__always_inline.patch
+
 # Clean the source
 make mrproper
 
