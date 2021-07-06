@@ -6,7 +6,7 @@
 
 # Truncate directory name for easier typing... 
 cd $CMLFS/sources       && \
-mv llvm-12.0.0-src llvm && \
+mv llvm-12.0.0.src llvm && \
 export LLVMSRC=${CMLFS}/sources/llvm && \
 
 cd ${LLVMSRC}
@@ -71,7 +71,10 @@ cmake -B build  \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
       -DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
-      -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \ 
+      -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \
+      -DCMAKE_EXE_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \ 
+      -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
+      -DLLVM_ENABLE_LIBCXX=ON \
       -DLLVM_BUILD_TESTS=OFF \
       -DLLVM_ENABLE_LIBEDIT=OFF \
       -DLLVM_ENABLE_LIBXML2=OFF \
@@ -93,15 +96,12 @@ cmake -B build  \
       -DCLANG_DEFAULT_CXX_STDLIB=libc++ \ 
       -DCLANG_DEFAULT_UNWINDLIB=libunwind \
       -DCLANG_DEFAULT_RTLIB=compiler-rt \
-      -DICONV_LIBRARY_PATH="/cgnutools/lib/libc.so" \
-      -DDEFAULT_SYSROOT="/cgnutools" \
-      -DLIBCXX_HAS_MUSL_LIBC=ON \
-      -DLLVM_ENABLE_LIBCXX=ON \
       -DCLANG_DEFAULT_LINKER="/cgnutools/bin/ld.lld" \
+      -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DBacktrace_HEADER="/cgnutools/include/execinfo.h" \
-      -DCMAKE_EXE_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
-      -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
-      -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1"
+      -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1" \
+      -DDEFAULT_SYSROOT="/cgnutools" \
+      -DICONV_LIBRARY_PATH="/cgnutools/lib/libc.so"
 
 # Now ready to build
 #LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
@@ -113,6 +113,8 @@ make -C build && \
 # Install to cgnutools
 cd build && cmake -DCMAKE_INSTALL_PREFIX=/cgnutools -P cmake_install.cmake
 
+# clean up
+unset CFLAGS CXFLAGS
 cd .. && rm -rf build
 
 # Set LLD as default toolchain linker
