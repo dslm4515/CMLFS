@@ -118,6 +118,10 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 
 ## Projects of Interest
 <ul>
-<li>Genshen's docker-clang-toolchain - https://github.com/genshen/docker-clang-toolchain</li>
-<li>Build a freestanding libc++ - https://blogs.gentoo.org/gsoc2016-native-clang/2016/05/05/build-a-freestanding-libcxx/ </li>
+<li> [Musl Linux From Scratch](https://github.com/dslm4515/Musl-LFS) - Based on LFS, but uses Musl instead of Glibc </li>
+<li> [Beyound MLFS](https://github.com/dslm4515/BMLFS) - The Musl version of LFS's BLFS </li>
+<li> [MLFS-S6-Bootscripts](https://github.com/dslm4515/MLFS-S6-Bootscripts) - Boot scripts for CMLFS/MLFS/LFS using skarnet's S6+S6-rc init system </li>
+<li> [MLFS-Pkgtool](https://github.com/dslm4515/MLFS-pkgtool) - Musl LFS with Slackware's pkgtools </li>
+<li> [Genshen's docker-clang-toolchain](https://github.com/genshen/docker-clang-toolchain)</li>
+<li> [Build a freestanding libc++](https://blogs.gentoo.org/gsoc2016-native-clang/2016/05/05/build-a-freestanding-libcxx/) </li>
 </ul>
