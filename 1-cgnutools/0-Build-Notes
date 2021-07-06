@@ -15,24 +15,24 @@ file /usr/bin/yacc
 which flex
 
 # Make sure building cgnutools as cmlfs
-
 whoami
 
 # Make sure PATH is set correctly:
-
 export PATH=/cgnutools/bin:/usr/bin:/bin
 
 # Each package should be unpacked in /mnt/cmlfs/source and change 
 # to the unpacked source directory. For example:
-
 cd /mnt/cmlfs/sources
 tar xf pkgs/foo-1.2.3.tar.gz
 cd foo-1.2.3
 
 # Then patch and compile per instruction
+patch -Np1 -i ../patches/foo-mlfs/fix-it.patch
+./configure --prefix=/cgnutools
+make 
+make install
 
 # After the package is installed, change directories and remove
 # unpacked source directory unless instructed:
-
 cd ..
 rm -rf foo-1.2.3
