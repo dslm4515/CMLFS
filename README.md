@@ -26,7 +26,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 ## Supported Architectures
 
 <ul>
-<li>AMD64/x86_64: Toolchain and final system build sucessfully (musl-libc host) .</li>
+<li>AMD64/x86_64: Toolchains and final system build sucessfully (musl & glibc hosts) .</li>
 <li>i686: Pending</li>
 <li>AARCH64/ARM64: Pending</li>
 <li>ARMV7L: Pending</li>
@@ -45,9 +45,42 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [x] Build GCC as a secondary systen compiler. </li>
 <li> [x] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 <li> [x] Merge cross-tools build with cgnutools </li>
-<li> [ ] Build successfully on a Glibc host </li>
+<li> [x] Build successfully on a Glibc host </li>
 <li> [ ] Build on aarch64</li>
 </ul>
+
+## Host System Requirements 
+
+<ul>
+ <li>CMake</li>
+ <li>Ninja/Samurai</li>
+ <li>wget/cURL</li>
+</ul>
+# Required Base Development tools (may refer to LFS)
+<ul>
+ <li>bash 3.2 (/bin/sh should be a symbolic or hard link to bash) </li>
+ <li>binutils 2.25 </li>
+ <li>bison 2.7 (/usr/bin/yacc should be a link to bison or small script that executes bison) </li>
+ <li>bzip2 1.0.4 </li>
+ <li>coreutils 6.9 </li>
+ <li>diffutils 2.8.1 </li>
+ <li>findutils 4.2.31 </li>
+ <li>gawk 4.0.1 (/usr/bin/awk should be a link to gawk) </li>
+ <li>GCC 6.2 *including the C++ compiler, g++ </li>
+ <li>Glibc 2.11 / Musl Libc 1.20 </li>
+ <li>Grep 2.5.1a </li>
+ <li>gzip 1.3.12 </li>
+ <li>linux kernel 3.2 (not sure if it matters, as most distros are running 4.x/5.x kernels</li>
+ <li>m4 1.4.10</li>
+ <li>make 4.0 </li>
+ <li>patch 2.5.4 </li>
+ <li>Python 3.4 </li>
+ <li>sed 4.1.5 </li>
+ <li>tar 1.22 </li>
+ <li>texinfo 4.7 </li>
+  <li>xz 5.0.0 </li>
+</ul>
+ * (if hostdistro is MLFS/LFS, then all development packages are installed)
 
 ## Current Method
 
@@ -64,19 +97,19 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 ## Issues
 <ul>
 <li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
-<li>libcap still expects gcc - Temp-fix: `ln -sv clang /usr/bin/gcc`</li>
-<li>libelf(elfutils) requires a compiler with GNU99 support. Clang doe not have true GNU99 support. Compiles fine with GCC from cross-tools</li> 
-<li>Diskboot.img of grub is not correctly built with clang. Grub needs to be built with GCC </li>
-<li>Cannot build cgnutools with host's LLVM/Clang. Has to be complied with Host's GCC or previously built cross-tools toolchain.
-<li>Build for cgnutools breaks on a glibc host. Currently testing and adjusting build instructions. </li>
+<li>libelf(elfutils) requires a compiler with GNU99 support. Clang doe not have true GNU99 support. Compiles fine with GCC in llvmtools</li> 
+<li>Diskboot.img of grub is not correctly built with clang. Grub requires GCC and patching. </li>
+<li>Cannot build cgnutools with host's LLVM/Clang. Has to be complied with Host's GCC or previously built cross-tools toolchain.</li>
 </ul>
 
 ## Change log
 
 <ul>
-<li>1.1.0: Sucessfully merged cross-tools and cgnutools to include GCC & binutils.
-<li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu.
-<li>0.1.3: Configure Stage1 clang correctly with x86_64-pc-linux-musl.cfg.
+<li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. No longer using /llvmtools/gnu anf /opt/gnu.</li>
+<li>1.2.0: Incomplete: LLVM=11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
+<li>1.1.0: Sucessfully merged cross-tools and cgnutools to include GCC & binutils.</li>
+<li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu </li>
+<li>0.1.3: Configure Stage1 clang correctly with x86_64-pc-linux-musl.cfg.</li>
 <li>0.1.2: Use stage0 to build a stage1 clang...Stage1 clang will be used in chroot. Stage1 clang fails to compile</li>
 <li>0.1.1: Build stage0 clang by building clang, lld, compiler-rt, libunwind, libcxxabi, libcxx together in llvm source tree. Stage0 builds binaries with host's dynamic linker in /lib</li>
 <li>0.1.0: Build cross-tools with GCC to build stage 1 clang... first build libunwind, libcxxabi & libcxx - stage1 Clang broken</li>
