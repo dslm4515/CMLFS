@@ -24,9 +24,16 @@ STRIP="${CMLFS_TARGET}-strip"       \
     --disable-libstdcxx-pch         \
     --with-gxx-include-dir=/llvmtools/include/c++/10.3.1
 
+# Build
 make  && 
 # Add an absolue path for ranlib in build/libtool script:
 #RANLIB="/cgnutools/bin/x86_64-cmlfs-linux-musl-ranlib"
 # ^ Updated configure command, not sure if this matters anymore
 
-make install 
+# Install
+make install
+
+# GCC & binutils built. No need for cgnutools.
+export PATH=/llvmtools/bin:/bin:/usr/bin
+
+ 
