@@ -19,14 +19,13 @@ ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
 ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
 
 # Adjust binutils linker of llvmtools:
-mv -v  /llvmtools/bin/{ld,ld-old}
+mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
 mv -v  /llvmtools/x86_64-cmlfs-linux-musl/bin/{ld,ld-old}
-mv -v  /llvmtools/bin/{ld-new,ld}
-ln -sv /llvmtools/bin/ld /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
+mv -v  /llvmtools/bin/{ld.bfd-new,ld.bfd}
+ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
 
 # Modify the specs file so that gcc of llvmtools builds
 # binaries with /lib/ld-musl-x86_64.so.1 as dynamic linker:
-mv -v   /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/{specs,specs.old}
 export SPECFILE=`dirname $(/llvmtools/bin/cc.gnu -print-libgcc-file-name)`/specs
 cc.gnu -dumpspecs | sed -e 's@/llvmtools@@g' \
                         -e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
@@ -36,7 +35,7 @@ unset SPECFILE
 
 
 # Check the basic functions (compiling and linking) of 
-# the adjusted toolchain are working as expected. To do 
+# the adjusted toolchain (clang) are working as expected. To do 
 # this, perform the following sanity checks:
 echo 'int main(){}' > dummy.c
 $CC dummy.c -v -Wl,--verbose &> dummy.log
@@ -70,5 +69,45 @@ grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
 
 # Once everything is working correctly, clean up 
 # the test files:
-rm -v dummy.c a.out dummy.log
+rm -v a.out dummy.log
 
+# Now test GCC of llvmtools
+cc.gnu dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+
+# Should output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-i386.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-arm.so.1]
+# or
+# [Requesting program interpreter: /lib/ld-musl-arch64.so.1]
+
+# Make sure that we're setup to use the correct start files: 
+grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+# Should output:
+# /usr/lib/crt1.o succeeded
+# /usr/lib/crti.o succeeded
+# /usr/lib/crtn.o succeeded
+
+# Verify that the compiler is searching for the correct 
+# header files: 
+grep -B1 '^ /usr/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+# /usr/include
+
+# Verify that the new linker is being used with the 
+# correct search paths: 
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+# Should output:
+# SEARCH_DIR("=/llvmtools/x86_64-mlfs-linux-musl/lib64")
+# SEARCH_DIR("/usr/lib")
+# SEARCH_DIR("/lib")
+# SEARCH_DIR("=/llvmtools/x86_64-mlfs-linux-musl/lib")
+# ^ first and last line can be ignored
+
+# Once everything is working correctly, clean up 
+# the test files:
+rm -v dummy.c a.out dummy.log
