@@ -25,8 +25,8 @@ STRIP=llvm-strip \
              --build=${CMLFS_HOST}       \
              --host=${CMLFS_TARGET}      \
              --target=${CMLFS_TARGET}    \
-             --disable-nls              \
-             --disable-werror           \
+             --disable-nls               \
+             --disable-werror            \
              --with-sysroot
 # Build
 make
@@ -39,4 +39,8 @@ make -C ld clean
 
 # Build and install linker that will be used later after adjusting toolchain
 make -C ld LIB_PATH=/usr/lib:/lib
-cp -v ld/ld-new /llvmtools/bin/
+cp -v ld/ld-new /llvmtools/bin/ld.bfd-new
+
+# Set lld as default linker
+rm -rf /llvmtools/bin/ld
+ln -sv lld /llvmtools/bin/ld

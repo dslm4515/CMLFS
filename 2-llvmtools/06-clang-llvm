@@ -112,9 +112,6 @@ done
 ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
 cp -v build/bin/clang-tblgen  /llvmtools/bin/
 
-# Make lld as default linker
-ln -sv lld /llvmtools/bin/ld
-
 # Remove the LLVM source as it will not be needed until chroot
 cd $CMLFS/source && \
 rm -rf llvm
