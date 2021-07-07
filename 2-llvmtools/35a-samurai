@@ -1,0 +1,16 @@
+# Toolchain: Samurai
+# Source: https://github.com/michaelforney/samurai 
+# Build and install as cmlfs
+
+# Build with clang
+CC=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+make PREFIX=/llvmtools
+
+# Install
+make PREFIX=/llvmtools install
