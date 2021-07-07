@@ -1,4 +1,8 @@
 # llvmtools: Kernel headers
+# Build and install as cmlfs
+
+# Kernel version greater than 5.9.16 will not compile under musl 
+patch -Np1 -i ../patches/kernel/include-uapi-linux-swab-Fix-potentially-missing-__always_inline.patch
 
 # Clean
 make mrproper
@@ -9,4 +13,6 @@ make ARCH=${CMLFS_ARCH} LLVM=1 CC=clang CXX=clang++ HOSTCC=${CMLFS_TARGET}-clang
 # Install to llvmtools
 find usr/include \( -name .install -o -name ..install.cmd \) -delete
 cp -rv usr/include/* /llvmtools/include/
+
+# Remove unecessary Makefile
 rm -v /llvmtools/include/Makefile
