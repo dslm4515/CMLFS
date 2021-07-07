@@ -105,16 +105,12 @@ cd build && \
 cmake -DCMAKE_INSTALL_PREFIX="/llvmtools" -P cmake_install.cmake
 
 # Some binaries were not installed
-cp -v build/bin/llvm-as       /llvmtools/bin/
-cp -v build/bin/llvm-readobj  /llvmtools/bin/
+for b in as readobj tblgen
+do
+   cp -v build/llvm-$b /llvmtools/bin/
+done
 ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
-
-# Since binutils will not be used, create the symlinks to the
-# llvm counterparts
-#for t in as ar ranlib readelf nm objcopy objdump size strip
-#do
-#  ln -sv llvm-$t /llvmtools/bin/$t
-#done
+cp -v build/bin/clang-tblgen  /llvmtools/bin/
 
 # Make lld as default linker
 ln -sv lld /llvmtools/bin/ld
@@ -134,6 +130,3 @@ EOF
 
 # Unset these flags
 unset CFLAGS CXXFLAGS
-
-# Cross-tools and cgnutools no longer needed:
-#export PATH=/llvmtools/bin:/usr/bin:/bin
