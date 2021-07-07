@@ -38,6 +38,6 @@ make -C build install
 # Install headers too
 cp -v include/*.h /llvmtools/include/
 
-# Remove source. Will not need for clang build.
+# Remove build. Will need libcxxabi source for libcxx
 cd ${LLVMSRC} && \
-rm -rf ${LLVMSRC}/projects/libcxxabi
+rm -rf ${LLVMSRC}/projects/libcxxabi/build
