@@ -14,19 +14,20 @@ ${LLVMSRC}/projects/libcxx/cmake/config-ix.cmake
 # Configure
 cmake -B build  \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
-      -DLLVM_PATH="${LLVMSRC}" \
       -DCMAKE_BUILD_TYPE="Release" \
       -DCMAKE_CXX_FLAGS="-isystem /llvmtools/include" \
+      -DLLVM_PATH="${LLVMSRC}" \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
       -DLIBCXX_ENABLE_SHARED=ON \
       -DLIBCXX_ENABLE_STATIC=ON  \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_USE_COMPILER_RT=ON \
       -DLIBCXX_CXX_ABI=libcxxabi \
       -DLIBCXX_CXX_ABI_INCLUDE_PATHS="/llvmtools/include" \
-      -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-      -DLIBCXX_CXX_ABI_LIBRARY_PATH=/llvmtools/lib \
+      -DLIBCXX_CXX_ABI_LIBRARY_PATH="/llvmtools/lib" \
       -DLIBCXX_INSTALL_HEADERS=ON \
-      -DLIBCXX_INCLUDE_BENCHMARKS=OFF -DLIBCXX_INCLUDE_DOCS=OFF \
+      -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+      -DLIBCXX_INCLUDE_DOCS=OFF \
       -DLIBCXX_INCLUDE_TESTS=OFF
 
 # Compile
@@ -45,5 +46,6 @@ readelf -d build/lib/libc++.so.1
 # If good, install to llvmtools
 make -C build install
 
-# Remove build, but keep source tree for later
-rm -rf build       
+# Remove libcxx & libcxxabi sources, but keep llvm source tree for later
+cd ${LLVMSRC} && \
+rm -rf ${LLVMSRC}/projects/{libcxx,libcxxabi}
