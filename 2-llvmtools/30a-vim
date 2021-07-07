@@ -3,20 +3,18 @@
 # Build and install as cmlfs
 # Optional package: Text editor for convenience or trouble shooting
 
-# Set the environment to use stage1 clang & friends if not done already.
-export CC=${TARGET_TRUPLE}-clang
-export CXX=${TARGET_TRUPLE}-clang++
-export AR=llvm-ar
-export AS=llvm-as
-export RANLIB=llvm-ranlib
-export LD=ld.lld
-export STRIP=llvm-strip
-
 # Modify source for vim's configuration
 echo '#define SYS_VIMRC_FILE "/llvmtools/etc/vimrc"' >> src/feature.h
 sed -i '/call/{s/split/xsplit/;s/303/492/}' src/testdir/test_recover.vim
 
-#Configure
+# Configure with clang
+CC=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
 ./configure --build=${TARGET_TRUPLE} \
             --host=${TARGET_TRUPLE} \
             --prefix=/llvmtools  \
@@ -25,4 +23,7 @@ sed -i '/call/{s/split/xsplit/;s/303/492/}' src/testdir/test_recover.vim
 
 # Build and install to toolchain
 make && make install
+
+# Some users use vim as vi
+ln -sv vim /llvmtools/bin/vi
 

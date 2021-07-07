@@ -2,15 +2,14 @@
 # Source: http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz
 # Build and install as cmlfs
 
-# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
-export CXX=${TARGET_TRUPLE}-clang++
-export AR=llvm-ar
-export AS=llvm-as
-export RANLIB=llvm-ranlib
-export LD=ld.lld
-export STRIP=llvm-strip
-
-# Configure source
+# Configure source with clang
+CC=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
 ./configure --build=${TARGET_TRUPLE} \
             --host=${TARGET_TRUPLE} \
             --prefix=/llvmtools

@@ -2,14 +2,6 @@
 # Source: http://ftp.gnu.org/gnu/bash/bash-5.1.tar.gz
 # Build and install as cmlfs
 
-# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
-export CXX=${TARGET_TRUPLE}-clang++
-export AR=llvm-ar
-export AS=llvm-as
-export RANLIB=llvm-ranlib
-export LD=ld.lld
-export STRIP=llvm-strip
-
 # Cross Compiling the configure script 
 # does not does not determine the correct 
 # values for the following, Set the values 
@@ -29,7 +21,14 @@ bash_cv_unusable_rtsigs=no
 gt_cv_int_divbyzero_sigfpe=yes
 EOF
 
-# Configure source
+# Configure source with clang
+CC=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
 ./configure --prefix=/llvmtools \
             --without-bash-malloc \
             --build=${TARGET_TRUPLE} \

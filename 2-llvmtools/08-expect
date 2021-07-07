@@ -4,15 +4,6 @@
 # Can be optional: Package used for testing final system packages
 # *No need to use latest version, so far. If so, patches need updating.*
 
-# Set the environment to use stage1 clang & friends if not done already.
-export CC=${TARGET_TRUPLE}-clang
-export CXX=${TARGET_TRUPLE}-clang++
-export AR=llvm-ar
-export AS=llvm-as
-export RANLIB=llvm-ranlib
-export LD=ld.lld
-export STRIP=llvm-strip
-
 # Patch source to run with musl libc
 patch -Np1 -i ../patches/expect-5.45.3/dont-put-toolchain-in-libpath.patch
 patch -Np1 -i ../patches/expect-5.45.3/dont-configure-testsuites.patch
@@ -24,7 +15,14 @@ cp -v ../files/config.sub-musl tclconfig/config.sub
 cp -v configure{,.orig}
 sed 's:/usr/local/bin:/bin:' configure.orig > configure
 
-# Configure source
+# Configure source with clang
+CC=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
 ./configure --build=${TARGET_TRUPLE} \
             --host=${TARGET_TRUPLE} \
             --prefix=/llvmtools \
