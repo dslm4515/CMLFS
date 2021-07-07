@@ -2,7 +2,6 @@
 # Build and install as cmlfs
 
 # Make sure PATH is set ...
-#export PATH=/llvmtools/bin:/llvmtools/gnu/bin:/cgnutools/bin:/usr/bin:/bin
 export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 
 # and ... set C and C++ compilers with stage0 clang
@@ -10,7 +9,7 @@ export CXX=clang++
 export  CC=clang
 
 # Configure
-./configure --prefix=/ 
+CC=$CC CXX=$CXX ./configure --prefix=/ 
 
 # Build and install to llvmtools
 make && make DESTDIR=/llvmtools install
@@ -28,7 +27,6 @@ ln -sv ../lib/libc.so /llvmtools/bin/ldd
 # Configure dynamic linker
 cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
 /llvmtools/lib
-/llvmtools/gnu/lib
 EOF
 
 # Test clang of  cgnutools toolchain:
