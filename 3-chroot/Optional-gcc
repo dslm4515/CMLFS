@@ -27,7 +27,7 @@ case $(uname -m) in
      arm*) export LIBITM=false ;;
 esac &&
 
-tar -xf ../pkgs/isl-0.23.tar.xz &&
+tar -xf ../pkgs/isl-0.23.tar.bz2 &&
 mv -v isl-0.23 isl         &&
 
 # Apply patches from Alpine Linux
