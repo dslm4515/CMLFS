@@ -82,3 +82,8 @@ for f in dlltool nlmconv windres windmc; do
  rm -fv /usr/share/man/man1/${f}.1
 done
 
+# Make LLVM binary tools as the default.
+for b in addr2line ar as c++filt dwp elfedit gprof nm objcopy objdump ranlib readelf size strings strip
+do
+  mv -v /usr/bin/{$b,$b.gnu}
+done
