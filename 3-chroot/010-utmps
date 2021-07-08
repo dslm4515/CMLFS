@@ -1,9 +1,13 @@
 # Final System: Utmps
 # This section is done in Chroot environment
 
-# Configure source
+# Set version for pkgconfig file
 cp -v ../files/utmps-alpine/*.pc /tmp/
 sed -i -e "s/@@VERSION@@/0.1.0.2/g" -- /tmp/*.pc 
+
+# utmps segfaults if built with clang.
+# Configure source with GCC
+CC=gcc LD=ld.bfd \
 ./configure --enable-shared      \
             --enable-static      \
             --disable-allstatic  \
