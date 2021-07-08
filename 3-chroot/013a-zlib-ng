@@ -5,6 +5,9 @@
 # Apply patch since perl fails due to use of undefined types.
 patch -Np1 -i ../patches/zlib-ng-openmandriva/0001-Fix-Z_SOLO-mode.patch 
 
+# Fix configure script to call bash directly
+patch -Np1 -i ../patches/zlib-ng-mlfs/configure-fix-interpreter.patch 
+
 # Configure source
 CC=$CC ./configure  --prefix=/usr --libdir=/lib --zlib-compat
 
