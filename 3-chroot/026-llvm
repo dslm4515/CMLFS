@@ -76,7 +76,7 @@ cmake -B build -G Ninja \
       -DCLANG_DEFAULT_UNWINDLIB=libunwind \
       -DCLANG_DEFAULT_RTLIB=compiler-rt \
       -DCLANG_DEFAULT_LINKER="/usr/bin/ld.lld" \
-      -DDEFAULT_SYSROOT="/llvmtools" \
+      -DDEFAULT_SYSROOT="/usr" \
       -DLLVM_ENABLE_LLD=ON \
       -DLLVM_ENABLE_RTTI=ON \
       -DLLVM_ENABLE_ZLIB=OFF \
