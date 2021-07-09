@@ -122,6 +122,7 @@ rm -v /lib/{cpp,cc}
 ln -sv ../usr/bin/cpp.gnu /lib/cpp
 ln -sv gcc.gnu   /usr/bin/cc
 EOF
+chmod -v +x /usr/bin/set-gcc-mode
 
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)

@@ -174,6 +174,10 @@ rm -v /lib/cpp
 ln -sv ../usr/bin/clang-12 /lib/cpp
 EOF
 
+# set scripts permission
+chmod -v +x /usr/bin/set-llvm-mode
+chmod -v +x /usr/bin/set-llvm-bin-mode
+
 # Test final system's toolchain:
 echo 'int main(){}' > dummy.c
 cc dummy.c -v -Wl,--verbose &> dummy.log

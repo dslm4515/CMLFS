@@ -100,3 +100,5 @@ do
 done                                          && \
 echo "[ info  ] GNU Binutils  set as system default binary tools"
 EOF
+chmod -v +x /usr/bin/set-gnu-bin-mode
+
