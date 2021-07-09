@@ -87,3 +87,16 @@ for b in addr2line ar as c++filt dwp elfedit gprof nm objcopy objdump ranlib rea
 do
   mv -v /usr/bin/{$b,$b.gnu}
 done
+
+# Create script to siwth back from LLVM to binutils as
+# some packages are hardcoded.
+cat > /usr/bin/set-gnu-bin-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GNU binutils as system binary tools..." && \
+for b in addr2line ar as c++filt dwp elfedit gprof nm objcopy objdump ranlib readelf size strings strip 
+do
+  rm -v         /usr/bin/$b
+  ln -sv $b.gnu /usr/bin/$b
+done                                          && \
+echo "[ info  ] GNU Binutils  set as system default binary tools"
+EOF

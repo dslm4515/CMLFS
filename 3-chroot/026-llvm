@@ -105,6 +105,7 @@ ninja -C build
 # Install
 cd build && \
 cmake -DCMAKE_INSTALL_PREFIX="/usr" -P cmake_install.cmake
+cd -
 
 # Install additional binaries that where built, but not installed by ninja -C build install:
 #cp -vn build/bin/* /usr/bin/
@@ -136,6 +137,28 @@ install -v -D -m755  getconf /usr/bin/
 install -v -D -m755  iconv   /usr/bin/
 install -v -D -m644  ../files/musl/getent.1   /usr/share/man/man1/
 install -v -D -m644  ../files/musl/getconf.1  /usr/share/man/man1/
+
+# Create script to switch system between LLVM and binutils
+# since some packages are hard coded.
+cat > /usr/bin/set-llvm-bin-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 2 ] Clearing links..."  && \
+for b in ar as dwp nm objcopy objdump size strings addr2line c++filt ranlib readelf strip
+do
+  rm -v /usr/bin/$b
+done                      && \
+echo "[ 2 / 2 ] Setting LLVM as system binary tools..." && \
+for b in ar as dwp nm objcopy objdump size strings 
+do
+  ln -sv llvm-$b /usr/bin/$b
+done                                          && \
+ln -sv llvm-symbolizer /usr/bin/addr2line     && \
+ln -sv llvm-cxxfilt    /usr/bin/c++filt       && \
+ln -sv llvm-ar         /usr/bin/ranlib        && \
+ln -sv llvm-readobj    /usr/bin/readelf       && \
+ln -sv llvm-objcopy    /usr/bin/strip         && \
+echo "[ info  ] LLVM Binary tools set as system default"
+EOF
 
 # Test final system's toolchain:
 echo 'int main(){}' > dummy.c
