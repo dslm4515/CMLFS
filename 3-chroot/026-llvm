@@ -44,8 +44,6 @@ tar xf ../pkgs/libunwind-12.0.0.src.tar.xz libunwind-12.0.0.src/include/mach-o/c
 mv libunwind-12.0.0.src/include/mach-o tools/lld/include/
 rm -rf libunwind-12.0.0.src
 
-
-
 # Vastly reduce size of debugging symbols:
 export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1"
@@ -84,9 +82,7 @@ cmake -B build -G Ninja \
       -DLLVM_ENABLE_ZLIB=OFF \
       -DBacktrace_INCLUDE_DIR="/usr/include" \
       -DBacktrace_LIBRARY="/usr/lib/libexecinfo.so" \
-      -DCMAKE_AR="/llvmtools/bin/llvm-ar" \
       -DCMAKE_INSTALL_OLDINCLUDEDIR="/usr/include" \
-      -DCMAKE_LINKER="/llvmtools/bin/ld.lld" \
       -DCMAKE_AR="/llvmtools/bin/llvm-ar" \
       -DCMAKE_LINKER="/llvmtools/bin/ld.lld" \
       -DCMAKE_NM="/llvmtools/bin/llvm-nm" \
@@ -101,8 +97,7 @@ cmake -B build -G Ninja \
       -DLLVM_INSTALL_UTILS=ON \
       -DLLVM_ENABLE_BINDINGS=OFF \
       -DLLVM_ENABLE_IDE=OFF \
-      -DLLVM_ENABLE_UNWIND_TABLES=OFF \
-      -DDEFAULT_SYSROOT="/usr"       
+      -DLLVM_ENABLE_UNWIND_TABLES=OFF 
 
 # Build
 ninja -C build
