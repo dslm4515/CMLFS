@@ -86,7 +86,7 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-fixed-point \
 	     --disable-sjlj-exceptions \
 	     --disable-werror $EXTRA_CONFIG \
-             --with-pkgversion="CMLFS 3.0"
+             --with-pkgversion="CMLFS 2.0"
 
 # Compile
 make 
@@ -102,11 +102,26 @@ do
 done  
 
 # Create a symlink required by the FHS for 'historical' reasons
-ln -sv ../bin/cpp /usr/lib/cpp
+ln -sv ../bin/cpp.gnu /usr/lib/cpp
 
 # Many packages use the name cc to call the C compiler. Satisfy
 # those pacakges with a symlink:
-ln -sv gcc /usr/bin/cc
+ln -sv gcc.gnu /usr/bin/cc
+
+# Some packages are hard coded to use GCC . Create script 
+# to set GCC as system compiler
+cat > /usr/bin/set-gcc-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GCC as system compiler..." && \
+for b in c++ cpp g++ gcc 
+do
+  rm -v          /usr/bin/$b
+  ln -sv $b.gnu  /usr/bin/$b
+done
+rm -v /lib/{cpp,cc}
+ln -sv ../usr/bin/cpp.gnu /lib/cpp
+ln -sv gcc.gnu   /usr/bin/cc
+EOF
 
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)

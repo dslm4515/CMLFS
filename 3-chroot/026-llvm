@@ -160,6 +160,20 @@ ln -sv llvm-objcopy    /usr/bin/strip         && \
 echo "[ info  ] LLVM Binary tools set as system default"
 EOF
 
+# Some packages are hard coded to use GCC . Create script 
+# to set clang/LLVM as system compiler
+cat > /usr/bin/set-llvm-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting LLVM as system compiler..." && \
+for b in c++ cpp g++ gcc cc
+do
+  rm -v  /usr/bin/$b
+  ln -sv clang-12  /usr/bin/$b
+done
+rm -v /lib/cpp
+ln -sv ../usr/bin/clang-12 /lib/cpp
+EOF
+
 # Test final system's toolchain:
 echo 'int main(){}' > dummy.c
 cc dummy.c -v -Wl,--verbose &> dummy.log
