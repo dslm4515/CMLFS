@@ -118,7 +118,8 @@ do
   rm -v          /usr/bin/$b
   ln -sv $b.gnu  /usr/bin/$b
 done
-rm -v /lib/{cpp,cc}
+rm -v /lib/cpp
+rm -v /usr/bin/cc
 ln -sv ../usr/bin/cpp.gnu /lib/cpp
 ln -sv gcc.gnu   /usr/bin/cc
 EOF
