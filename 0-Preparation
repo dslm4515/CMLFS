@@ -72,7 +72,7 @@ set +h
 umask 022
 CMLFS=/mnt/cmlfs
 LC_ALL=POSIX
-PATH=/cross-tools/bin:/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
+PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 export CMLFS LC_ALL PATH
 EOF
 
