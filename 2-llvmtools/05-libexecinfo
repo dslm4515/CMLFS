@@ -6,7 +6,7 @@ patch -Np1 -i ../patches/libexecinfo-alpine/20-define-gnu-source.patch
 patch -Np1 -i ../patches/libexecinfo-alpine/30-linux-makefile.patch
 
 # Build
-CC=clang CXX=clang++ CFLAGS=" -fno-omit-frame-pointer" make
+CC=$CC CXX=$CXX CFLAGS=" -fno-omit-frame-pointer" make
 
 # Install to llvmtools
 install -D -m755 -v execinfo.h       /llvmtools/include/execinfo.h     && \
