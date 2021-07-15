@@ -101,7 +101,17 @@ cmake -B build  \
       -DBacktrace_HEADER="/cgnutools/include/execinfo.h" \
       -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1" \
       -DDEFAULT_SYSROOT="/cgnutools" \
-      -DICONV_LIBRARY_PATH="/cgnutools/lib/libc.so"
+      -DICONV_LIBRARY_PATH="/cgnutools/lib/libc.so" \
+      -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+      -DCLANG_ENABLE_ARCMT=OFF \
+      -DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF \
+      -DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF \
+      -DLIBCXX_ENABLE_DEBUG_MODE_SUPPORT=OFF \
+      -DLLVM_ENABLE_BACKTRACES=OFF \
+      -DLLVM_ENABLE_LIBPFM=OFF \
+      -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_ENABLE_CRASH_OVERRIDES=OFF \
+      -DLLVM_ENABLE_OCAMLDOC=OFF
 
 # Now ready to build
 #LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
