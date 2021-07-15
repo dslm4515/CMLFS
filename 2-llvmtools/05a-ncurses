@@ -6,8 +6,7 @@
 sed -i s/mawk// configure
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=$CC CXX=$CXX \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
