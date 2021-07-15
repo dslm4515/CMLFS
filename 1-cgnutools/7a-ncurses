@@ -10,6 +10,7 @@ RANLIB="${CMLFS_TARGET}-ranlib"  \
 LD="${CMLFS_TARGET}-ld"          \
 STRIP="${CMLFS_TARGET}-strip"    \
 ./configure --prefix=/cgnutools \
+            --with-shared   \
             --without-debug \
             --without-ada   \
             --enable-widec  \
@@ -21,4 +22,4 @@ make
 make install
 
 # LLVM will look for 'libncurses'
-ln -sv libncursesw.a /cgnutools/lib/libcurses.a
+ln -sv libncursesw.so.6.2  /cgnutools/lib/libcurses.so
