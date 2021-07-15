@@ -78,7 +78,7 @@ cmake -B build \
     -DLLVM_INCLUDE_EXAMPLES=OFF                                 \
     -DLLVM_INCLUDE_BENCHMARKS=OFF                               \
     -DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl"         \
-    -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl"                   \
+    -DLLVM_HOST_TRIPLE="x86_64-cmlfs-linux-musl"                   \
     -DLLVM_TARGET_ARCH="X86"                                    \
     -DLLVM_TARGETS_TO_BUILD="X86"                               \
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl"  \
