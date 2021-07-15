@@ -1,0 +1,24 @@
+# cgnutools: ncurses
+# Build as cmlfs 
+
+# Configure source with freshly built GCC
+CC="${CMLFS_TARGET}-gcc"         \
+CXX="${CMLFS_TARGET}-g++"        \
+AR="${CMLFS_TARGET}-ar"          \
+AS="${CMLFS_TARGET}-as"          \
+RANLIB="${CMLFS_TARGET}-ranlib"  \
+LD="${CMLFS_TARGET}-ld"          \
+STRIP="${CMLFS_TARGET}-strip"    \
+./configure --prefix=/cgnutools \
+            --without-debug \
+            --without-ada   \
+            --enable-widec  \
+            --enable-overwrite
+# Compile
+make
+
+# Install
+make install
+
+# LLVM will look for 'libncurses'
+ln -sv libncursesw.a /cgnutools/lib/libcurses.a
