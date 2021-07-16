@@ -105,11 +105,11 @@ cd build && \
 cmake -DCMAKE_INSTALL_PREFIX="/llvmtools" -P cmake_install.cmake
 
 # Some binaries were not installed
-for b in as readobj tblgen
-do
-   cp -v build/llvm-$b /llvmtools/bin/
-done
-ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
+#for b in as readobj tblgen
+#do
+#   cp -v build/llvm-$b /llvmtools/bin/
+#done
+#ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
 cp -v build/bin/clang-tblgen  /llvmtools/bin/
 
 # Remove the LLVM source as it will not be needed until chroot
