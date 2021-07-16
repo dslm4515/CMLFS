@@ -10,5 +10,6 @@ rm -fv man/man8/arpd.8
 sed -i 's/.m_ipt.o//' tc/Makefile
 
 # Build and install
-make && 
+#make && 
+make CC=clang CCOPTS="-D_GNU_SOURCE"
 make DOCDIR=/usr/share/doc/iproute2-5.10.0 install
