@@ -78,8 +78,32 @@ cp -v /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h \
 cat ../gcc/limitx.h ../gcc/glimits.h ../gcc/limity.h > \
     /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h
 
+# Make clang the primary compiler system
+for b in gcc cpp g++ c++
+do
+  mv -v /llvmtools/bin/{$b,$b.gnu}
+  ln -sv clang-12 /llvmtools/bin/$b
+done
+
 # Many programs and scripts run cc instead of gcc, provide a link
-ln -sv gcc /llvmtools/bin/cc
+ln -sv clang-12 /llvmtools/bin/cc
+
+# Some packages are hard coded to use GCC . Create script 
+# to set GCC as system compiler
+cat > /llvmtools/bin/set-gcc-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GCC as system compiler..." && \
+for b in c++ cpp g++ gcc
+do
+  rm -v          /llvmtools/bin/$b
+  ln -sv $b.gnu  /llvmtools/bin/$b
+done
+rm -v /llvmtools/lib/cpp
+rm -v /llvmtools/bin/cc
+ln -sv ../llvmtools/bin/cpp.gnu /llvmtools/lib/cpp
+ln -sv gcc.gnu   /llvmtools/bin/cc
+EOF
+chmod -v +x /llvmtools/bin/set-gcc-mode
 
 # Can't remember why this was done
 #GCC_INCLUDEDIR=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/include &&
