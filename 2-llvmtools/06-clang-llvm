@@ -164,4 +164,23 @@ ln -sv llvm-objcopy    /llvmtools/bin/strip         && \
 echo "[ info  ] LLVM Binary tools set as system default"
 EOF
 
-chmod -v +x /llvmtools/bin/set-llvm-bin-mode
+# Some packages are hard coded to use GCC . Create script 
+# to set clang/LLVM as system compiler
+cat > /llvmtools/bin/set-llvm-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting LLVM as system compiler..." && \
+for b in c++ cpp g++ gcc cc
+do
+  rm -v  /llvmtools/bin/$b
+  ln -sv clang-12  /llvmtools/bin/$b
+done
+rm -v /llvmtools/lib/cpp
+ln -sv ../llvmtools/bin/clang-12 /llvmtools/lib/cpp
+EOF
+
+# Make the scripts executable
+for s in llvm-bin llvm
+do
+  chmod -v +x /llvmtools/bin/set-$s-mode
+done
+
