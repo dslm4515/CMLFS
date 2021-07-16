@@ -8,7 +8,8 @@ patch -Np0 -i ../patches/python3-void/tweak-MULTIARCH-for-powerpc-linux-musl.pat
 
 # Make sure libffi isnt built, as it has been built and
 # installed in /llvmtools
-rm -r Modules/_ctypes/{darwin,libffi}* 
+#rm -r Modules/_ctypes/{darwin,libffi}* 
+rm -r Modules/_ctypes/darwin
 
 # The main script for building modules is written in Python, and 
 # uses hard-coded paths to the host /usr/include and /usr/lib 
