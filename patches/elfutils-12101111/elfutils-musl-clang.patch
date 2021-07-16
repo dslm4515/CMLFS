@@ -1,0 +1,87 @@
+diff --git a/configure.ac b/configure.ac
+index ad046bc2..32524e8a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -105,29 +105,6 @@ AC_CHECK_TOOL([NM], [nm])
+ # https://gcc.gnu.org/onlinedocs/gcc/Nested-Functions.html
+ # Arrays of Variable Length
+ # https://gcc.gnu.org/onlinedocs/gcc/Variable-Length.html
+-AC_CACHE_CHECK([for gcc with GNU99 support], ac_cv_c99, [dnl
+-old_CFLAGS="$CFLAGS"
+-CFLAGS="$CFLAGS -std=gnu99"
+-AC_COMPILE_IFELSE([AC_LANG_SOURCE([dnl
+-int foo (int a)
+-{
+-  for (int i = 0; i < a; ++i) if (i % 4) break; int s = a; return s;
+-}
+-
+-double bar (double a, double b)
+-{
+-  double square (double z) { return z * z; }
+-  return square (a) + square (b);
+-}
+-
+-void baz (int n)
+-{
+-  struct S { int x[[n]]; };
+-}])],
+-		  ac_cv_c99=yes, ac_cv_c99=no)
+-CFLAGS="$old_CFLAGS"])
+-AS_IF([test "x$ac_cv_c99" != xyes],
+-      AC_MSG_ERROR([gcc with GNU99 support required]))
+ 
+ AC_CACHE_CHECK([whether gcc supports __attribute__((visibility()))],
+ 	ac_cv_visibility, [dnl
+diff --git a/src/elfcompress.c b/src/elfcompress.c
+index c5ba6c34..96518a32 100644
+--- a/src/elfcompress.c
++++ b/src/elfcompress.c
+@@ -37,6 +37,10 @@
+ #include "libeu.h"
+ #include "printversion.h"
+ 
++#ifndef FNM_EXTMATCH
++# define FNM_EXTMATCH   (1 << 5)        /* Use ksh-like extended matching. */
++#endif
++
+ /* Name and version of program.  */
+ ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
+ 
+diff --git a/src/readelf.c b/src/readelf.c
+index b9740455..26aac82f 100644
+--- a/src/readelf.c
++++ b/src/readelf.c
+@@ -8763,12 +8763,12 @@ print_debug_line_section (Dwfl_Module *dwflmod, Ebl *ebl, GElf_Ehdr *ehdr,
+       /* Apply the "operation advance" from a special opcode
+ 	 or DW_LNS_advance_pc (as per DWARF4 6.2.5.1).  */
+       unsigned int op_addr_advance;
+-      inline void advance_pc (unsigned int op_advance)
+-      {
+-	op_addr_advance = minimum_instr_len * ((op_index + op_advance)
+-					       / max_ops_per_instr);
+-	address += op_addr_advance;
+-	op_index = (op_index + op_advance) % max_ops_per_instr;
++#define advance_pc(op_advance) \
++      {\
++	op_addr_advance = minimum_instr_len * ((op_index + op_advance)\
++					       / max_ops_per_instr);\
++	address += op_addr_advance;\
++	op_index = (op_index + op_advance) % max_ops_per_instr;\
+       }
+ 
+       if (max_ops_per_instr == 0)
+diff --git a/src/strip.c b/src/strip.c
+index 7a5d4e4c..f10775d0 100644
+--- a/src/strip.c
++++ b/src/strip.c
+@@ -46,6 +46,10 @@
+ #include <system.h>
+ #include <printversion.h>
+ 
++#ifndef FNM_EXTMATCH
++# define FNM_EXTMATCH	(1 << 5)	/* Use ksh-like extended matching. */
++#endif
++
+ typedef uint8_t GElf_Byte;
+ 
+ /* Name and version of program.  */
