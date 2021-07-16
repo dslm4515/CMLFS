@@ -34,6 +34,28 @@ make
 # Install
 make install
 
+# Binary tools from LLVM will be the default.
+for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip
+do
+  mv -v  /llvmtools/bin/{$b,$b.gnu}
+  ln -sv llvm-$b /llvmtools/bin/$b
+done
+# There are no LLVM counterparts for dwp, c++filt, gprof, elfedit
+
+# Create script to siwth back from LLVM to binutils as
+# some packages are hardcoded.
+cat > /llvmtools/bin/set-gnu-bin-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GNU binutils as system binary tools..." && \
+for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip
+do
+  rm -v         /llvmtools/bin/$b
+  ln -sv $b.gnu /llvmtools/bin/$b
+done                                          && \
+echo "[ info  ] GNU Binutils  set as system default binary tools"
+EOF
+chmod -v +x /llvmtools/bin/set-gnu-bin-mode
+
 # Clean source to rebuild linker
 make -C ld clean
 
