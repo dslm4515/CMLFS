@@ -47,55 +47,70 @@ export CXXFLAGS=" -g -g1"
 # Update host/target triple detection
 cp -v ../files/config.guess-musl cmake/config.guess
 
-# Remember to use the configured stage0 clang
+# Remember to use the configured stage0 clang.
+# Make sure to use LLVM's binary tools from cgnutools.
+export CONFIG_TOOLS='-DCMAKE_CXX_COMPILER_AR="/cgnutools/bin/llvm-ar" \
+                     -DCMAKE_C_COMPILER_AR="/cgnutools/bin/llvm-ar"   \
+                     -DCMAKE_CXX_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib" \
+                     -DCMAKE_C_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib"   \
+                     -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
+                     -DCMAKE_NM="/cgnutools/bin/llvm-nm" \
+                     -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy" \
+                     -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
+                     -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" '
+# Set the truples...
+export CONFIG_TRUPLES='-DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
+                       -DLLVM_HOST_TRIPLE="x86_64-cmlfs-linux-musl" \
+                       -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" '
+# Set the flags for Compiler-rt...
+export CONFIG_CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+                   -DCOMPILER_RT_BUILD_XRAY=OFF \
+                   -DCOMPILER_RT_BUILD_PROFILE=OFF \
+                   -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+                   -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+
+# Set the flags for clang:
+export CONFIG_CLANG='-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+                    -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+                    -DCLANG_DEFAULT_RTLIB=compiler-rt \
+                    -DCLANG_DEFAULT_LINKER="/llvmtools/bin/ld.lld" '
+
+# Turn off unwanted features, docs and tests
+export BUILD_OFF="-DLLVM_BUILD_TESTS=OFF \
+                  -DLLVM_ENABLE_LIBEDIT=OFF \
+                  -DLLVM_ENABLE_LIBXML2=OFF \
+                  -DLLVM_INCLUDE_GO_TESTS=OFF \
+                  -DLLVM_INCLUDE_TESTS=OFF \
+                  -DLLVM_INCLUDE_DOCS=OFF \
+                  -DLLVM_INCLUDE_EXAMPLES=OFF \
+                  -DLLVM_INCLUDE_BENCHMARKS=OFF \
+                  -DLLVM_ENABLE_ZLIB=OFF "
+
+# Turn on features for LLVM...
+export CONFIG_LLVM="-DLLVM_LINK_LLVM_DYLIB=ON \
+                    -DLLVM_BUILD_LLVM_DYLIB=ON \
+                    -DLLVM_ENABLE_LIBCXX=ON \
+                    -DLLVM_ENABLE_LLD=ON \
+                    -DLLVM_ENABLE_RTTI=ON "
+# Set paths...
+export CONFIG_PATHS='-DCMAKE_INSTALL_OLDINCLUDEDIR="/llvmtools/include" \
+                     -DBacktrace_INCLUDE_DIR="/llvmtools/include" \
+                     -DBacktrace_LIBRARY="/llvmtools/lib/libexecinfo.so" \
+                     -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so" '
+
+# Now configure the source
 CC=x86_64-cmlfs-linux-musl-clang    \    
 CXX=x86_64-cmlfs-linux-musl-clang++ \ 
 cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release                                  \
-    -DCMAKE_INSTALL_PREFIX="/llvmtools"                         \
-    -DCMAKE_CXX_COMPILER_AR="/cgnutools/bin/llvm-ar"            \
-    -DCMAKE_C_COMPILER_AR="/cgnutools/bin/llvm-ar"              \
-    -DCMAKE_CXX_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib"    \
-    -DCMAKE_C_COMPILER_RANLIB="/cgnutools/bin/llvm-ranlib"      \
-    -DCMAKE_INSTALL_OLDINCLUDEDIR="/llvmtools/include"          \
-    -DCMAKE_LINKER="/cgnutools/bin/ld.lld"                      \
-    -DCMAKE_NM="/cgnutools/bin/llvm-nm"                         \
-    -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy"               \
-    -DCMAKE_READELF="/cgnutools/bin/llvm-readelf"               \
-    -DCMAKE_STRIP="/cgnutools/bin/llvm-strip"                   \
-    -DLLVM_LINK_LLVM_DYLIB=ON                                   \
-    -DLLVM_BUILD_LLVM_DYLIB=ON                                  \
-    -DLLVM_BUILD_TESTS=OFF                                      \
-    -DLLVM_ENABLE_LIBEDIT=OFF                                   \
-    -DLLVM_ENABLE_LIBXML2=OFF                                   \
-    -DLLVM_ENABLE_LIBCXX=ON                                     \
-    -DLLVM_ENABLE_LLD=ON                                        \
-    -DLLVM_ENABLE_RTTI=ON                                       \
-    -DLLVM_ENABLE_ZLIB=OFF                                      \
-    -DLLVM_INCLUDE_GO_TESTS=OFF                                 \
-    -DLLVM_INCLUDE_TESTS=OFF                                    \
-    -DLLVM_INCLUDE_DOCS=OFF                                     \
-    -DLLVM_INCLUDE_EXAMPLES=OFF                                 \
-    -DLLVM_INCLUDE_BENCHMARKS=OFF                               \
-    -DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl"         \
-    -DLLVM_HOST_TRIPLE="x86_64-cmlfs-linux-musl"                   \
-    -DLLVM_TARGET_ARCH="X86"                                    \
-    -DLLVM_TARGETS_TO_BUILD="X86"                               \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl"  \
-    -DCOMPILER_RT_BUILD_SANITIZERS=OFF                          \
-    -DCOMPILER_RT_BUILD_XRAY=OFF                                \
-    -DCOMPILER_RT_BUILD_PROFILE=OFF                             \
-    -DCOMPILER_RT_BUILD_LIBFUZZER=OFF                           \
-    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON                       \
-    -DCLANG_DEFAULT_CXX_STDLIB=libc++                           \
-    -DCLANG_DEFAULT_UNWINDLIB=libunwind                         \
-    -DCLANG_DEFAULT_RTLIB=compiler-rt                           \
-    -DCLANG_DEFAULT_LINKER="/llvmtools/bin/ld.lld"              \
-    -DBacktrace_INCLUDE_DIR="/llvmtools/include"                \
-    -DBacktrace_LIBRARY="/llvmtools/lib/libexecinfo.so"         \
-    -DDEFAULT_SYSROOT="/llvmtools"                              \
-    -DICONV_LIBRARY_PATH="/llvmtools/lib/libc.so"
-
+    -DCMAKE_BUILD_TYPE=Release          \
+    -DCMAKE_INSTALL_PREFIX="/llvmtools" \
+    -DLLVM_TARGET_ARCH="X86"            \
+    -DLLVM_TARGETS_TO_BUILD="X86"       \
+    -DDEFAULT_SYSROOT="/llvmtools"      \
+    ${CONFIG_TOOLS} ${CONFIG_TRUPLES}   \
+    ${CONFIG_CLANG} ${CONFIG_CRT}       \
+    ${CONFIG_LLVM}  ${CONFIG_PATHS}     \
+    ${BUILD_OFF}
 
 # Compile 
 make -C build
