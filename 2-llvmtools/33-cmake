@@ -22,6 +22,7 @@ STRIP=llvm-strip \
             --no-system-expat \
             --no-system-zlib \
             --no-system-zstd \
+            --no-system-libuv \
             -- -DCMAKE_USE_OPENSSL=OFF
 
 # Build and install to toolchain
