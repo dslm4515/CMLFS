@@ -142,3 +142,26 @@ EOF
 
 # Unset these flags
 unset CFLAGS CXXFLAGS
+
+# Create script to switch system between LLVM and binutils
+# since some packages are hard coded.
+cat > /llvmtools/bin/set-llvm-bin-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 2 ] Clearing links..."  && \
+for b in ar as nm objcopy objdump size strings addr2line ranlib readelf strip
+do
+  rm -v /llvmtools/bin/$b
+done                      && \
+echo "[ 2 / 2 ] Setting LLVM as system binary tools..." && \
+for b in ar as nm objcopy objdump size strings
+do
+  ln -sv llvm-$b /llvmtools/bin/$b
+done                                          && \
+ln -sv llvm-symbolizer /llvmtools/bin/addr2line     && \
+ln -sv llvm-ar         /llvmtools/bin/ranlib        && \
+ln -sv llvm-readobj    /llvmtools/bin/readelf       && \
+ln -sv llvm-objcopy    /llvmtools/bin/strip         && \
+echo "[ info  ] LLVM Binary tools set as system default"
+EOF
+
+chmod -v +x /llvmtools/bin/set-llvm-bin-mode
