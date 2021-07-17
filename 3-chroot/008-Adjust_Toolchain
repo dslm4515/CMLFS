@@ -1,7 +1,7 @@
 # Final System - Adjust Tool Chain
 # This section is done in Chroot environment
 
-# Re-configure clang to use new sysroot (/usr)
+# Re-configure clang to use new sysroot (/usr) with newly built musl Libc
 echo " --sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-$(uname -m).so.1" > \
      /llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg
 
@@ -13,15 +13,21 @@ export CC=$(uname -m)-cmlfs-linux-musl-clang
 export CXX=$(uname -m)-cmlfs-linux-musl-clang++
 
 # Create links to make sure clang is used and not GCC
-mv /llvmtools/bin/cc  /llvmtools/bin/cc.gnu
-mv /llvmtools/bin/g++ /llvmtools/bin/g++.gnu
-ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
-ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
+#mv /llvmtools/bin/cc  /llvmtools/bin/cc.gnu
+#mv /llvmtools/bin/g++ /llvmtools/bin/g++.gnu
+#ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
+#ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
+
+# Use script (from when buillding llvmtools) to make sure clang is
+# the default compiler and LLVM as default binary tools
+set-llvm-mode 
+set-llvm-bin-mode
 
 # Adjust binutils linker of llvmtools:
 mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
-mv -v  /llvmtools/x86_64-cmlfs-linux-musl/bin/{ld,ld-old}
+mv -v  /llvmtools/x86_64-cmlfs-linux-musl/bin/{ld.bfd,ld-old}
 mv -v  /llvmtools/bin/{ld.bfd-new,ld.bfd}
+rm -v /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
 ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
 
 # Modify the specs file so that gcc of llvmtools builds
