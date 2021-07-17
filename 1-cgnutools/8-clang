@@ -66,52 +66,67 @@ export CXXFLAGS=" -g -g1"
 # Update host/target triple detection
 cp -v ../files/config.guess-musl cmake/config.guess
 
+# Set the compiler and linker flags...
+export CONFIG_TOOLS='-DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
+                     -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \
+                     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
+                     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
+                     -DCLANG_DEFAULT_LINKER="/cgnutools/bin/ld.lld" ' 
+
+# Set the truples...
+export CONFIG_TRUPLES='-DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
+                       -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
+                       -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" '
+
+# Set the flags for Compiler-rt...
+export CONFIG_CRT="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+
+# Set the flags for clang:
+export CONFIG_CLANG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+                     -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+                     -DCLANG_DEFAULT_RTLIB=compiler-rt "
+
+# Set paths...
+export CONFIG_PATHS='-DBacktrace_HEADER="/cgnutools/include/execinfo.h"    \
+                     -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1" \
+                     -DICONV_LIBRARY_PATH="/cgnutools/lib/libc.so" '
+
+# Turn off unwanted features, docs and tests
+export BUILD_OFF="-DLLVM_BUILD_TESTS=OFF \
+                  -DLLVM_INCLUDE_GO_TESTS=OFF \
+                  -DLLVM_INCLUDE_TESTS=OFF \
+                  -DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF \
+                  -DLLVM_INCLUDE_DOCS=OFF \
+                  -DLLVM_ENABLE_OCAMLDOC=OFF \
+                  -DLLVM_INCLUDE_EXAMPLES=OFF \
+                  -DLLVM_INCLUDE_BENCHMARKS=OFF \
+                  -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+                  -DCOMPILER_RT_BUILD_XRAY=OFF \
+                  -DCOMPILER_RT_BUILD_PROFILE=OFF \
+                  -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+                  -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+                  -DCLANG_ENABLE_ARCMT=OFF \
+                  -DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF \
+                  -DLIBCXX_ENABLE_DEBUG_MODE_SUPPORT=OFF \
+                  -DLLVM_ENABLE_BACKTRACES=OFF \
+                  -DLLVM_ENABLE_LIBPFM=OFF \
+                  -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+                  -DLLVM_ENABLE_CRASH_OVERRIDES=OFF \
+                  -DLLVM_ENABLE_LIBEDIT=OFF \
+                  -DLLVM_ENABLE_LIBXML2=OFF "
+
 # Configure source
 cmake -B build  \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
-      -DCMAKE_C_COMPILER="${CMLFS_TARGET}-gcc" \
-      -DCMAKE_CXX_COMPILER="${CMLFS_TARGET}-g++" \
-      -DCMAKE_EXE_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \ 
-      -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1" \
       -DLLVM_ENABLE_LIBCXX=ON \
-      -DLLVM_BUILD_TESTS=OFF \
-      -DLLVM_ENABLE_LIBEDIT=OFF \
-      -DLLVM_ENABLE_LIBXML2=OFF \
-      -DLLVM_INCLUDE_GO_TESTS=OFF \
-      -DLLVM_INCLUDE_TESTS=OFF \
-      -DLLVM_INCLUDE_DOCS=OFF \
-      -DLLVM_INCLUDE_EXAMPLES=OFF \
-      -DLLVM_INCLUDE_BENCHMARKS=OFF \
-      -DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
-      -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
       -DLLVM_TARGET_ARCH="X86" \
       -DLLVM_TARGETS_TO_BUILD="X86" \
-      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
-      -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-      -DCOMPILER_RT_BUILD_XRAY=OFF \
-      -DCOMPILER_RT_BUILD_PROFILE=OFF \
-      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-      -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \ 
-      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-      -DCLANG_DEFAULT_RTLIB=compiler-rt \
-      -DCLANG_DEFAULT_LINKER="/cgnutools/bin/ld.lld" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
-      -DBacktrace_HEADER="/cgnutools/include/execinfo.h" \
-      -DBacktrace_LIBRARY="/cgnutools/lib/libexecinfo.so.1" \
       -DDEFAULT_SYSROOT="/cgnutools" \
-      -DICONV_LIBRARY_PATH="/cgnutools/lib/libc.so" \
-      -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
-      -DCLANG_ENABLE_ARCMT=OFF \
-      -DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF \
-      -DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF \
-      -DLIBCXX_ENABLE_DEBUG_MODE_SUPPORT=OFF \
-      -DLLVM_ENABLE_BACKTRACES=OFF \
-      -DLLVM_ENABLE_LIBPFM=OFF \
-      -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
-      -DLLVM_ENABLE_CRASH_OVERRIDES=OFF \
-      -DLLVM_ENABLE_OCAMLDOC=OFF
+      ${CONFIG_TOOLS} ${CONFIG_TRUPLES} \
+      ${CONFIG_CRT}   ${CONFIG_CLANG} \
+      ${CONFIG_PATHS  ${BUILD_OFF}
 
 # Now ready to build
 #LD_LIBRARY_PATH=/cgnutools/lib:/cgnutools/${CMLFS_TARGET}/lib:/usr/lib:/lib \
