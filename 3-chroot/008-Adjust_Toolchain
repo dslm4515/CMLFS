@@ -32,8 +32,8 @@ ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
 
 # Modify the specs file so that gcc of llvmtools builds
 # binaries with /lib/ld-musl-x86_64.so.1 as dynamic linker:
-export SPECFILE=`dirname $(/llvmtools/bin/cc.gnu -print-libgcc-file-name)`/specs
-cc.gnu -dumpspecs | sed -e 's@/llvmtools@@g' \
+export SPECFILE=`dirname $(/llvmtools/bin/gcc.gnu -print-libgcc-file-name)`/specs
+gcc.gnu -dumpspecs | sed -e 's@/llvmtools@@g' \
                         -e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
                         -e '/\*cpp:/{n;s@$@ -isystem /usr/include@}' >  tempspecfile
 mv -vf tempspecfile $SPECFILE
