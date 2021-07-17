@@ -7,7 +7,10 @@ sed -i -e "s/@@VERSION@@/0.1.0.2/g" -- /tmp/*.pc
 
 # utmps segfaults if built with clang.
 # Configure source with GCC
-CC=gcc LD=ld.bfd \
+set-gcc-mode && set-gnu-bin-mode
+
+CC=gcc CXX=g++ \
+LD=ld.bfd \
 ./configure --enable-shared      \
             --enable-static      \
             --disable-allstatic  \
@@ -26,3 +29,6 @@ ln -sv utmps/utmpx.h /usr/include/utmpx.h
 
 # Install pkgconfig
 install -v -D -m644 /tmp/utmps.pc /usr/lib/pkgconfig
+
+# Switch back to using LLVM
+set-llvm-mode && set-llvm-bin-mode
