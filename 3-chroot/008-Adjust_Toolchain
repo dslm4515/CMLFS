@@ -78,7 +78,7 @@ grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
 rm -v a.out dummy.log
 
 # Now test GCC of llvmtools
-cc.gnu dummy.c -v -Wl,--verbose &> dummy.log
+gcc.gnu dummy.c -v -Wl,--verbose &> dummy.log
 readelf -l a.out | grep ': /lib'
 
 # Should output:
