@@ -48,56 +48,63 @@ rm -rf libunwind-12.0.0.src
 export CFLAGS=" -g -g1"
 export CXXFLAGS=" -g -g1"
 
+# Set the build
+export  CONFIG_BUILD="-DCMAKE_AR=/llvmtools/bin/llvm-ar "   
+export CONFIG_BUILD+="-DCMAKE_LINKER=/llvmtools/bin/ld.lld " 
+export CONFIG_BUILD+="-DCMAKE_NM=/llvmtools/bin/llvm-nm " 
+export CONFIG_BUILD+="-DCMAKE_OBJCOPY=/llvmtools/bin/llvm-objcopy "
+export CONFIG_BUILD+="-DCMAKE_OBJDUMP=/llvmtools/bin/llvm-objdump " 
+export CONFIG_BUILD+="-DCMAKE_RANLIB=/llvmtools/bin/llvm-ranlib " 
+export CONFIG_BUILD+="-DCMAKE_READELF=/llvmtools/bin/llvm-readelf " 
+export CONFIG_BUILD+="-DCMAKE_STRIP=/llvmtools/bin/llvm-strip " 
+
+# Set the LLVM features
+export  CONFIG_LLVM="-DLLVM_LINK_LLVM_DYLIB=ON -DLLVM_BUILD_LLVM_DYLIB=ON "
+export CONFIG_LLVM+="-DLLVM_ENABLE_LIBCXX=ON   -DLLVM_ENABLE_LLD=ON "
+export CONFIG_LLVM+="-DLLVM_ENABLE_RTTI=ON     -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON "
+export CONFIG_LLVM+="-DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON  -DLLVM_INSTALL_UTILS=ON "
+
+# Turn off features and options not needed
+export  CONFIG_OFF="-DLLVM_BUILD_TESTS=OFF        -DLLVM_ENABLE_LIBEDIT=OFF "
+export CONFIG_OFF+="-DLLVM_ENABLE_LIBXML2=OFF     -DLLVM_INCLUDE_GO_TESTS=OFF "
+export CONFIG_OFF+="-DLLVM_INCLUDE_DOCS=OFF       -DLLVM_INCLUDE_EXAMPLES=OFF "
+export CONFIG_OFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF -DLLVM_ENABLE_UNWIND_TABLES=OFF "
+export CONFIG_OFF+="-DLLVM_ENABLE_IDE=OFF         -DLLVM_ENABLE_BINDINGS=OFF "
+export CONFIG_OFF+="-DLLVM_ENABLE_OCAMLDOC=OFF    -DLLVM_ENABLE_IDE=OFF "
+export CONFIG_OFF+="-DLLVM_ENABLE_ZLIB=OFF "
+
+# Set options for clang
+export  CONFIG_CLANG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CONFIG_CLANG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CONFIG_CLANG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CONFIG_CLANG+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
+
+# Set some paths
+export  CONFIG_PATH="-DBacktrace_INCLUDE_DIR=/usr/include " 
+export CONFIG_PATH+="-DBacktrace_LIBRARY=/usr/lib/libexecinfo.so " 
+export CONFIG_PATH+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/usr/include " 
+export CONFIG_PATH+="-DICONV_LIBRARY_PATH=/usr/lib/libc.so " 
+
+# Set options for compiler-rt
+export C ONFIG_CRT="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF " 
+
 cmake -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DLLVM_LINK_LLVM_DYLIB=ON \
-      -DLLVM_BUILD_LLVM_DYLIB=ON \
-      -DLLVM_BUILD_TESTS=OFF \
-      -DLLVM_ENABLE_LIBEDIT=OFF \
-      -DLLVM_ENABLE_LIBXML2=OFF \
-      -DLLVM_ENABLE_LIBCXX=ON \
-      -DLLVM_INCLUDE_GO_TESTS=OFF \
-      -DLLVM_INCLUDE_TESTS=OFF \
-      -DLLVM_INCLUDE_DOCS=OFF \
-      -DLLVM_INCLUDE_EXAMPLES=OFF \
-      -DLLVM_INCLUDE_BENCHMARKS=OFF \
       -DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl \
       -DLLVM_HOST_TRIPLE="x86_64-pc-linux-musl" \
       -DLLVM_TARGET_ARCH="X86" \
       -DLLVM_TARGETS_TO_BUILD="host;BPF;AMDGPU;X86" \
       -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-musl" \
-      -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-      -DCOMPILER_RT_BUILD_XRAY=OFF \
-      -DCOMPILER_RT_BUILD_PROFILE=OFF \
-      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-      -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-      -DCLANG_DEFAULT_RTLIB=compiler-rt \
-      -DCLANG_DEFAULT_LINKER="/usr/bin/ld.lld" \
       -DDEFAULT_SYSROOT="/usr" \
-      -DLLVM_ENABLE_LLD=ON \
-      -DLLVM_ENABLE_RTTI=ON \
-      -DLLVM_ENABLE_ZLIB=OFF \
-      -DBacktrace_INCLUDE_DIR="/usr/include" \
-      -DBacktrace_LIBRARY="/usr/lib/libexecinfo.so" \
-      -DCMAKE_INSTALL_OLDINCLUDEDIR="/usr/include" \
-      -DCMAKE_AR="/llvmtools/bin/llvm-ar" \
-      -DCMAKE_LINKER="/llvmtools/bin/ld.lld" \
-      -DCMAKE_NM="/llvmtools/bin/llvm-nm" \
-      -DCMAKE_OBJCOPY="/llvmtools/bin/llvm-objcopy" \
-      -DCMAKE_OBJDUMP="/llvmtools/bin/llvm-objdump" \
-      -DCMAKE_RANLIB="/llvmtools/bin/llvm-ranlib" \
-      -DCMAKE_READELF="/llvmtools/bin/llvm-readelf" \
-      -DCMAKE_STRIP="/llvmtools/bin/llvm-strip" \
-      -DICONV_LIBRARY_PATH="/usr/lib/libc.so" \
-      -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
-      -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON  \
-      -DLLVM_INSTALL_UTILS=ON \
-      -DLLVM_ENABLE_BINDINGS=OFF \
-      -DLLVM_ENABLE_IDE=OFF \
-      -DLLVM_ENABLE_UNWIND_TABLES=OFF 
+      ${CONFIG_BUILD} ${CONFIG_LLVM} ${CONFIG_OFF} \
+      ${CONFIG_CLANG} ${CONFIG_PATH} ${CONFIG_CRT} -Wno-dev
+
+unset CONFIG_BUILD CONFIG_LLVM CONFIG_OFF CONFIG_CLANG CONFIG_PATH CONFIG_CRT
 
 # Build
 ninja -C build
