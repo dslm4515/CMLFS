@@ -44,15 +44,20 @@ case $(uname -m) in
   ;;
 esac &&
 
+# Change compilers, use GCC of llvmtools
+/llvmtools/bin/set-gcc-mode
+
+# Change binary tools for llvmtools to Binutils
+/llvmtools/bin/set-gnu-bin-mode
+
+# Use system installed binutils
+/usr/bin/set-gnu-bin-mode
+
 # Build in a dedicated directory
 mkdir -v build && cd build
 
-# Create temporary links for llvmtool's gcc
-ln -sv /llvmtools/lib/libgcc_s.so{,.1}       /usr/lib
-ln -sv /llvmtools/lib/libstdc++.{a,so{,.6}}  /usr/lib
-
 # Configure source
-CC=cc.gnu   \
+CC=gcc.gnu   \
 CXX=g++.gnu \
 SED=sed  libat_cv_have_ifunc=no       \
 ../configure --prefix=/usr            \
@@ -86,7 +91,7 @@ SED=sed  libat_cv_have_ifunc=no       \
 	     --disable-fixed-point \
 	     --disable-sjlj-exceptions \
 	     --disable-werror $EXTRA_CONFIG \
-             --with-pkgversion="CMLFS 2.0"
+             --with-pkgversion="CMLFS 2.0.0"
 
 # Compile
 make 
@@ -133,4 +138,23 @@ ln -sv  ../../libexec/gcc/x86_64-pc-linux-musl/10.3.1/liblto_plugin.so \
 mkdir -pv /usr/share/gdb/auto-load/usr/lib
 mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
 
+# Set toolchain compiler back as LLVM
+/llvmtools/bin/set-llvm-mode
 
+# Set toolchain binary tools back to LLVM
+/llvmtools/bin/set-llvm-bin-mode
+
+# Set system binary tools back to LLVM
+for b in ar as nm objcopy objdump size strings addr2line ranlib readelf strip
+do
+ rm -v /usr/bin/$b
+done
+for b in ar as nm objcopy objdump size strings
+do 
+  ln -sv /llvmtools/bin/llvm-$b /usr/bin/$b
+done
+ln -sv /llvmtools/bin/llvm-symbolizer /usr/bin/addr2line     && \
+ln -sv /llvmtools/bin/llvm-ar         /usr/bin/ranlib        && \
+ln -sv /llvmtools/bin/llvm-readobj    /usr/bin/readelf       && \
+ln -sv /llvmtools/bin/llvm-objcopy    /usr/bin/strip      
+   
