@@ -2,27 +2,6 @@
 # Source: https://sourceware.org/ftp/elfutils/0.183/elfutils-0.183.tar.bz2
 # This section is done in Chroot environment
 
-## Compile libelf with cross-tools
-## Unpack a fresh copy of cross-tools
-##cd /
-##rm -rf /cross-tools
-##tar xf crosstools-gcc-$(uname -m).tar.xz
-
-# Modify /cross-tools/etc/ld-musl-x86_64.path to search /usr/lib and /lib
-#echo "/usr/lib" >> /cgnutools/etc/ld-musl-x86_64.path
-#echo "/lib"     >> /cgnutools/etc/ld-musl-x86_64.path
-
-# Add cross-tools to PATH
-#export OLD_PATH=$PATH
-#export PATH=$PATH:/cgnutools/bin
-
-# Disable symlinks for gcc and cc
-#mv /usr/bin/gcc /usr/bin/gcc.clang
-#mv /usr/bin/cc /usr/bin/cc.clang
-
-## Return to elfutils source
-##cd /sources/elfutils-0.183
-
 # Add missing files
 cp -vr ../files/elfutils-void/error.h lib/
 cp -vr ../files/elfutils-void/error.h src/
@@ -33,18 +12,6 @@ patch -Np1 -i ../patches/elfutils-12101111/elfutils-musl-clang.patch
 # Re-create configure script
 autoreconf -ifv
 
-# Configure source, using cross-tools
-#CC=x86_64-cmlfs-linux-musl-gcc \
-#CXX=x86_64-cmlfs-linux-musl-g++ \
-#AR=x86_64-cmlfs-linux-musl-ar \
-#AS=x86_64-cmlfs-linux-musl-as \
-#RANLIB=x86_64-cmlfs-linux-musl-ranlib \
-#LD=x86_64-cmlfs-linux-musl-ld \
-#STRIP=x86_64-cmlfs-linux-musl-strip \
-#CFLAGS="-DFNM_EXTMATCH=0 -Wno-error -Wno-error=null-dereference -Wl,-z,stack-size=2097152 -L/lib -L/usr/lib -I/usr/include" \
-#./configure --prefix=/usr \
-#            --disable-debuginfod \
-#            --disable-libdebuginfod 
 CFLAGS="-Wno-error -Wno-null-dereference -DFNM_EXTMATCH=0" \
 CXXFLAGS="-Wno-error -Wl,-z,stack-size=2097152" \
 ./configure --prefix=/usr \
@@ -60,6 +27,3 @@ make -C libelf install
 # Install pkgconfig file for library
 install -vm644 config/libelf.pc /usr/lib/pkgconfig
 
-# Restore the symlinks for gcc & cc and remove cross-tools from PATH
-#export PATH=$OLD_PATH
-#unset OLD_PATH
