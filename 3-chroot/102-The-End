@@ -4,13 +4,13 @@
 # file, it is very easy for you (and for us if you need to ask for help at 
 # some point) to find out which LFS version is installed on the system. 
 # Create this file by running: 
-echo 2.0b > /etc/cmlfs-release
+echo 2.0.0 > /etc/cmlfs-release
 
 # It is also a good idea to create a file to show the status of your new 
 # system with respect to the Linux Standards Base (LSB). To create this file, run: 
 cat > /etc/lsb-release << "EOF"
 DISTRIB_ID="Clang Musl Linux From Scratch"
-DISTRIB_RELEASE="2.0.0b"
+DISTRIB_RELEASE="2.0.0"
 DISTRIB_CODENAME="<your name here>"
 DISTRIB_DESCRIPTION="Clang Musl Linux From Scratch"
 EOF
@@ -18,11 +18,11 @@ EOF
 # If desired, an os-release file
 cat > /usr/lib/os-release << "EOF"
 NAME="CMLFS"
-VERSION="2.0.0 (beta)"
+VERSION="2.0.0"
 ID=cmlfs
 ID_LIKE="mlfs lfs"
 PRETTY_NAME="Clang-built Musl Linux From Scratch 2.0.0 Beta"
-VERSION_ID="2.0.0b"
+VERSION_ID="2.0.0"
 HOME_URL="https://github.com/dslm4515/CMLFS"
 SUPPORT_URL="https://github.com/dslm4515/CMLFS/issues"
 BUG_REPORT_URL="https://github.com/dslm4515/CMLFS/issues"
