@@ -7,10 +7,6 @@ export  CC=${CMLFS_TARGET}-clang
 
 cd ${LLVMSRC}/projects/libcxx
 
-# Remove libatomic detection, as libatomic is from GCC
-sed -i '/check_library_exists(atomic __atomic_fetch_add_8 "" LIBCXX_HAS_ATOMIC_LIB)/d' \
-${LLVMSRC}/projects/libcxx/cmake/config-ix.cmake
-
 # Configure
 cmake -B build  \
       -DCMAKE_INSTALL_PREFIX=/llvmtools \
@@ -22,6 +18,7 @@ cmake -B build  \
       -DLIBCXX_ENABLE_STATIC=ON  \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DLIBCXX_USE_COMPILER_RT=ON \
+      -DLIBCXX_HAS_ATOMIC_LIB=OFF \
       -DLIBCXX_CXX_ABI=libcxxabi \
       -DLIBCXX_CXX_ABI_INCLUDE_PATHS="/llvmtools/include" \
       -DLIBCXX_CXX_ABI_LIBRARY_PATH="/llvmtools/lib" \
