@@ -57,7 +57,8 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
  <li>Ninja/Samurai</li>
  <li>wget/cURL</li>
 </ul>
-# Required Base Development tools (may refer to LFS)
+
+## Required Base Development tools (may refer to LFS)
 <ul>
  <li>bash 3.2 (/bin/sh should be a symbolic or hard link to bash) </li>
  <li>binutils 2.25 </li>
