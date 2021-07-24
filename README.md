@@ -46,6 +46,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [x] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 <li> [x] Merge cross-tools build with cgnutools </li>
 <li> [x] Build successfully on a Glibc host </li>
+<li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools
 <li> [ ] Build on aarch64</li>
 </ul>
 
@@ -97,7 +98,6 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 ## Issues
 <ul>
 <li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
-<li>libelf(elfutils) requires a compiler with GNU99 support. Clang doe not have true GNU99 support. Compiles fine with GCC in llvmtools</li> 
 <li>Diskboot.img of grub is not correctly built with clang. Grub requires GCC and patching. </li>
 <li>Cannot build cgnutools with host's LLVM/Clang. Has to be complied with Host's GCC or previously built cross-tools toolchain.</li>
 </ul>
@@ -105,7 +105,7 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 ## Change log
 
 <ul>
-<li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. No longer using /llvmtools/gnu anf /opt/gnu.</li>
+<li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li> 
 <li>1.2.0: Incomplete: LLVM=11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
 <li>1.1.0: Sucessfully merged cross-tools and cgnutools to include GCC & binutils.</li>
 <li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu </li>
