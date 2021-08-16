@@ -126,7 +126,7 @@ cmake -B build  \
       -DDEFAULT_SYSROOT="/cgnutools" \
       ${CONFIG_TOOLS} ${CONFIG_TRUPLES} \
       ${CONFIG_CRT}   ${CONFIG_CLANG} \
-      ${CONFIG_PATHS  ${BUILD_OFF}
+      ${CONFIG_PATHS}  ${BUILD_OFF}
 
 # Now ready to build
 make -C build && \
