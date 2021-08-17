@@ -45,7 +45,9 @@ ln -sv   $CMLFS/llvmtools /
 mkdir -pv $CMLFS/sources/{patches,files,pkgs}
 
 # Download sources. Provided list can be used with wget:
-wget --input-file=source.list --continue --directory-prefix=$CMLFS/sources/pkgs
+#wget --input-file=sources.list --continue --directory-prefix=$CMLFS/sources/pkgs
+# or use the download_sources.sh script if you have only cURL ;^]
+./download_sources.sh sources.list sources.md5
 
 # Create user and group:
 # As root, change ownership to allow installation of tools
