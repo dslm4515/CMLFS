@@ -9,14 +9,12 @@ cp -vr ../files/elfutils-void/error.h src/
 # Apply patch to build libelf with clang
 patch -Np1 -i ../patches/elfutils-12101111/elfutils-musl-clang.patch
 
-# Re-create configure script
-autoreconf -ifv
-
 CFLAGS="-Wno-error -Wno-null-dereference -DFNM_EXTMATCH=0" \
 CXXFLAGS="-Wno-error -Wl,-z,stack-size=2097152" \
 ./configure --prefix=/usr \
             --disable-debuginfod \
-            --disable-libdebuginfod
+            --disable-libdebuginfod \
+            ac_cv_c99=yes
 
 # Build it
 make -C lib && make -C libelf
