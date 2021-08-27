@@ -1,0 +1,113 @@
+# # Prequisites # #
+# Required for host:
+#  o cmake
+#  o ninja/samurai
+#  o python3 (linked as 'python' if python2 not installed)
+#  o wget/curl (to download sources)
+# Required Base Development tools (may refer to LFS)
+#  o bash 3.2 (/bin/sh should be a symbolic or hard link to bash) 
+#  o binutils 2.25
+#  o bison 2.7 (/usr/bin/yacc should be a link to bison or small script that executes bison) 
+#  o bzip2 1.0.4
+#  o coreutils 6.9
+#  o diffutils 2.8.1
+#  o findutils 4.2.31
+#  o gawk 4.0.1 (/usr/bin/awk should be a link to gawk)
+#  o GCC 6.2 *including the C++ compiler, g++
+#  o Glibc 2.11 / Musl Libc 1.20
+#  o Grep 2.5.1a
+#  o gzip 1.3.12
+#  o linux kernel 3.2 (not sure if it matters, as most distros are running 4.x/5.x kernels
+#  o m4 1.4.10
+#  o make 4.0
+#  o patch 2.5.4
+#  o Python 3.4
+#  o sed 4.1.5
+#  o tar 1.22
+#  o texinfo 4.7
+#  o xz 5.0.0
+#  * (if hostdistro is MLFS/LFS, then all development packages are installed)
+
+# Create a directory to hold sources and stage area, as root:
+mkdir -pv /mnt/cmlfs
+export CMLFS=/mnt/cmlfs
+
+# Create directories to build clang with GCC libraries (cgnutools) 
+# and the final toolchain without GCC libraries. As root, Link them
+# to host's root directory:
+mkdir -v $CMLFS/cgnutools
+mkdir -v $CMLFS/llvmtools
+ln -sv   $CMLFS/cgnutools /
+ln -sv   $CMLFS/llvmtools /
+
+# As root, create directories to hold patches, files, packages, 
+# and build area:
+mkdir -pv $CMLFS/sources/{patches,files,pkgs}
+
+# Download sources. Provided list can be used with wget:
+#wget --input-file=sources.list --continue --directory-prefix=$CMLFS/sources/pkgs
+# or use the download_sources.sh script if you have only cURL ;^]
+./download_sources.sh sources.list sources.md5
+
+# Create user and group:
+# As root, change ownership to allow installation of tools
+groupadd cmlfs
+useradd -s /bin/bash -g cmlfs -m -k /dev/null cmlfs
+passwd cmlfs
+
+chown -v  cmlfs $CMLFS/cgnutools
+chown -v  cmlfs $CMLFS/llvmtools
+chown -vR cmlfs $CMLFS/sources
+chmod -v  a+wt  $CMLFS/sources
+
+# Now run as cmlfs user. All toolchain software should be built 
+# as this user, unless specified.
+su - cmlfs
+
+# Set up the environment.
+cat > ~/.bash_profile << "EOF"
+exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\n\$ ' /bin/bash
+EOF
+
+cat > ~/.bashrc << "EOF"
+set +h
+umask 022
+CMLFS=/mnt/cmlfs
+LC_ALL=POSIX
+PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
+export CMLFS LC_ALL PATH
+EOF
+
+# Load the stored environment
+source ~/.bash_profile
+
+# CFLAGS and CXXFLAGS must not be set during the building of cross-tools. 
+unset CFLAGS
+unset CXXFLAGS
+cat >> ~/.bashrc << EOF
+unset CFLAGS
+unset CXXFLAGS
+EOF
+
+# Set build paths:
+cat >> ~/.bashrc << EOF
+export LLVMSRC="/mnt/cmlfs/sources/llvm"
+EOF
+
+export CMLFS_TARGET="x86_64-cmlfs-linux-musl" \
+TARGET_TRUPLE="x86_64-pc-linux-musl" \
+	CMLFS_ARCH="x86" \
+	CMLFS_CPU="x86-64" \
+	CMLFS_HOST="$(echo $MACHTYPE | \
+	    sed "s/$(echo $MACHTYPE | cut -d- -f2)/cross/")"
+
+cat >> ~/.bashrc << EOF
+export CMLFS_HOST="${CMLFS_HOST}" \
+	CMLFS_TARGET="${CMLFS_TARGET}" \
+	CMLFS_ARCH="${CMLFS_ARCH}" \
+	CMLFS_CPU="${CMLFS_CPU}" \
+	TARGET_TRUPLE="${TARGET_TRUPLE}"
+EOF
+source ~/.bashrc
+
+
