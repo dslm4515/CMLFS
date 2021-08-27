@@ -23,7 +23,7 @@ main(){
 	test ! -e ${SRCDIR} && mkdir ${SRCDIR};
 	urls=( `cat ${1} | tr "\n" " "` );
 	n_urls=`n ${urls[*]}`;
-	cd src;
+	cd ${SRCDIR};
 	for (( i=0; i < ${n_urls}; i++ )){
 		printf '%s\n' "Downloading $(basename ${urls[${i}]})";
 		curl -L ${urls[${i}]} -O;
