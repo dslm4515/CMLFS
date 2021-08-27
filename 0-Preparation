@@ -94,19 +94,19 @@ cat >> ~/.bashrc << EOF
 export LLVMSRC="/mnt/cmlfs/sources/llvm"
 EOF
 
-export CMLFS_TARGET="x86_64-cmlfs-linux-musl"
-export TARGET_TRUPLE="x86_64-pc-linux-musl"
-export CMLFS_ARCH="x86"
-export CMLFS_CPU="x86-64"
-export CMLFS_HOST="$(echo $MACHTYPE | \
-    sed "s/$(echo $MACHTYPE | cut -d- -f2)/cross/")"
+export CMLFS_TARGET="x86_64-cmlfs-linux-musl" \
+TARGET_TRUPLE="x86_64-pc-linux-musl" \
+	CMLFS_ARCH="x86" \
+	CMLFS_CPU="x86-64" \
+	CMLFS_HOST="$(echo $MACHTYPE | \
+	    sed "s/$(echo $MACHTYPE | cut -d- -f2)/cross/")"
 
 cat >> ~/.bashrc << EOF
-export CMLFS_HOST="${CMLFS_HOST}"
-export CMLFS_TARGET="${CMLFS_TARGET}"
-export CMLFS_ARCH="${CMLFS_ARCH}"
-export CMLFS_CPU="${CMLFS_CPU}"
-export TARGET_TRUPLE="${TARGET_TRUPLE}"
+export CMLFS_HOST="${CMLFS_HOST}" \
+	CMLFS_TARGET="${CMLFS_TARGET}" \
+	CMLFS_ARCH="${CMLFS_ARCH}" \
+	CMLFS_CPU="${CMLFS_CPU}" \
+	TARGET_TRUPLE="${TARGET_TRUPLE}"
 EOF
 source ~/.bashrc
 
