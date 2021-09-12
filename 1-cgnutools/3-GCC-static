@@ -16,7 +16,7 @@ mkdir -v build && cd  build
 
 # Configure source 
 CFLAGS='-g0 -O0' \
-CXXFLAGS='-g0 -O0' \
+CXXFLAGS=$CFLAGS \
 ../configure \
   --prefix=/cgnutools --build=${CMLFS_HOST} \
   --host=${CMLFS_HOST}   --target=${CMLFS_TARGET} \
