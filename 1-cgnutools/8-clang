@@ -68,8 +68,9 @@ mkdir -pv tools/lld/include/mach-o
 cp -v projects/libunwind/include/mach-o/compact_unwind_encoding.h tools/lld/include/mach-o
 
 # Set flags to greatly reduce debugging symbols
-export CFLAGS=" -g -g1"
-export CXXFLAGS=" -g -g1" 
+CFLAGS=' -g -g1'
+CXXFLAGS=$CFLAGS 
+export CFLAGS CXXFLAGS
 
 # Update host/target triple detection
 cp -v ../files/config.guess-musl cmake/config.guess
