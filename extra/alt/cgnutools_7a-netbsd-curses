@@ -1,0 +1,27 @@
+# cgnutools: netbsd-curses
+# source tarball: http://ftp.barfooze.de/pub/sabotage/tarballs/netbsd-curses-0.3.2.tar.xz
+# note: this is experimental, i'm not sure if it will work or just broke my
+# toolchain.
+# Build as cmlfs
+
+# Configure source with freshly build GCC, PREFIX and DESTDIR (it will be your
+# CMLFS root if you followed the steps at 0-Preparation correctly)
+cat > config.mak << "EOF"
+CC="${CMLFS_TARGET}-gcc"
+CXX="${CMLFS_TARGET}-g++"
+AR="${CMLFS_TARGET}-ar"
+AS="${CMLFS_TARGET}-as"
+RANLIB="${CMLFS_TARGET}-ranlib"
+LD="${CMLFS_TARGET}-ld"
+STRIP="${CMLFS_TARGET}-strip"
+
+PREFIX=/cgnutools
+DESTDIR="${CMLFS}"
+
+EOF
+
+# Build all the targets (both static and dynamic/shared libraries)
+make all
+
+# Install
+make install
