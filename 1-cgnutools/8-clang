@@ -13,44 +13,52 @@ cd ${LLVMSRC}
 # make sure compiler-rt, libcxx, libcxxabi, libunwind are unpacked in ${{LLVMSRC}/projects
 # and clang & lld in ${LLVMSRC}/tools.
 cd projects && \
-tar xf ../../pkgs/compiler-rt-12.0.0.src.tar.xz && \
-mv compiler-rt-12.0.0.src compiler-rt           && \
-tar xf ../../pkgs/libcxx-12.0.0.src.tar.xz      && \
-mv libcxx-12.0.0.src libcxx                     && \
-tar xf ../../pkgs/libcxxabi-12.0.0.src.tar.xz   && \
-mv libcxxabi-12.0.0.src libcxxabi               && \
-tar xf ../../pkgs/libunwind-12.0.0.src.tar.xz   && \
-mv libunwind-12.0.0.src libunwind               && \
-cd ${LLVMSRC}/tools && \
-tar xf ../../pkgs/clang-12.0.0.src.tar.xz 
-mv clang-12.0.0.src clang
-tar xf ../../pkgs/lld-12.0.0.src.tar.xz 
+xz -cd ../../pkgs/compiler-rt-12.0.0.src.tar.xz | tar xf - && \
+mv compiler-rt-12.0.0.src compiler-rt           	   && \
+xz -cd ../../pkgs/libcxx-12.0.0.src.tar.xz | tar xf -	   && \
+mv libcxx-12.0.0.src libcxx                     	   && \
+xz -cd ../../pkgs/libcxxabi-12.0.0.src.tar.xz | tar xf -   && \
+mv libcxxabi-12.0.0.src libcxxabi 			   && \
+xz -cd ../../pkgs/libunwind-12.0.0.src.tar.xz | tar xf -   && \
+mv libunwind-12.0.0.src libunwind               	   && \
+cd ${LLVMSRC}/tools 					   && \
+xz -cd ../../pkgs/clang-12.0.0.src.tar.xz | tar xf -	   && \
+mv clang-12.0.0.src clang				   && \
+xz -cd ../../pkgs/lld-12.0.0.src.tar.xz | tar xf - 	   && \
 mv lld-12.0.0.src lld
 
 # Apply patches from void linux
 cd ${LLVMSRC}/projects/compiler-rt
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-aarch64-ucontext.patch
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-sanitizer-ppc64-musl.patch
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-size_t.patch 
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-xray-ppc64-musl.patch
+for i in ../../../patches/llvm12-compiler-rt-void/compiler-rt-aarch64-ucontext.patch \
+	../../../patches/llvm12-compiler-rt-void/compiler-rt-sanitizer-ppc64-musl.patch \
+	../../../patches/llvm12-compiler-rt-void/compiler-rt-size_t.patch \
+	../../../patches/llvm12-compiler-rt-void/compiler-rt-xray-ppc64-musl.patch; do
+	patch -Np1 -i $i 
+done
 cd ${LLVMSRC}/projects/libcxx
-patch -Np1 -i ../../../patches/llvm12-libcxx-void/libcxx-musl.patch 
-patch -Np1 -i ../../../patches/llvm12-libcxx-void/libcxx-ppc.patch 
-patch -Np1 -i ../../../patches/llvm12-libcxx-void/libcxx-ssp-nonshared.patch 
+for i in ../../../patches/llvm12-libcxx-void/libcxx-musl.patch \
+	../../../patches/llvm12-libcxx-void/libcxx-ppc.patch \ 
+	../../../patches/llvm12-libcxx-void/libcxx-ssp-nonshared.patch; do
+	patch -Np1 -i $i 
+done
 cd ${LLVMSRC}/projects/libunwind
 patch -Np1 -i ../../../patches/llvm12-libunwind-void/libunwind-ppc32.patch
 cd ${LLVMSRC}/tools/clang
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-001-fix-unwind-chain-inclusion.patch 
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-002-add-musl-triples.patch 
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-003-ppc64-dynamic-linker-path.patch 
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-004-ppc64-musl-elfv2.patch
+for i in ../../../patches/llvm12-clang-void/clang-001-fix-unwind-chain-inclusion.patch \
+	../../../patches/llvm12-clang-void/clang-002-add-musl-triples.patch \
+	../../../patches/llvm12-clang-void/clang-003-ppc64-dynamic-linker-path.patch \
+ 	../../../patches/llvm12-clang-void/clang-004-ppc64-musl-elfv2.patch; do
+	patch -Np1 -i $i
+done
 cd ${LLVMSRC}
-patch  -Np1 -i ../patches/llvm12-void/llvm-001-musl.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-002-musl-ppc64-elfv2.patch 
-patch  -Np1 -i ../patches/llvm12-void/llvm-003-ppc-secureplt.patch 
-patch  -Np1 -i ../patches/llvm12-void/llvm-004-override-opt.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-005-ppc-bigpic.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-006-aarch64-mf_exec.patch 
+for i in ../patches/llvm12-void/llvm-001-musl.patch \ 
+	../patches/llvm12-void/llvm-002-musl-ppc64-elfv2.patch \
+	../patches/llvm12-void/llvm-003-ppc-secureplt.patch \
+	../patches/llvm12-void/llvm-004-override-opt.patch \
+	../patches/llvm12-void/llvm-005-ppc-bigpic.patch \
+	../patches/llvm12-void/llvm-006-aarch64-mf_exec.patch; do
+	patch  -Np1 -i $i
+done
 
 # Disable sanitizers for musl systems, per Void Linux... fixes early build failure
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
