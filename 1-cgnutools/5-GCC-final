@@ -29,6 +29,7 @@ AR=ar LDFLAGS="-Wl,-rpath,/cgnutools/lib" \
     --host=${CMLFS_HOST} \
     --target=${CMLFS_TARGET} \
     --disable-multilib \
+    --disable-static \
     --with-sysroot=/cgnutools \
     --disable-nls \
     --enable-shared \
