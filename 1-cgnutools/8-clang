@@ -103,10 +103,14 @@ export CONFIG_CLANG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
 export CONFIG_CLANG+="-DCLANG_ENABLE_STATIC_ANALYZER=OFF "
 export CONFIG_CLANG+="-DCLANG_ENABLE_ARCMT=OFF "
 
+# Set the flags to prevent build static libraries for
+# libunwind, libcxxabi, and libcxx:
+export CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=OFF "
+export CONFIG_LIBCXXABI="-DLIBCXXABI_ENABLE_STATIC=OFF "
+export CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=OFF "
+
 # Set paths...
-export  CONFIG_PATHS="-DBacktrace_HEADER=/cgnutools/include/execinfo.h "
-export CONFIG_PATHS+="-DBacktrace_LIBRARY=/cgnutools/lib/libexecinfo.so.1 " 
-export CONFIG_PATHS+="-DICONV_LIBRARY_PATH=/cgnutools/lib/libc.so "
+export CONFIG_PATHS="-DICONV_LIBRARY_PATH=/cgnutools/lib/libc.so "
 
 # Turn off unwanted features, docs and tests
 export  BUILD_OFF="-DLLVM_BUILD_TESTS=OFF "
@@ -128,14 +132,16 @@ export BUILD_OFF+="-DLLVM_ENABLE_LIBXML2=OFF "
 cmake -B build  \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX="/cgnutools" \
+      -DBUILD_SHARED_LIBS=ON \
       -DLLVM_ENABLE_LIBCXX=ON \
       -DLLVM_TARGET_ARCH="X86" \
       -DLLVM_TARGETS_TO_BUILD="X86" \
       -DLIBCXX_HAS_MUSL_LIBC=ON \
       -DDEFAULT_SYSROOT="/cgnutools" \
       ${CONFIG_TOOLS} ${CONFIG_TRUPLES} \
-      ${CONFIG_CRT}   ${CONFIG_CLANG} \
-      ${CONFIG_PATHS}  ${BUILD_OFF}
+      ${CONFIG_CRT} ${CONFIG_CLANG} \
+      ${CONFIG_LIBUNWIND} ${CONFIG_LIBCXXABI} \
+      ${CONFIG_LIBCXX} ${CONFIG_PATHS}  ${BUILD_OFF}
 
 # Now ready to build
 make -C build && \

@@ -12,6 +12,7 @@ mkdir -v build && cd build
    --with-sysroot=/cgnutools/${CMLFS_TARGET} \
    --disable-nls \
    --disable-multilib \
+   --disable-static \
    --disable-werror \
    --enable-deterministic-archives \
    --disable-compressed-debug-sections 
