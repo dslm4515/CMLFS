@@ -29,6 +29,8 @@ ln -sv ../lib/libc.so /cgnutools/bin/ldd
 cat > /cgnutools/etc/ld-musl-$CMLFS_CPU.path << "EOF"
 /cgnutools/lib
 /cgnutools/${CMLFS_TARGET}/lib
+/usr/lib64
+/lib64
 /usr/lib
 /lib
 EOF
