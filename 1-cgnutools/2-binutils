@@ -5,20 +5,22 @@
 # Create build directory in-tree
 mkdir -v build && cd build
 
+# Set the congiure flags
+export  CARGS="--prefix=/cgnutools "
+export CARGS+="--target=${CMLFS_TARGET} "
+export CARGS+="--with-sysroot=/cgnutools/${CMLFS_TARGET} "
+export CARGS+="--disable-compressed-debug-sections "
+export CARGS+="--enable-deterministic-archives "
+export CARGS+="--disable-multilib "
+export CARGS+="--disable-static "
+export CARGS+="--disable-werror "
+export CARGS+="--disable-nls "
+
 # configure source
-../configure \
-   --prefix=/cgnutools \
-   --target=${CMLFS_TARGET} \
-   --with-sysroot=/cgnutools/${CMLFS_TARGET} \
-   --disable-nls \
-   --disable-multilib \
-   --disable-static \
-   --disable-werror \
-   --enable-deterministic-archives \
-   --disable-compressed-debug-sections 
+../configure ${CARGS}
 
 # Check host can build
 make configure-host
 
 # Build and install
-make && make install
+make && make install && unset CARGS
