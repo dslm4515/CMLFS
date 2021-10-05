@@ -14,26 +14,39 @@ mv -v mpc-1.2.1 mpc
 # a dedicated build directory
 mkdir -v build && cd  build
 
+# Set the configure flags
+export  CARGS="--prefix=/cgnutools "
+export CARGS+="--build=${CMLFS_HOST} "
+export CARGS+="--host=${CMLFS_HOST} "
+export CARGS+="--target=${CMLFS_TARGET} "
+export CARGS+="--with-sysroot=/cgnutools/${CMLFS_TARGET} "
+export CARGS+="--with-arch=${CMLFS_CPU} "
+export CARGS+="--with-newlib "
+export CARGS+="--disable-nls "
+export CARGS+="--disable-libvtv "
+export CARGS+="--disable-libitm "
+export CARGS+="--disable-libssp "
+export CARGS+="--disable-shared "
+export CARGS+="--disable-libgomp "
+export CARGS+="--without-headers "
+export CARGS+="--disable-threads "
+export CARGS+="--disable-multilib "
+export CARGS+="--disable-libatomic "
+export CARGS+="--disable-libstdcxx "
+export CARGS+="--disable-libquadmath "
+export CARGS+="--disable-libsanitizer "
+export CARGS+="--disable-decimal-float "
+export CARGS+="--enable-clocale=generic "
+export CARGS+="--enable-languages=c "
+
 # Configure source 
 CFLAGS='-g0 -O0' \
 CXXFLAGS=$CFLAGS \
-../configure \
-  --prefix=/cgnutools --build=${CMLFS_HOST} \
-  --host=${CMLFS_HOST}   --target=${CMLFS_TARGET} \
-  --with-sysroot=/cgnutools/${CMLFS_TARGET} \
-  --disable-nls         --with-newlib  \
-  --disable-libitm     --disable-libvtv \
-  --disable-libssp     --disable-shared \
-  --disable-libgomp    --without-headers \
-  --disable-threads    --disable-multilib \
-  --disable-libatomic  --disable-libstdcxx \
-  --enable-languages=c --disable-libquadmath \
-  --disable-libsanitizer --with-arch=${CMLFS_CPU} \
-  --disable-decimal-float --enable-clocale=generic 
+../configure ${CARGS}
 
 # Build only the mininum 
 make all-gcc all-target-libgcc
 
 # Install
-make install-gcc install-target-libgcc
+make install-gcc install-target-libgcc && unset CARGS
 
