@@ -75,12 +75,19 @@ export CFLAGS CXXFLAGS
 # Update host/target triple detection
 cp -v ../files/config.guess-musl cmake/config.guess
 
+# Set the build optins ..
+export  CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release "
+export CONFIG_OPTIONS+="-DBUILD_SHARED_LIBS=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_LIBCXX=ON "
+export CONFIG_OPTIONS+="-DLLVM_TARGET_ARCH=X86 "
+export CONFIG_OPTIONS+="-DLLVM_TARGETS_TO_BUILD=X86 "
+export CONFIG_OPTIONS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
+
 # Set the compiler and linker flags...
-export  CONFIG_TOOLS="-DCMAKE_C_COMPILER=${CMLFS_TARGET}-gcc " 
-export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER=${CMLFS_TARGET}-g++ " 
-export CONFIG_TOOLS+="-DCMAKE_EXE_LINKER_FLAGS='-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1' " 
-export CONFIG_TOOLS+="-DCMAKE_SHARED_LINKER_FLAGS='-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1' " 
-export CONFIG_TOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "  
+export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
+export  CONFIG_TOOLS="-DCMAKE_C_COMPILER=${CMLFS_TARGET}-gcc "
+export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER=${CMLFS_TARGET}-g++ "
+export CONFIG_TOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
 
 # Set the truples...
 export  CONFIG_TRUPLES="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
@@ -110,7 +117,10 @@ export CONFIG_LIBCXXABI="-DLIBCXXABI_ENABLE_STATIC=OFF "
 export CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=OFF "
 
 # Set paths...
-export CONFIG_PATHS="-DICONV_LIBRARY_PATH=/cgnutools/lib/libc.so "
+export  CONFIG_PATHS="-DICONV_LIBRARY_PATH=/cgnutools/lib/libc.so "
+export CONFIG_PATHS+="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CONFIG_PATHS+="-DDEFAULT_SYSROOT=/cgnutools " 
+export CONFIG_PATHS+="-DBacktrace_LIBRARY=/cgnutools/lib/libexecinfo.so "
 
 # Turn off unwanted features, docs and tests
 export  BUILD_OFF="-DLLVM_BUILD_TESTS=OFF "
@@ -134,16 +144,10 @@ export BUILD_OFF+="-DLIBCXX_ENABLE_DEBUG_MODE_SUPPORT=OFF "
 
 # Configure source
 cmake -B build  \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX="/cgnutools" \
-      -DBUILD_SHARED_LIBS=ON \
-      -DLLVM_ENABLE_LIBCXX=ON \
-      -DLLVM_TARGET_ARCH="X86" \
-      -DLLVM_TARGETS_TO_BUILD="X86" \
-      -DLIBCXX_HAS_MUSL_LIBC=ON \
-      -DDEFAULT_SYSROOT="/cgnutools" \
+      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}"    \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
       ${CONFIG_TOOLS} ${CONFIG_TRUPLES} \
-      ${CONFIG_CRT} ${CONFIG_CLANG} \
+      ${CONFIG_CRT} ${CONFIG_CLANG} ${CONFIG_OPTIONS} \
       ${CONFIG_LIBUNWIND} ${CONFIG_LIBCXXABI} \
       ${CONFIG_LIBCXX} ${CONFIG_PATHS} ${BUILD_OFF}
 
@@ -154,7 +158,7 @@ make -C build && \
 cd build && cmake -DCMAKE_INSTALL_PREFIX=/cgnutools -P cmake_install.cmake
 
 # clean up
-unset CFLAGS CXFLAGS
+unset CFLAGS CXFLAGS LINKERFLAGS
 cd .. && rm -rf build
 
 # Set LLD as default toolchain linker
