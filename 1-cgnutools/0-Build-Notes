@@ -18,7 +18,7 @@ which flex
 whoami
 
 # Make sure PATH is set correctly:
-export PATH=/cgnutools/bin:/usr/bin:/bin
+export PATH=/cgnutools/bin:/llvmtools/bin:/usr/bin:/bin
 
 # Each package should be unpacked in /mnt/cmlfs/source and change 
 # to the unpacked source directory. For example:
