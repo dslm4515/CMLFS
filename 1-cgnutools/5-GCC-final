@@ -10,38 +10,35 @@ gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
 mv -v mpc-1.2.1 mpc
 
 # Apply patches [from Alpine-linux]
-bash ../patches/gcc-10.3.1_git20210424-alpine/apply_patches_ct.sh
-
-# For 64-bit systems, fix a file so GCC installs libraries in 'lib' and not 'lib64'
-case $(uname -m) in
-  x86_64)
-    sed -e '/m64=/s/lib64/lib/' \
-        -i.orig gcc/config/i386/t-linux64
- ;;
-esac
+bash ../patches/gcc-11.2.0-alpine/apply_patches_ct.sh
 
 # Configure in a dedicated build directory
 mkdir build && cd  build
+
+# Set configure flags
+export  CARGS="--prefix=/cgnutools "
+export CARGS+="--build=${CMLFS_HOST} "
+export CARGS+="--host=${CMLFS_HOST} "
+export CARGS+="--target=${CMLFS_TARGET} "
+export CARGS+="--enable-shared "
+export CARGS+="--enable-threads=posix "
+export CARGS+="--enable-libstdcxx-time "
+export CARGS+="--enable-clocale=generic "
+export CARGS+="--enable-languages=c,c++ "
+export CARGS+="--enable-fully-dynamic-string "
+export CARGS+="--with-sysroot=/cgnutools "
+export CARGS+="--disable-libsanitizer "
+export CARGS+="--disable-lto-plugin "
+export CARGS+="--disable-multilib "
+export CARGS+="--disable-symvers "
+export CARGS+="--disable-libsspc "
+export CARGS+="--disable-libssp "
+export CARGS+="--disable-static "
+export CARGS+="--disable-nls "
+
+# Configure source
 AR=ar LDFLAGS="-Wl,-rpath,/cgnutools/lib" \
-../configure \
-    --prefix=/cgnutools \
-    --build=${CMLFS_HOST} \
-    --host=${CMLFS_HOST} \
-    --target=${CMLFS_TARGET} \
-    --disable-multilib \
-    --disable-static \
-    --with-sysroot=/cgnutools \
-    --disable-nls \
-    --enable-shared \
-    --enable-languages=c,c++ \
-    --enable-threads=posix \
-    --enable-clocale=generic \
-    --enable-libstdcxx-time \
-    --enable-fully-dynamic-string \
-    --disable-symvers \
-    --disable-libsanitizer \
-    --disable-lto-plugin \
-    --disable-libssp 
+../configure ${CARGS}
 
 # Build
 make AS_FOR_TARGET="${CMLFS_TARGET}-as" \
