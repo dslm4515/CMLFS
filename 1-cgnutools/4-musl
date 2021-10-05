@@ -16,8 +16,8 @@ mkdir -pv /cgnutools/usr
 ln -sv ../include /cgnutools/usr/include
 
 # Fix a symlink
-rm -v /cgnutools/lib/ld-musl-x86_64.so.1
-ln -sv libc.so /cgnutools/lib/ld-musl-x86_64.so.1
+rm -v /cgnutools/lib/ld-musl-$(uname -m).so.1
+ln -sv libc.so /cgnutools/lib/ld-musl-$(uname -m).so.1
 
 # Create a symlink that can be used to print
 # the required shared objects of a program or 
@@ -26,7 +26,7 @@ mkdir /cgnutools/etc
 ln -sv ../lib/libc.so /cgnutools/bin/ldd
 
 # Configure the dynamic linker
-cat > /cgnutools/etc/ld-musl-$CMLFS_CPU.path << "EOF"
+cat > /cgnutools/etc/ld-musl-$(uname -m).path << "EOF"
 /cgnutools/lib
 /cgnutools/${CMLFS_TARGET}/lib
 /usr/lib64
