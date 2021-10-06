@@ -23,22 +23,24 @@ mv libcxx-12.0.0.src libcxx
 
 cd ${LLVMSRC}/projects/libunwind
 
+# Set configure flags
+export  CARGS="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CARGS+="-DLIBUNWIND_ENABLE_SHARED=ON "
+export CARGS+="-DLIBUNWIND_USE_COMPILER_RT=ON "
+export CARGS+="-DCMAKE_C_FLAGS=-fPIC " 
+export CARGS+="-DCMAKE_CXX_FLAGS=-fPIC "
+export CARGS+="-DCMAKE_AR=/cgnutools/bin/llvm-ar " 
+export CARGS+="-DCMAKE_LINKER=/cgnutools/bin/ld.lld " 
+export CARGS+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "  
+export CARGS+="-DCMAKE_OBJCOPY=/cgnutools/bin/llvm-objcopy " 
+export CARGS+="-DCMAKE_OBJDUMP=/cgnutools/bin/llvm-objdump " 
+export CARGS+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib " 
+export CARGS+="-DCMAKE_READELF="/cgnutools/bin/llvm-readelf " 
+export CARGS+="-DCMAKE_STRIP=/cgnutools/bin/llvm-strip " 
+export CARGS+="-DLLVM_PATH=${LLVMSRC} " 
+      
 # Configure
-cmake -B build \
-      -DCMAKE_INSTALL_PREFIX=/llvmtools \
-      -DLIBUNWIND_ENABLE_SHARED=ON \
-      -DLIBUNWIND_USE_COMPILER_RT=ON \
-      -DCMAKE_C_FLAGS="-fPIC" \
-      -DCMAKE_CXX_FLAGS="-fPIC" \
-      -DCMAKE_AR="/cgnutools/bin/llvm-ar" \
-      -DCMAKE_LINKER="/cgnutools/bin/ld.lld" \
-      -DCMAKE_NM="/cgnutools/bin/llvm-nm" \
-      -DCMAKE_OBJCOPY="/cgnutools/bin/llvm-objcopy" \
-      -DCMAKE_OBJDUMP="/cgnutools/bin/llvm-objdump" \
-      -DCMAKE_RANLIB="/cgnutools/bin/llvm-ranlib" \
-      -DCMAKE_READELF="/cgnutools/bin/llvm-readelf" \
-      -DCMAKE_STRIP="/cgnutools/bin/llvm-strip" \
-      -DLLVM_PATH=${LLVMSRC} 
+cmake -B build ${CARGS}
 
 # Build
 make -C build 
