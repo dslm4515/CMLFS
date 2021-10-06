@@ -100,6 +100,7 @@ export  CONFIG_PATHS="-DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include"
 export CONFIG_PATHS+="-DBacktrace_INCLUDE_DIR=/llvmtools/include " 
 export CONFIG_PATHS+="-DBacktrace_LIBRARY=/llvmtools/lib/libexecinfo.so " 
 export CONFIG_PATHS+="-DICONV_LIBRARY_PATH=/llvmtools/lib/libc.so " 
+export CONFIG_PATHS+="-DBacktrace_INCLUDE_DIR=/llvmtools/include "
 
 # Now configure the source
 CC=x86_64-cmlfs-linux-musl-clang    \    
