@@ -35,7 +35,7 @@ export CARGS+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "
 export CARGS+="-DCMAKE_OBJCOPY=/cgnutools/bin/llvm-objcopy " 
 export CARGS+="-DCMAKE_OBJDUMP=/cgnutools/bin/llvm-objdump " 
 export CARGS+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib " 
-export CARGS+="-DCMAKE_READELF="/cgnutools/bin/llvm-readelf " 
+export CARGS+="-DCMAKE_READELF=/cgnutools/bin/llvm-readelf " 
 export CARGS+="-DCMAKE_STRIP=/cgnutools/bin/llvm-strip " 
 export CARGS+="-DLLVM_PATH=${LLVMSRC} " 
       
