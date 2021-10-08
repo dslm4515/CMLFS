@@ -1,11 +1,14 @@
-# Toolchain: Nano 5.1
-# Source: https://www.nano-editor.org/dist/v5/nano-5.1.tar.xz 
+# Toolchain: Nano 5.9
+# Source: https://www.nano-editor.org/dist/v5/nano-5.9.tar.xz
 # Build and install as mlfs
 # Optional package: Text editor for convenience or trouble shooting
 
 # Set flags, so ncurses header can be found in /tools/include
-export LDFLAGS="-L/llvmtools/lib"
+export LDFLAGS="-L/llvmtools/lib -lncursesw "
 export CPPFLAGS="-I/llvmtools/include"
+
+# Build will fail since libtinfo cannot be found. Link it
+ln -sv libncursesw.so.6.2 /llvmtools/lib/libtinfow.so
 
 # Configure source with clang
 CC=x86_64-pc-linux-musl-clang \
