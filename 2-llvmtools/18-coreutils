@@ -1,5 +1,5 @@
-# Toolchain: Coreutils 8.32
-# Source: http://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz
+# Toolchain: Coreutils 9.0
+# Source: https://ftp.gnu.org/gnu/coreutils/coreutils-9.0.tar.xz
 # Build and install as cmlfs
 
 # Re-create configure script
