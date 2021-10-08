@@ -1,5 +1,5 @@
-# Toolchain: Texinfo 6.7
-# Source: http://ftp.gnu.org/gnu/texinfo/texinfo-6.7.tar.xz
+# Toolchain: Texinfo 6.8
+# Source: https://ftp.gnu.org/gnu/texinfo/texinfo-6.8.tar.xz
 # Build and install as cmlfs
 
 # Configure source with clang
