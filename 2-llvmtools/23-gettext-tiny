@@ -13,4 +13,4 @@ STRIP=llvm-strip \
 make LIBINTL=MUSL prefix=/llvmtools
 
 # Install the msgfmt, msgmerge and xgettext programs to toolchain
-cp -v msgfmt msgmerge xgettext /llvmtools/bin
+cp -v autopoint msgfmt msgmerge xgettext /llvmtools/bin
