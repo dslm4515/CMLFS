@@ -3,6 +3,33 @@
 
 sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
 
+# Set build flags
+export  CARGS="--prefix=/llvmtools "
+export CARGS+="--mandir=/share/man "
+export CARGS+="--docdir=/share/doc/cmake-3.21.3 "
+
+# Do not use host's libraries. use built-in
+export CARGS+="--no-system-jsoncpp "
+export CARGS+="--no-system-librhash "
+export CARGS+="--no-system-curl "
+export CARGS+="--no-system-libarchive "
+export CARGS+="--no-system-nghttp2 "
+export CARGS+="--no-system-expat "
+export CARGS+="--no-system-zlib "
+export CARGS+="--no-system-zstd "
+export CARGS+="--no-system-libuv "
+
+# Set cmake flags
+export  CMARGS="-DCMAKE_USE_OPENSSL=OFF "
+export CMARGS+="-DBUILD_CursesDialog=ON "
+
+# Force build to use ncurses built in llvmtools
+export CMARGS+="-DCURSES_CURSES_LIBRARY=/llvmtools/lib/libcursesw.so "
+export CMARGS+="-DCURSES_EXTRA_LIBRARY=/llvmtools/lib/libtinfow.so "
+export CMARGS+="-DCURSES_FORM_LIBRARY=/llvmtools/lib/libformw.so "
+export CMARGS+="-DCURSES_INCLUDE_PATH=/llvmtools/include "
+export CMARGS+="-DCURSES_NCURSES_LIBRARY=/llvmtools/lib/libncursesw.so "
+
 # Configure source with clang
 CC=x86_64-pc-linux-musl-clang \
 CXX=x86_64-pc-linux-musl-clang++ \
@@ -11,19 +38,7 @@ AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
-./bootstrap --prefix=/llvmtools \
-            --mandir=/share/man \
-            --docdir=/share/doc/cmake-3.20.4 \
-            --no-system-jsoncpp  \
-            --no-system-librhash \
-            --no-system-curl \
-            --no-system-libarchive \
-            --no-system-nghttp2 \
-            --no-system-expat \
-            --no-system-zlib \
-            --no-system-zstd \
-            --no-system-libuv \
-            -- -DCMAKE_USE_OPENSSL=OFF -DBUILD_CursesDialog=ON
+./bootstrap ${CARGS} -- ${CMARGS} 
 
 # Build and install to toolchain
 make && make install
