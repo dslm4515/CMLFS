@@ -26,7 +26,7 @@ mkdir /cgnutools/etc
 ln -sv ../lib/libc.so /cgnutools/bin/ldd
 
 # Configure the dynamic linker
-cat > /cgnutools/etc/ld-musl-$(uname -m).path << "EOF"
+cat > /cgnutools/etc/ld-musl-$(uname -m).path <<EOF
 /cgnutools/lib
 /cgnutools/${CMLFS_TARGET}/lib
 /usr/lib64
