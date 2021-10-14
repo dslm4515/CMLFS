@@ -1,5 +1,5 @@
-# Toolchain: Diffutils 3.7
-# Source: http://ftp.gnu.org/gnu/diffutils/diffutils-3.7.tar.xz
+# Toolchain: Diffutils 3.8
+# Source: https://ftp.gnu.org/gnu/diffutils/diffutils-3.8.tar.xz
 # Build and install as cmlfs
 
 # Configure source with clang

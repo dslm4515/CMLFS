@@ -10,7 +10,11 @@ gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
 mv -v mpc-1.2.1 mpc
 
 # Apply patches [from Alpine-linux]
-bash ../patches/gcc-10.3.1_git20210424-alpine/apply_patches_ct.sh
+bash ../patches/gcc-11.2.0-alpine/apply_patches_ct.sh
+
+# The target build is finding the host libstdc++'s <fenv.h>, fix it
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100017#c7
+patch -Np1 -i ../patches/gcc-mlfs-11.2.0/fix_fenv_header.patch
 
 # change the location of GCC's default dynamic linker to use the one installed in /llvmtools
 #
@@ -31,7 +35,33 @@ done
 # Configure in dedicated build directory
 mkdir -v build && cd build
 
+# Set build options:
+export  CARGS="--target=${CMLFS_TARGET} "
+export CARGS+="--build=${CMLFS_HOST} "
+export CARGS+="--host=${CMLFS_TARGET} "
+export CARGS+="--prefix=/llvmtools "
+export CARGS+="--with-local-prefix=/llvmtools "
+export CARGS+="--with-native-system-header-dir=/llvmtools/include "
+
+# Enable only C++ and C languages
+export CARGS+="--enable-languages=c,c++ "
+
+# Disable features not supported by Musl 
+export CARGS+="--disable-libsanitizer "
+export CARGS+="--disable-symvers "
+
+# Disable features not needed during chroot
+export CARGS+="--disable-libssp "
+export CARGS+="--disable-libvtv"
+export CARGS+="--disable-libitm "
+export CARGS+="--disable-libgomp "
+export CARGS+="--disable-multilib"
+export CARGS+="--disable-bootstrap "
+export CARGS+="--disable-libquadmath "
+export CARGS+="--disable-libstdcxx-pch "
+
 # GCC can only be compiled by GCC
+# Configure source
 CC="${CMLFS_TARGET}-gcc"    \
 CXX="${CMLFS_TARGET}-g++"   \
 AR="${CMLFS_TARGET}-ar"     \
@@ -42,25 +72,8 @@ STRIP="${CMLFS_TARGET}-strip"       \
 CC_FOR_BUILD="${CMLFS_TARGET}-gcc"  \
 CXX_FOR_BUILD="${CMLFS_TARGET}-g++" \
 CFLAGS='-g0 -O0' \
-CXXFLAGS='-g0 -O0' \
-../configure                                       \
-    --target=${CMLFS_TARGET}                        \
-    --build=${CMLFS_HOST}                           \
-    --host=${CMLFS_TARGET}                          \
-    --prefix=/llvmtools                             \
-    --with-local-prefix=/llvmtools                  \
-    --with-native-system-header-dir=/llvmtools/include \
-    --enable-languages=c,c++                       \
-    --disable-libstdcxx-pch                        \
-    --disable-multilib                             \
-    --disable-bootstrap                            \
-    --disable-libgomp                              \
-    --disable-libquadmath                          \
-    --disable-libssp                               \
-    --disable-libvtv                               \
-    --disable-symvers                              \
-    --disable-libitm                               \
-    --disable-libsanitizer
+CXXFLAGS=$CFLAGS \
+../configure $CARGS
 
 # Build - Set the PATHs for binaries and PATHs for libraries
 PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/bin \
@@ -73,10 +86,10 @@ make install
 # Re-create internal header for GCC installed in llvmtools/gnu since
 # the internal header that has just been installed is a partial, 
 # self-contained file and does not include the extended features of the system header
-cp -v /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h \
-      /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h.old
+cp -v /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/11.2.0/include-fixed/limits.h \
+      /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/11.2.0/include-fixed/limits.h.old
 cat ../gcc/limitx.h ../gcc/glimits.h ../gcc/limity.h > \
-    /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/10.3.1/include-fixed/limits.h
+    /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/11.2.0/include-fixed/limits.h
 
 # Make clang the primary compiler system
 for b in gcc cpp g++ c++
@@ -113,7 +126,7 @@ chmod -v +x /llvmtools/bin/set-gcc-mode
 
 # Test GCC portion of the toolchain
 echo 'int main(){}' > dummy.c &&
-/llvmtools/bin/cc dummy.c
+/llvmtools/bin/gcc.gnu dummy.c
 readelf -l a.out | grep ': /llvmtools'
 
 # Should output:

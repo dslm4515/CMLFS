@@ -1,5 +1,5 @@
-# Toolchain: Grep 3.6
-# Source: http://ftp.gnu.org/gnu/grep/grep-3.6.tar.xz
+# Toolchain: Grep 3.7
+# Source: https://ftp.gnu.org/gnu/grep/grep-3.7.tar.xz
 # Build and install as cmlfs
 
 # Configure source with clang

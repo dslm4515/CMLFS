@@ -1,5 +1,5 @@
-# Toolchain: M4-1.4.18
-# Source: http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz
+# Toolchain: M4-1.4.19
+# Source: https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
 # Build and install as cmlfs
 
 # Configure source with clang
