@@ -22,8 +22,8 @@ LD=ld.lld \
 STRIP=llvm-strip \
 READELF=llvm-readelf \
 OBJDUMP=llvm-objdump \
-./configure --target=${TARGET_TRUPLE} \
-            --build=${TARGET_TRUPLE} \
+./configure --target=${TARGET_TUPLE} \
+            --build=${TARGET_TUPLE} \
             --prefix=/llvmtools
 
 # Build

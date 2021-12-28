@@ -10,13 +10,13 @@ chroot "$CMLFS" /llvmtools/bin/env -i \
 
 # Establish variables for build
 case $(uname -m) in
-     i686)    export TRUPLE="i686-pc-linux-musl"       ;;
-     x86_64)  export TRUPLE="x86_64-pc-linux-musl"     ;;
-     aarch64) export TRUPLE="aarch64-linux-musleabihf" ;;
-     armv7*)  export TRUPLE="armv7l-linux-musleabihf"  ;;
-     armv6*)  export TRUPLE="armv6l-linux-musleabihf"  ;;
+     i686)    export TUPLE="i686-pc-linux-musl"       ;;
+     x86_64)  export TUPLE="x86_64-pc-linux-musl"     ;;
+     aarch64) export TUPLE="aarch64-linux-musleabihf" ;;
+     armv7*)  export TUPLE="armv7l-linux-musleabihf"  ;;
+     armv6*)  export TUPLE="armv6l-linux-musleabihf"  ;;
 esac
 
 # Use the configured clang until Musl is built
-export CC=${TRUPLE}-clang CXX=${TRUPLE}-clang++
+export CC=${TUPLE}-clang CXX=${TUPLE}-clang++
 

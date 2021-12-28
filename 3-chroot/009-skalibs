@@ -4,7 +4,7 @@
 
 # Configure source
 ./configure --prefix=/usr       \
-            --build=${TRUPLE}   \
+            --build=${TUPLE}   \
             --enable-static     \
             --enable-shared     \
             --libdir=/usr/lib

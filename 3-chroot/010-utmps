@@ -19,7 +19,7 @@ LD=ld.bfd \
             --with-dynlib=/lib   \
             --libexecdir="/lib/utmps" \
             --with-dynlib=/lib \
-            --build=${TRUPLE}
+            --build=${TUPLE}
 # Build and Install
 make
 make install

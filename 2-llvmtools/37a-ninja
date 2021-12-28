@@ -2,8 +2,8 @@
 # Source: https://github.com/ninja-build/ninja/archive/v1.10.2/ninja-1.10.2.tar.gz
 # Build and install as cmlfs
 
-# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TRUPLE}-clang
-export CXX=${TARGET_TRUPLE}-clang++
+# Set the environment to use stage1 clang & friends if not done already.export CC=${TARGET_TUPLE}-clang
+export CXX=${TARGET_TUPLE}-clang++
 export AR=llvm-ar
 export AS=llvm-as
 export RANLIB=llvm-ranlib

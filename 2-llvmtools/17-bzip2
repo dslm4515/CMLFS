@@ -11,11 +11,11 @@ sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
 sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
 
 # Prepare source with clang
-make -f Makefile-libbz2_so CC="${TARGET_TRUPLE}-clang" AR="llvm-ar" RANLIB="llvm-ranlib"
+make -f Makefile-libbz2_so CC="${TARGET_TUPLE}-clang" AR="llvm-ar" RANLIB="llvm-ranlib"
 make clean
 
 # Build with clang
-make CC="${TARGET_TRUPLE}-clang" AR="llvm-ar" RANLIB="llvm-ranlib"
+make CC="${TARGET_TUPLE}-clang" AR="llvm-ar" RANLIB="llvm-ranlib"
 
 # Install to tool chain
 make PREFIX=/llvmtools install

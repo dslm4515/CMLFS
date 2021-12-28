@@ -8,19 +8,19 @@
 # https://gcc.gnu.org/onlinedocs/gcc-9.2.0/gcc/x86-Options.html
 case $(uname -m) in
  x86_64) export ARCH="x86-64"
-         export TRUPLE="x86_64-linux-musl"
+         export TUPLE="x86_64-linux-musl"
          ;;
  i686)   export ARCH="i686"
-         export TRUPLE="i686-linux-musl"
+         export TUPLE="i686-linux-musl"
          ;;
  armv7l) export ARCH="armv7-a"
-         export TRUPLE="armv7l-linux-musleabihf"
+         export TUPLE="armv7l-linux-musleabihf"
          ;;
  armv6l) export ARCH="armv6"
-         export TRUPLE="armv6l-linux-musleabihf"
+         export TUPLE="armv6l-linux-musleabihf"
          ;;
  aarch64) export ARCH="armv8-a"
-          export TRUPLE="aarch64-linux-musleabihf"
+          export TUPLE="aarch64-linux-musleabihf"
          ;;
 esac
 
@@ -33,8 +33,8 @@ CC=clang CXX=clang++         \
             --includedir=/usr/include    \
             --disable-multi-os-directory \
             --with-pic --with-gcc-arch=$ARCH \
-            --build=$TRUPLE
-unset ARCH TRUPLE
+            --build=$TUPLE
+unset ARCH TUPLE
 
 # Build and install
 make && make install

@@ -5,19 +5,19 @@
 # **Installing GCC is optional as most packages can be built with clang.**
 
 case $(uname -m) in
-  x86_64) export TRUPLE="x86_64-linux-musl"
+  x86_64) export TUPLE="x86_64-linux-musl"
           export EXTRA_CONFIG=" --with-arch=x86-64"
           ;;
-  i686)   export TRUPLE="i686-linux-musl"
+  i686)   export TUPLE="i686-linux-musl"
           export EXTRA_CONFIG=" --with-arch=pentium3 --with-tune=pentium-m"
           ;;
-  armv7l) export TRUPLE="armv7l-linux-musleabihf"
+  armv7l) export TUPLE="armv7l-linux-musleabihf"
           export EXTRA_CONFIG=" --with-arch=armv7-a --with-tune=generic-armv7-a --with-fpu=vfpv3-d16 --with-float=hard --with-abi=aapcs-linux --with-mode=thumb"
           ;;
-  armv6l) export TRUPLE="armv6l-linux-musleabihf"
+  armv6l) export TUPLE="armv6l-linux-musleabihf"
           export EXTRA_CONFIG=" --with-arch=armv6zk --with-tune=arm1176jzf-s --with-fpu=vfp --with-float=hard --with-abi=aapcs-linux"
           ;;
-  aarch64) export TRUPLE="aarch64-linux-musleabihf"
+  aarch64) export TUPLE="aarch64-linux-musleabihf"
            export EXTRA_CONFIG=" --with-arch=armv8-a --with-abi=lp64 --enable-fix-cortex-a53-835769 --enable-fix-cortex-a53-843419"
            sed -i '/m64=/s/lib64/lib/' gcc/config/aarch64/t-aarch64-linux
           ;;
@@ -61,7 +61,7 @@ CC=gcc.gnu   \
 CXX=g++.gnu \
 SED=sed  libat_cv_have_ifunc=no       \
 ../configure --prefix=/usr            \
-             --build="${TRUPLE}"\
+             --build="${TUPLE}"\
              --with-system-zlib       \
              --with-isl \
              --with-linker-hash-style=gnu \

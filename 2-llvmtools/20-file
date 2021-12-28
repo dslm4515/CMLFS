@@ -11,8 +11,8 @@ AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
-./configure --build=${TARGET_TRUPLE} \
-            --host=${TARGET_TRUPLE}  \
+./configure --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE}  \
             --prefix=/llvmtools      \
             --disable-libseccomp
 
