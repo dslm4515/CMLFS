@@ -95,7 +95,7 @@ export LLVMSRC="/mnt/cmlfs/sources/llvm"
 EOF
 
 export CMLFS_TARGET="x86_64-cmlfs-linux-musl" \
-TARGET_TRUPLE="x86_64-pc-linux-musl" \
+TARGET_TUPLE="x86_64-pc-linux-musl" \
 	CMLFS_ARCH="x86" \
 	CMLFS_CPU="x86-64" \
 	CMLFS_HOST="$(echo $MACHTYPE | \
@@ -106,7 +106,7 @@ export CMLFS_HOST="${CMLFS_HOST}" \
 	CMLFS_TARGET="${CMLFS_TARGET}" \
 	CMLFS_ARCH="${CMLFS_ARCH}" \
 	CMLFS_CPU="${CMLFS_CPU}" \
-	TARGET_TRUPLE="${TARGET_TRUPLE}"
+	TARGET_TUPLE="${TARGET_TRUPLE}"
 EOF
 source ~/.bashrc
 
