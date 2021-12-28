@@ -13,8 +13,8 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 ./configure --prefix=/llvmtools \
-            --build=${TARGET_TRUPLE} \
-            --host=${TARGET_TRUPLE} \
+            --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE} \
             --with-shared   \
             --without-debug \
             --without-ada   \
