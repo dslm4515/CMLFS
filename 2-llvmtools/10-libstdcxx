@@ -13,7 +13,7 @@ export  CARGS="--target=${CMLFS_TARGET} "
 export CARGS+="--build=${CMLFS_HOST} "
 export CARGS+="--host=${CMLFS_TARGET} "
 export CARGS+="--prefix=/llvmtools "
-export CARGS+="--with-gxx-include-dir=/llvmtools/include/c++/11.2.0"
+export CARGS+="--with-gxx-include-dir=/llvmtools/include/c++/11.2.0 "
 
 # Disable features not needed in chroot
 export CARGS+="--disable-libstdcxx-threads "
