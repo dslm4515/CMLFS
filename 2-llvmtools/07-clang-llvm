@@ -134,7 +134,7 @@ cmake -DCMAKE_INSTALL_PREFIX="/llvmtools" -P cmake_install.cmake
 cp -v build/bin/clang-tblgen  /llvmtools/bin/
 
 # Remove the LLVM source as it will not be needed until chroot
-cd $CMLFS/source && \
+cd $CMLFS/sources && \
 rm -rf llvm
 
 # Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
