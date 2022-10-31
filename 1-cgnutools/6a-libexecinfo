@@ -8,7 +8,7 @@ patch -Np1 -i ../patches/libexecinfo-alpine/20-define-gnu-source.patch
 patch -Np1 -i ../patches/libexecinfo-alpine/30-linux-makefile.patch
 
 # Build with freshly built GCC
-cc=${CMLFS_TARGET}-gcc CFLAGS=" -fno-omit-frame-pointer" make
+CC=${CMLFS_TARGET}-gcc CFLAGS=" -fno-omit-frame-pointer" make
 
 # Install to cgnutools
 install -D -m755 -v execinfo.h           /cgnutools/include/execinfo.h     && \
