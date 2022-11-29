@@ -2,15 +2,15 @@
 # Build and install as cmlfs
 
 # Additional sources to add as GCC requires them 
-xz -cd ../pkgs/mpfr-4.1.0.tar.xz | tar -xf - 
-mv -v mpfr-4.1.0 mpfr
+xz -cd ../pkgs/mpfr-4.1.1.tar.xz | tar -xf - 
+mv -v mpfr-4.1.1 mpfr
 xz -cd ../pkgs/gmp-6.2.1.tar.xz | tar -xf - 
 mv -v gmp-6.2.1 gmp
 gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
 mv -v mpc-1.2.1 mpc
 
-# Apply patches [from Alpine-linux]
-bash ../patches/gcc-11.2.0-alpine/apply_patches_ct.sh
+# Apply patches [from Glaucus]
+patch -Np0 -i ../patches/glaucus/0001-pure64-for-x86-64.patch 
 
 # Configure in a dedicated build directory
 mkdir build && cd  build

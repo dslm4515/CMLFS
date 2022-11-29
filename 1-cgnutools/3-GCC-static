@@ -3,8 +3,8 @@
 
 # GCC now requires the GMP, MPFR and MPC packages to build.
 # Unpack them in-tree.
-xz -cd ../pkgs/mpfr-4.1.0.tar.xz | tar -xf -
-mv -v mpfr-4.1.0 mpfr
+xz -cd ../pkgs/mpfr-4.1.1.tar.xz | tar -xf -
+mv -v mpfr-4.1.1 mpfr
 xz -cd ../pkgs/gmp-6.2.1.tar.xz | tar -xf -
 mv -v gmp-6.2.1 gmp
 gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
