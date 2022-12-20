@@ -1,11 +1,14 @@
-# cgnutools: Stage0 LLVM Runtime Libraries ( with clang,compiler-rt,libcxx,libcxxabi,libunwind,lld)
+# cgnutools: Stage0 Clang ( with compiler-rt,libcxx,libcxxabi,libunwind,lld)
+#
 # Build as cmlfs
 #
-# NOTE: Unpack llvm-project-x.x.x.src.tar.xz not llvm-x.x.x.src.tar.xz
-
+# NOTES: Stage 0 Clang seems to work (can compile musl libc, ncurses, etc), yet when 
+# building stage 1 clang (in llvmools) CMake complains about Stage 0 clang lacking 
+# atomics OR cannot find kernel headers already installed in llvmtools.
+#
 # Rename for shorter paths:
-mv llvm-project-15.0.5.src llvm-rl 
-export LLVMSRC=${CMLFS}/sources/llvm-rl 
+mv llvm-project-15.0.5.src llvm
+export LLVMSRC=${CMLFS}/sources/llvm
 
 cd $LLVMSRC
 
@@ -35,36 +38,23 @@ rm -v test/tools/llvm-readobj/ELF/dependent-libraries.test test/Object/macho-inv
       test/CodeGen/RISCV/rv64zbp.ll
 sed -i "/OrcCAPITest.cpp/d" unittests/ExecutionEngine/Orc/CMakeLists.txt
 
-# If building Hexagon target, there is a known broken codegen 
-# for Hexagon target, reported upstream.
-# https://github.com/llvm/llvm-project/issues/48936
-#rm -v \
-#                test/CodeGen/Hexagon/csr-stubs-spill-threshold.ll \
-#                test/CodeGen/Hexagon/long-calls.ll \
-#                test/CodeGen/Hexagon/mlong-calls.ll \
-#                test/CodeGen/Hexagon/pic-regusage.ll \
-#                test/CodeGen/Hexagon/runtime-stkchk.ll \
-#                test/CodeGen/Hexagon/swp-memrefs-epilog.ll \
-#                test/CodeGen/Hexagon/vararg-formal.ll \
-#                test/tools/llvm-objcopy/MachO/universal-object.test \
-#                test/DebugInfo/X86/vla-multi.ll
-
 # Return to top-level
 cd ..
 
 # Apply patches for clang
 cd clang
 patch -Np1 -i ../../patches/llvm15-clang-alpine/10-add-musl-triples.patch
+patch -Np1 -i ../../patches/llvm15-clang-alpine/clang-003-as-needed.patch
 
 # Apply patches for compiler-rt 
-cd ../compiler-rt 
-patch -Np2 -i ../../patches/llvm15-compiler-rt-alpine/compiler-rt-sanitizer-ppc64-musl.patch 
-patch -Np2 -i ../../patches/llvm15-compiler-rt-alpine/compiler-rt-sanitizer-supported-arch.patch 
+cd ../compiler-rt
+patch -Np2 -i ../../patches/llvm15-compiler-rt-alpine/compiler-rt-sanitizer-ppc64-musl.patch
+patch -Np2 -i ../../patches/llvm15-compiler-rt-alpine/compiler-rt-sanitizer-supported-arch.patch
 
 # Apply patches for libcxx
 cd ../libcxx
-patch -Np2 -i ../../patches/llvm15-libcxx-alpine/libcxx-musl.patch 
-patch -Np2 -i ../../patches/llvm15-libcxx-alpine/libcxx-ppc.patch 
+patch -Np2 -i ../../patches/llvm15-libcxx-alpine/libcxx-musl.patch
+patch -Np2 -i ../../patches/llvm15-libcxx-alpine/libcxx-ppc.patch
 
 cd ..
 
@@ -73,131 +63,143 @@ CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo'
 CXXFLAGS=$CFLAGS
 export CFLAGS CXXFLAGS
 
-# Set the build options ..
-export  CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release "
-export CONFIG_OPTIONS+="-DBUILD_SHARED_LIBS=ON "
-export CONFIG_OPTIONS+="-DLLVM_ENABLE_LIBCXX=ON "
-export CONFIG_OPTIONS+="-DLLVM_TARGET_ARCH=X86 "
-export CONFIG_OPTIONS+="-DLLVM_TARGETS_TO_BUILD=X86 "
-export CONFIG_OPTIONS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
-export CONFIG_OPTIONS+="-DLLVM_ENABLE_EH=ON "
-export CONFIG_OPTIONS+="-DLLVM_ENABLE_RTTI=ON "
-export CONFIG_OPTIONS+="-DLLVM_BUILD_LLVM_DYLIB=ON "
-
 # Set the compiler and linker flags...
 export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
-export  CONFIG_TOOLS="-DCMAKE_C_COMPILER=${CMLFS_TARGET}-gcc "
-export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER=${CMLFS_TARGET}-g++ "
-export CONFIG_TOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
+export  CTOOLS="-DCMAKE_C_COMPILER=${CMLFS_TARGET}-gcc "
+export CTOOLS+="-DCMAKE_CXX_COMPILER=${CMLFS_TARGET}-g++ "
+export CTOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
 
-# Set the tuples...
-export  CONFIG_TUPLES="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CONFIG_TUPLES+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
-export CONFIG_TUPLES+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+# Set the tuples & build target ...
+export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
+export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl " 
+export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=X86 "
+export CTARG+="-DLLVM_TARGET_ARCH=X86 "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native "
 
-# Set the flags for Compiler-rt...
-export  CONFIG_CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF"
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_ORC=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+# Set the paths ...
+export  CPATHS="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CPATHS+="-DDEFAULT_SYSROOT=/cgnutools "
+export CPATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/cgnutools/lib "
+export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
 
-# Set the flags for clang:
-export  CONFIG_CLANG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
-export CONFIG_CLANG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
-export CONFIG_CLANG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
-export CONFIG_CLANG+="-DCLANG_ENABLE_STATIC_ANALYZER=OFF "
-export CONFIG_CLANG+="-DCLANG_ENABLE_ARCMT=OFF "
-export CONFIG_CLANG+="-DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF "
-export CONFIG_CLANG+="-DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF "
-export CONFIG_CLANG+="-DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF "
-export CONFIG_CLANG+="-DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
-export CONFIG_CLANG+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF "
-export CONFIG_CLANG+="-DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
+# Set bootstrap options..
+# https://discourse.llvm.org/t/bootstrapping-standalone-llvm-clang-libc-lld-toolchain/3069
+export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
+export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "       
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "    
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON " 
+export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
+export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
+# make sure bootstrap has atomics
+#export CBSTRAP+="-DBOOTSTRAP_COMPILER_RT_BUILD_STANDALONE_LIBATOMIC=ON "
+#export CBSTRAP+="-DBOOTSTRAP_COMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "    
 
-# Set the flags to prevent build static libraries for
-# libunwind, libcxxabi, and libcxx:
-export  CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=OFF "
-export  CONFIG_LIBCXXABI="-DLIBCXXABI_ENABLE_STATIC=OFF "
-export  CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=OFF "
+# Set the standard C++ library that clang will use to LLVM's libc++:
+export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
 
-# Set the options for libc++
-export CONFIG_LIBCXX+="-DLIBCXX_USE_COMPILER_RT=ON "
-export CONFIG_LIBCXX+="-DLIBCXX_EXTRA_SITE_DEFINES=ON "
-export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
-export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_LOCALIZATION=OFF "
-export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_VENDOR_AVAILABILITY_ANNOTATIONS=ON "
-export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF "
+# Set the runtime library that clang will use to compiler-rt:
+export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
 
-# Set the options for libc++abi
-export CONFIG_LIBCXXABI+="-DLIBCXXABI_ENABLE_FORGIVING_DYNAMIC_CAST=ON "
-export CONFIG_LIBCXXABI+="-DLIBCXXABI_USE_COMPILER_RT=ON "
-export CONFIG_LIBCXXABI+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+# Set libc++abi & libc++ to use compiler-rt instead of gcc's runtime:
+export COPTS+="-DLIBCXX_USE_COMPILER_RT=ON " 
+export COPTS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
 
-# Set the options for libunwind
-export CONFIG_LIBUNWIND+="-DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON "
+# Set libc++abi to use libunwind to avoid dependace on GCC:
+export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
 
-# Set paths...
-export  CONFIG_PATHS="-DCMAKE_INSTALL_PREFIX=/cgnutools "
-export CONFIG_PATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
-export CONFIG_PATHS+="-DDEFAULT_SYSROOT=/cgnutools "
-export CONFIG_PATHS+="-DBacktrace_LIBRARY=/cgnutools/lib/libexecinfo.so "
-#export CONFIG_PATHS+="-DICONV_LIBRARY_PATH=/cgnutools/lib/libc.so"
+# Enable Exception Handling:
+export COPTS+="-DLLVM_ENABLE_EH=ON "
 
-# Turn off unwanted features, docs and tests
-export  BUILD_OFF="-DLLVM_BUILD_TESTS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_GO_TESTS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_TESTS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_DOCS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_OCAMLDOC=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_BACKTRACES=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_LIBEDIT=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_LIBXML2=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_LIBPFM=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_TERMINFO=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_ZLIB=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_Z3_SOLVER=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_CRASH_OVERRIDES=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_ZSTD=OFF "
-export BUILD_OFF+="-DLLVM_APPEND_VC_REV=OFF "
-export BUILD_OFF+="-DLIBCXX_INCLUDE_BENCHMARKS=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_XCODE_TOOLCHAIN_BUILD=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_LLVM_XRAY_BUILD=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_LLVM_MICROSOFT_DEMANGLE_FUZZER_BUILD=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_LLVM_ITANIUM_DEMANGLE_FUZZER_BUILD=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_LLVM_GO_BUILD=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_BUGPOINT_PASSES_BUILD=OFF "
-export BUILD_OFF+="-DLLVM_TOOL_BUGPOINT_BUILD=OFF "
+# Exception handling requires Runtime Type Info
+export COPTS+="-DLLVM_ENABLE_RTTI=ON "
 
-# Configure source
+# Stage 1 clang's compiler-rt will require new delete definitions in libc++
+export COPTS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+
+# Enable atomics to avoid using atomics from GCC:
+export COPTS+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF "
+export COPTS+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
+
+# Turn off features ...
+export  BOFF="-DLLVM_ENABLE_LIBXML2=OFF  -DLIBCXX_ENABLE_LOCALIZATION=OFF "
+export BOFF+="-DLLVM_ENABLE_ZLIB=OFF     -DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
+export BOFF+="-DLLVM_ENABLE_ZSTD=OFF     -DLIBUNWIND_INCLUDE_TESTS=OFF "
+export BOFF+="-DLLVM_ENABLE_LIBEDIT=OFF  -DLIBUNWIND_INCLUDE_DOCS=OFF "
+
+export BOFF+="-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF "
+
+# Turn off features that cause compiler-rt to NOT reference backtrace symbols from libexecinfo
+export BOFF+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_ORC=OFF "
+
 cmake -B build -G Ninja -Wno-dev -S llvm  \
-      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}"    \
-      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
-      ${CONFIG_TOOLS} ${CONFIG_TUPLES} \
-      ${CONFIG_CRT} ${CONFIG_CLANG} ${CONFIG_OPTIONS} \
-      ${CONFIG_LIBUNWIND} ${CONFIG_LIBCXXABI} \
-      ${CONFIG_LIBCXX} ${CONFIG_PATHS} ${BUILD_OFF}  \
-      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld;libunwind" \
-      -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0" 
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+  -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
+  -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
+  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DLIBUNWIND_INSTALL_HEADERS=ON 
 
-# Compile
-ninja -C build cxx
-ninja -C build
+# Compile only what we need for a stage 0 clang
+#ninja -C build builtins #164 targets
+#ninja -C build unwind  #19
+#ninja -C build cxxabi  #829 
+#ninja -C build cxx #79
+#ninja -C build compiler-rt # 598
+#ninja -C build lld #1652 
+#ninja -C build libclang #798
+#ninja -C build clang #288
 
-# Install to /cgnutools
-ninja -C build install
+for t in builtins unwind cxxabi cxx compiler-rt lld libclang clang ;
+do
+  ninja -C build $t
+done
 
-# Clean up
-unset CFLAGS CXXFLAGS CONFIG_TOOLS CONFIG_TUPLES
-unset CONFIG_CRT CONFIG_CLANG CONFIG_OPTIONS 
-unset CONFIG_LIBUNWIND CONFIG_LIBCXXABI CONFIG_LIBCXX
-unset CONFIG_PATHS BUILD_OFF LLVMSRC
-rm -rf build
+# Compile LLVM binutils(binary utilities)
+for b in addr2line ar as config cxxdump diff link lipo \
+         lto lto2 nm objcopy objdump ranlib rc readelf \
+         size split strings strip tblgen ;
+do
+  ninja -C build llvm-$b
+done
 
-# Source tree will be used later. Save time by not removing
+# Install only what we built to /cgnutools
+#ninja -C build install-builtins #............... libclang_rt.builtins.a
+#ninja -C build install-crt #.................... clang_rt.crtbegin.o;clang_rt.crtbend.o
+#ninja -C build install-unwind #................. /cgnutools/lib/libunwind.so.1.0 & /cgnutools/include/libunwind.h
+#ninja -C build install-cxxabi #................. /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.so.1.0
+#ninja -C build install-cxxabi-headers #......... /cgnutools/include/c++/v1/__cxxabi_config.h;/cgnutools/include/c++/v1/cxxabi_config.h
+#ninja -C build install-cxx #.................... /cgnutools/lib/x86_64-pc-linux-musl/libc++.so.1.0
+#ninja -C build install-cxx-headers # ........... /cgnutools/include/c++/v1;/cgnutools/include/x86_64-pc-linux-musl/c++/v1
+#ninja -C build install-compiler-rt # ........... /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/*
+#ninja -C build install-lld # ................... lld-link;ld.lld;ld64.lld;wasm-ld
+#ninja -C build install-libclang # .............. /cgnutools/lib/libclang.so.15.0.5
+#ninja -C build install-libclang-headers #....... /cgnutools/include/clang-c
+#ninja -C build install-clang # ................. /cgnutools/bin/{clang,clang-15,clang++,clang-cl,clang-cpp}
+#ninja -C build install-x86-resource-headers #..... /cgnutools/lib/clang/15.0.5/include/*
+#ninja -C build install-utility-resource-headers #../cgnutools/lib/clang/15.0.5/include/mm_malloc.h
+#ninja -C build install-ve-resource-headers #......./cgnutools/lib/clang/15.0.5/include/velintrin*
+#ninja -C build install-compiler-rt-headers #......./cgnutools/lib/clang/15.0.5/include/sanitizer/*
+#ninja -C build install-clang-resource-headers #..../cgnutools/lib/clang/15.0.5/include/builtins.h
+#ninja -C build install-clang-headers #............./cgnutools/include/clang/AST
+
+for t in butiltins crt unwind cxxabi cxx compiler-rt lld libclang libclang-headers clang \
+         x86-resource-headers utility-resource-headers ve-resource-headers \
+         compiler-rt-headers clang-resource-headers clang-headers ;
+do
+  ninja -C build install-$t
+done
+
+# Install LLVM binutils:
+for b in addr2line ar as config cxxdump diff link lipo \
+         lto lto2 nm objcopy objdump ranlib rc readelf \
+         size split strings strip tblgen ;
+do
+  ninja -C build install-llvm-$b
+done
+
+unset CC CXX CFLAGS CXXFLAGS CTOOLS CTARG CPATHS CBSTRAP COPTS BOFF LINKERFLAGS
