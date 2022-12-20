@@ -1,192 +1,175 @@
-# llvmtools: LLVM+clang
-# Build and install as cmlfs
+# cgnutools: Stage1 Clang ( with compiler-rt, lld)
+#
+# Build as cmlfs
+#
 
-cd ${LLVMSRC}
-# make sure compiler-rt are unpacked in ${{LLVMSRC}/projects
-# and clang & lld in ${LLVMSRC}/tools. No need to unpack libunwind,
-# libcxxabi and libcxxabi as all 3 are installed in /llvmtools
-rm -rf projects/{libunwind,libcxx,libcxxabi}
-tar xf ../pkgs/compiler-rt-12.0.0.src.tar.xz 
-mv compiler-rt-12.0.0.src projects/compiler-rt
-tar xf ../pkgs/clang-12.0.0.src.tar.xz 
-tar xf ../pkgs/lld-12.0.0.src.tar.xz
-mv clang-12.0.0.src tools/clang
-mv lld-12.0.0.src   tools/lld
+# Rename for shorter paths:
+mv llvm-project-15.0.5.src llvm
+export LLVMSRC=${CMLFS}/sources/llvm
 
-# Apply patches from void linux
-cd ${LLVMSRC}/projects/compiler-rt
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-aarch64-ucontext.patch
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-sanitizer-ppc64-musl.patch
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-size_t.patch
-patch -Np1 -i ../../../patches/llvm12-compiler-rt-void/compiler-rt-xray-ppc64-musl.patch
-cd ${LLVMSRC}/tools/clang
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-001-fix-unwind-chain-inclusion.patch
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-002-add-musl-triples.patch
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-003-ppc64-dynamic-linker-path.patch
-patch -Np1 -i ../../../patches/llvm12-clang-void/clang-004-ppc64-musl-elfv2.patch
-cd ${LLVMSRC}
-patch  -Np1 -i ../patches/llvm12-void/llvm-001-musl.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-002-musl-ppc64-elfv2.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-003-ppc-secureplt.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-004-override-opt.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-005-ppc-bigpic.patch
-patch  -Np1 -i ../patches/llvm12-void/llvm-006-aarch64-mf_exec.patch
+cd $LLVMSRC
 
-# Disable sanitizers for musl systems, per Void Linux... fixes early build failure
-sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' projects/compiler-rt/cmake/config-ix.cmake
+# Apply patches for main LLVM source ... from alpine linux:
+patch -Np1 -i ../patches/llvm15-alpine/0001-Disable-dynamic-lib-tests-for-musl-s-dlclose-is-noop.patch
+patch -Np1 -i ../patches/llvm15-alpine/fix-memory-mf_exec-on-aarch64.patch
+patch -Np1 -i ../patches/llvm15-alpine/install-prefix.patch
+patch -Np1 -i ../patches/llvm15-alpine/llvm-stack-size.patch
 
-# Fix missing header for lld, https://bugs.llvm.org/show_bug.cgi?id=49228
-tar xf ../pkgs/libunwind-12.0.0.src.tar.xz libunwind-12.0.0.src/include/mach-o/compact_unwind_encoding.h
-mv libunwind-12.0.0.src/include/mach-o tools/lld/include/
-rm -rf libunwind-12.0.0.src/
+# Known broken test on musl
+cd llvm
+rm -v test/CodeGen/AArch64/wineh4.mir
+# https://github.com/llvm/llvm-project/issues/47657
+rm -v test/ExecutionEngine/Interpreter/intrinsics.ll
+
+# If builing on x86, remove tests:
+rm -v test/Object/macho-invalid.test test/tools/llvm-size/radix.test unittests/Support/JSONTest.cpp
+sed -i "/JSONTest.cpp/d" unittests/Support/CMakeLists.txt
+
+# If building on arm*, remove tests:
+rm -v test/tools/llvm-readobj/ELF/dependent-libraries.test test/Object/macho-invalid.test \
+      test/tools/llvm-size/radix.test test/tools/gold/X86/split-dwarf.ll \
+      test/ExecutionEngine/frem.ll test/tools/llvm-dwarfdump/X86/prettyprint_types.s \
+      test/tools/llvm-dwarfdump/X86/simplified-template-names.s \
+      unittests/ExecutionEngine/Orc/OrcCAPITest.cpp \
+      test/CodeGen/RISCV/rv32zbp.ll \
+      test/CodeGen/RISCV/rv64zbp.ll
+sed -i "/OrcCAPITest.cpp/d" unittests/ExecutionEngine/Orc/CMakeLists.txt
+
+# Return to top-level
+cd ..
+
+# Apply patches for clang
+cd clang
+patch -Np1 -i ../../patches/llvm15-clang-alpine/10-add-musl-triples.patch
+patch -Np1 -i ../../patches/llvm15-clang-alpine/clang-003-as-needed.patch
+
+# Apply patches for compiler-rt 
+cd ../compiler-rt
+patch -Np2 -i ../../patches/llvm15-compiler-rt-alpine/compiler-rt-sanitizer-ppc64-musl.patch
+patch -Np2 -i ../../patches/llvm15-compiler-rt-alpine/compiler-rt-sanitizer-supported-arch.patch
+
+# Apply patches for libcxx
+cd ../libcxx
+patch -Np2 -i ../../patches/llvm15-libcxx-alpine/libcxx-musl.patch
+patch -Np2 -i ../../patches/llvm15-libcxx-alpine/libcxx-ppc.patch
+
+cd ..
 
 # Set flags to greatly reduce debugging symbols
-export CFLAGS=" -g -g1"
-export CXXFLAGS=" -g -g1" 
+#CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo'
+CFLAGS="-g -g1  "
+CXXFLAGS=$CFLAGS
+export CFLAGS CXXFLAGS
 
-# Update host/target triple detection
-cp -v ../files/config.guess-musl cmake/config.guess
+# Set the compiler and linker flags...
+export LINKERFLAGS="-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1"
+export  CTOOLS="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-clang "
+export CTOOLS+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-clang++ "
+export CTOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
 
-# Remember to use the configured stage0 clang.
-# Make sure to use LLVM's binary tools from cgnutools.
-export  CONFIG_TOOLS="-DCMAKE_CXX_COMPILER_AR=/cgnutools/bin/llvm-ar " 
-export CONFIG_TOOLS+="-DCMAKE_C_COMPILER_AR=/cgnutools/bin/llvm-ar "   
-export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER_RANLIB=/cgnutools/bin/llvm-ranlib " 
-export CONFIG_TOOLS+="-DCMAKE_C_COMPILER_RANLIB=/cgnutools/bin/llvm-ranlib "   
-export CONFIG_TOOLS+="-DCMAKE_LINKER=/cgnutools/bin/ld.lld " 
-export CONFIG_TOOLS+="-DCMAKE_NM=/cgnutools/bin/llvm-nm " 
-export CONFIG_TOOLS+="-DCMAKE_OBJCOPY=/cgnutools/bin/llvm-objcopy " 
-export CONFIG_TOOLS+="-DCMAKE_READELF=/cgnutools/bin/llvm-readelf " 
-export CONFIG_TOOLS+="-DCMAKE_STRIP=/cgnutools/bin/llvm-strip " 
+# Set the tuples & build target ...
+export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=X86 "
+export CTARG+="-DLLVM_TARGET_ARCH=X86 "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native "
 
-# Set the truples...
-export  CONFIG_TUPLES="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
-export CONFIG_TUPLES+="-DLLVM_HOST_TRIPLE=x86_64-cmlfs-linux-musl " 
-export CONFIG_TUPLES+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
+# Set the paths ...
+export  CPATHS="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CPATHS+="-DDEFAULT_SYSROOT=/llvmtools "
+export CPATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/llvmtools/lib "
+export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include "
 
-# Set the flags for Compiler-rt...
-export  CONFIG_CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+# Set bootstrap options..
+export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
+export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "       
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "    
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON " 
+export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
+export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "    
 
-# Set the flags for clang:
-export  CONFIG_CLANG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
-export CONFIG_CLANG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
-export CONFIG_CLANG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
-export CONFIG_CLANG+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld " 
+# Set the standard C++ library that clang will use to LLVM's libc++:
+export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
 
-# Turn off unwanted features, docs and tests
-export  BUILD_OFF="-DLLVM_BUILD_TESTS=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_LIBEDIT=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_LIBXML2=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_GO_TESTS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_TESTS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_DOCS=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
-export BUILD_OFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_ZLIB=OFF "
+# Set the runtime library that clang will use to compiler-rt:
+export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
 
-# Turn on features for LLVM...
-export  CONFIG_LLVM="-DLLVM_LINK_LLVM_DYLIB=ON "
-export CONFIG_LLVM+="-DLLVM_BUILD_LLVM_DYLIB=ON "
-export CONFIG_LLVM+="-DLLVM_ENABLE_LIBCXX=ON "
-export CONFIG_LLVM+="-DLLVM_ENABLE_LLD=ON "
-export CONFIG_LLVM+="-DLLVM_ENABLE_RTTI=ON "
+# Set libc++abi & libc++ to use compiler-rt instead of gcc's runtime:
+export COPTS+="-DLIBCXX_USE_COMPILER_RT=ON " # YES--OFF?
+export COPTS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
 
-# Set paths...
-export  CONFIG_PATHS="-DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include" 
-export CONFIG_PATHS+="-DBacktrace_INCLUDE_DIR=/llvmtools/include " 
-export CONFIG_PATHS+="-DBacktrace_LIBRARY=/llvmtools/lib/libexecinfo.so " 
-export CONFIG_PATHS+="-DICONV_LIBRARY_PATH=/llvmtools/lib/libc.so " 
-export CONFIG_PATHS+="-DBacktrace_INCLUDE_DIR=/llvmtools/include "
-export CONFIG_PATHS+="-DCOMPILER_RT_TERMINFO_LIB=/llvmtools/lib/libncursesw.so.6.2 "
-export CONFIG_PATHS+="-DTERMINFO_LIB=/llvmtools/lib/libncursesw.so.6.2 "
+# Set libc++abi to use libunwind to avoid dependence on GCC:
+export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON " # YES--OFF?
 
-# Now configure the source
-CC=x86_64-cmlfs-linux-musl-clang    \    
-CXX=x86_64-cmlfs-linux-musl-clang++ \ 
-cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release          \
-    -DCMAKE_INSTALL_PREFIX="/llvmtools" \
-    -DLLVM_TARGET_ARCH="X86"            \
-    -DLLVM_TARGETS_TO_BUILD="X86"       \
-    -DDEFAULT_SYSROOT="/llvmtools"      \
-    ${CONFIG_TOOLS} ${CONFIG_TUPLES}   \
-    ${CONFIG_CLANG} ${CONFIG_CRT}       \
-    ${CONFIG_LLVM}  ${CONFIG_PATHS}     \
-    ${BUILD_OFF}
+# Enable Exception Handling:
+export COPTS+="-DLLVM_ENABLE_EH=ON "
 
-# Compile 
-make -C build
+# Exception handling requires Runtime Type Info
+export COPTS+="-DLLVM_ENABLE_RTTI=ON "
 
-# Install
-cd build && \
-cmake -DCMAKE_INSTALL_PREFIX="/llvmtools" -P cmake_install.cmake
+# Stage 1 clang's compiler-rt will require new delete definitions in libc++
+export COPTS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON"
 
-# Some binaries were not installed
-#for b in as readobj tblgen
-#do
-#   cp -v build/llvm-$b /llvmtools/bin/
-#done
-#ln -sv llvm-readobj /llvmtools/bin/llvm-readelf
-cp -v build/bin/clang-tblgen  /llvmtools/bin/
+# Turn off features ...
+export  BOFF="-DLLVM_ENABLE_LIBXML2=OFF  -DLIBCXX_ENABLE_LOCALIZATION=OFF "
+export BOFF+="-DLLVM_ENABLE_ZLIB=OFF     -DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
+export BOFF+="-DLLVM_ENABLE_ZSTD=OFF     -DLIBUNWIND_INCLUDE_TESTS=OFF "
+export BOFF+="-DLLVM_ENABLE_LIBEDIT=OFF  -DLIBUNWIND_INCLUDE_DOCS=OFF "
 
-# Remove the LLVM source as it will not be needed until chroot
-cd $CMLFS/sources && \
-rm -rf llvm
+export BOFF+="-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF "
 
-# Configure stage1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
-# of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
-# file is modified to use the  dynamic linker in /tools instead of host's /lib
-ln -sv clang-12   /llvmtools/bin/x86_64-pc-linux-musl-clang
-ln -sv clang-12   /llvmtools/bin/x86_64-pc-linux-musl-clang++
-cat > /llvmtools/bin/x86_64-pc-linux-musl.cfg << "EOF"
--Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
-EOF
+# Turn off features that cause compiler-rt to NOT reference backtrace symbols from libexecinfo
+export BOFF+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_ORC=OFF " #-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
 
-# Unset these flags
-unset CFLAGS CXXFLAGS
+# Compile source ... with installed runtimes in llvmtools?
+cmake -B build -G Ninja -Wno-dev -S llvm  \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_PROJECTS="lld;clang" \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind" \
+  -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
+  -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
+  ${CTOOLS} ${CTARG} ${CPATHS} ${BOFF} ${COPTS} -DCLANG_DEFAULT_UNWINDLIB=libunwind -DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
+  -DLIBUNWIND_INSTALL_HEADERS=ON -DLIBUNWIND_USE_COMPILER_RT=ON -DCOMPILER_RT_CXX_LIBRARY=libcxx -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON
 
-# Create script to switch system between LLVM and binutils
-# since some packages are hard coded.
-cat > /llvmtools/bin/set-llvm-bin-mode << "EOF"
-#! /bin/bash
-echo "[ 1 / 2 ] Clearing links..."  && \
-for b in ar as nm objcopy objdump size strings addr2line ranlib readelf strip
-do
-  rm -v /llvmtools/bin/$b
-done                      && \
-echo "[ 2 / 2 ] Setting LLVM as system binary tools..." && \
-for b in ar as nm objcopy objdump size strings
-do
-  ln -sv llvm-$b /llvmtools/bin/$b
-done                                          && \
-ln -sv llvm-symbolizer /llvmtools/bin/addr2line     && \
-ln -sv llvm-ar         /llvmtools/bin/ranlib        && \
-ln -sv llvm-readobj    /llvmtools/bin/readelf       && \
-ln -sv llvm-objcopy    /llvmtools/bin/strip         && \
-echo "[ info  ] LLVM Binary tools set as system default"
-EOF
+# Manually-specified variables were not used by the project:
+#    LIBCXXABI_USE_COMPILER_RT
+#    LIBCXXABI_USE_LLVM_UNWINDER
+#    LIBCXX_ENABLE_LOCALIZATION
+#    LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS
+#    LIBCXX_USE_COMPILER_RT
 
-# Some packages are hard coded to use GCC . Create script 
-# to set clang/LLVM as system compiler
-cat > /llvmtools/bin/set-llvm-mode << "EOF"
-#! /bin/bash
-echo "[ 1 / 1 ] Setting LLVM as system compiler..." && \
-for b in c++ cpp g++ gcc cc
-do
-  rm -v  /llvmtools/bin/$b
-  ln -sv clang-12  /llvmtools/bin/$b
-done
-rm -v /llvmtools/lib/cpp
-ln -sv ../llvmtools/bin/clang-12 /llvmtools/lib/cpp
-EOF
+# Compile only what we need for a stage 1 clang
+ninja -C build builtins #165 targets
+ninja -C build unwind #19
+ninja -C build cxxabi #829 
+ninja -C build cxx #77
+ninja -C build compiler-rt # 598 ........fails. Can't find unwind.h ...and missing headers in /cgnutools/lib/clang/15.0.5/include
+ninja -C build lld #1652 
+ninja -C build libclang #798
+ninja -C build clang #288
 
-# Make the scripts executable
-for s in llvm-bin llvm
-do
-  chmod -v +x /llvmtools/bin/set-$s-mode
-done
+# Configure source ...
+# The llvm-project source tree seems to not use the installed LLVM runtimes 
+# (libc++abi,libc++, libunwind) in llvmtools.
+cmake -B build -G Ninja -Wno-dev -S llvm  \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+  -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
+  -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
+  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${BOFF} ${COPTS} -DCLANG_DEFAULT_UNWINDLIB=libunwind -DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
+  -DLIBUNWIND_INSTALL_HEADERS=ON -DLIBUNWIND_USE_COMPILER_RT=ON -DCOMPILER_RT_CXX_LIBRARY=libcxx -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+  -DCOMPILER_RT_TERMINFO_LIB=/llvmtools/lib/libcurses.so -DC_INCLUDE_DIRS=/llvmtools/include -DLLVM_ENABLE_TERMINFO=OFF \
+  -DBacktrace_INCLUDE_DIR=/llvmtools/include -DLIBCXX_HAS_MUSL_LIBC=ON #-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF 
 
+# Compile
+ninja -C build builtins
+ninja -C build unwind
+ninja -C build cxxabi
+ninja -C build cxx # .............. Stage 0 clang still lacks atomics... need lib/clang/14.0.5/lib/linux/libclang_rt.tsan-x86_64.so ?
+ninja -C build compiler-rt 
