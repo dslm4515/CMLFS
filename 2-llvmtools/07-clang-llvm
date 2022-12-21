@@ -172,4 +172,36 @@ ninja -C build builtins
 ninja -C build unwind
 ninja -C build cxxabi
 ninja -C build cxx # .............. Stage 0 clang still lacks atomics... need lib/clang/14.0.5/lib/linux/libclang_rt.tsan-x86_64.so ?
-ninja -C build compiler-rt 
+ninja -C build compiler-rt
+
+# Compile just clang with runtimes?
+CC=${TARGET_TUPLE}-clang \
+CXX=${TARGET_TUPLE}-clang++ \
+cmake -B build -G Ninja -Wno-dev -S llvm -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+      -DLLVM_RUNTIME_TARGETS=x86_64-pc-linux-musl \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
+      ${CTOOLS} ${CTARG} ${CPATHS} ${BOFF} ${COPTS} -DBacktrace_INCLUDE_DIR=/llvmtools/include -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+      -DCLANG_ENABLE_ARCMT=OFF -DCLANG_ENABLE_PROTO_FUZZER=OFF -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF -DCLANG_TOOL_CLANG_FUZZER_BUILD=OFF \
+      -DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF -DC_INCLUDE_DIRS=/llvmtools/include -DLLVM_ENABLE_TERMINFO=OFF -DLLVM_TOOL_GOLD_BUILD=OFF \
+      -DBUILD_SHARED_LIBS=ON -DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON -DLLVM_ENABLE_LIBCXX=ON \
+      -DLLVM_TOOL_COMPILER_RT_BUILD=ON -DLLVM_TOOL_LIBCXXABI_BUILD=ON -DLLVM_TOOL_LIBCXX_BUILD=ON -DLLVM_TOOL_LIBUNWIND_BUILD=ON \
+      -DLLVM_TOOL_LLD_BUILD=ON -DLLVM_TOOL_XCODE_TOOLCHAIN_BUILD=OFF -DLLVM_ENABLE_LLD=ON  
+
+#  Manually-specified variables were not used by the project:
+
+    COMPILER_RT_BUILD_GWP_ASAN
+    COMPILER_RT_BUILD_LIBFUZZER
+    COMPILER_RT_BUILD_ORC
+    COMPILER_RT_DEFAULT_TARGET_TRIPLE
+    LIBCXXABI_USE_COMPILER_RT
+    LIBCXXABI_USE_LLVM_UNWINDER
+    LIBCXX_ENABLE_LOCALIZATION
+    LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS
+    LIBCXX_USE_COMPILER_RT
+    LIBUNWIND_INCLUDE_DOCS
+    LIBUNWIND_INCLUDE_TESTS
+    LIBUNWIND_INSTALL_LIBRARY_DIR
+
+# Compile
+ninja -C build runtimes  # ..... Fails: "<locale.h> is not supported since libc++ has been configured without support for localization."
