@@ -90,14 +90,6 @@ https://sourceforge.net/projects/expect/files/Expect/5.45.3/expect5.45.3.tar.gz
 http://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.2.tar.gz
 https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.12.10.tar.xz 
 http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/llvm-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/llvm-project-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/clang-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/compiler-rt-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/libcxx-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/libcxxabi-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/libunwind-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/lld-15.0.5.src.tar.xz
-https://anduin.linuxfromscratch.org/BLFS/llvm/llvm-cmake-15.0.5.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/llvm-project-14.0.6.src.tar.xz
 https://cmake.org/files/v3.20/cmake-3.20.4.tar.gz
 https://dist.libuv.org/dist/v1.41.0/libuv-v1.41.0.tar.gz
