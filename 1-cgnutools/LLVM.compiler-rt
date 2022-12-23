@@ -1,0 +1,144 @@
+# cgnutools: LLVM Compiler-rt
+#
+# Build as cmlfs
+#
+# Reused unpacked LLVM source from building LLVM runtimes
+
+# Set cxxflags for cross-gcc to build clang with the 
+# just built LLVM runtimes
+
+export  CXXFLAGS="-nostdinc++ -nodefaultlibs "
+export CXXFLAGS+="-isystem /cgnutools/include/c++/v1 "
+export CXXFLAGS+="-L/cgnutools/lib "
+export CXXFLAGS+="-Wl,-rpath,/cgnutools/lib "
+export CXXFLAGS+="-lc++ -lc++abi -lm -lc -lgcc_s -lgcc " 
+
+# Test that cross-gcc will use the LLVM runtime libraries :
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+    ++y;
+      return ++x;
+      }
+EOF
+
+${CMLFS_TARGET}-g++ $CXXFLAGS atomics-test.cpp  -v -Wl,--verbose &> atomics-test.log
+
+# Check if runtime lbraries are used:
+grep libc++  atomics-test.log | grep succeeded
+
+# Should output:
+# attempt to open /cgnutools/lib/libc++.so succeeded
+# attempt to open /cgnutools/lib/libc++.so.1 succeeded
+# attempt to open /cgnutools/lib/libc++abi.so succeeded
+# attempt to open /cgnutools/lib/libc++abi.so succeeded
+
+# If all is good, clean up:
+rm -rf atomics-test.cpp atomics-test.log
+
+# Set flags to greatly reduce debugging symbols
+CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo'
+CXXFLAGS+=" -g -g1 -Wl,--as-needed -lexecinfo "
+export CFLAGS
+
+# Set the compiler and linker flags...
+export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
+export  CTOOLS="-DCMAKE_C_COMPILER=${CMLFS_TARGET}-gcc "
+export CTOOLS+="-DCMAKE_CXX_COMPILER=${CMLFS_TARGET}-g++ "
+export CTOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
+
+# Set the tuples & build target .
+# Using vendor pc instead of CMLFS since clang is the last
+# tool to build for cgnutools
+export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
+export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl " 
+export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=X86 "
+export CTARG+="-DLLVM_TARGET_ARCH=X86 "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native "
+
+# Set the paths ...
+export  CPATHS="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CPATHS+="-DDEFAULT_SYSROOT=/cgnutools "
+export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
+
+# Set bootstrap options..
+# # https://discourse.llvm.org/t/bootstrapping-standalone-llvm-clang-libc-lld-toolchain/3069
+export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
+export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
+#export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
+
+# Set the standard C++ library that clang will use to LLVM's libc++:
+export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set the runtime library that clang will use to compiler-rt:
+export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+
+# Set libc++abi & libc++ to use compiler-rt instead of gcc's runtime:
+export COPTS+="-DLIBCXX_USE_COMPILER_RT=ON "
+export COPTS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+
+# Set libc++abi to use libunwind to avoid dependace on GCC:
+export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+
+# Enable Exception Handling:
+export COPTS+="-DLLVM_ENABLE_EH=ON "
+
+# Exception handling requires Runtime Type Info
+export COPTS+="-DLLVM_ENABLE_RTTI=ON "
+
+# Stage 1 clang's compiler-rt will require new delete definitions in libc++
+export COPTS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+
+# Enable atomics to avoid using atomics from GCC:
+export COPTS+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF "
+export COPTS+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
+
+# Turn off features ...
+export  BOFF="-DLLVM_ENABLE_LIBXML2=OFF  -DLIBCXX_ENABLE_LOCALIZATION=OFF "
+export BOFF+="-DLLVM_ENABLE_ZLIB=OFF     -DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
+export BOFF+="-DLLVM_ENABLE_ZSTD=OFF     -DLIBUNWIND_INCLUDE_TESTS=OFF "
+export BOFF+="-DLLVM_ENABLE_LIBEDIT=OFF  -DLIBUNWIND_INCLUDE_DOCS=OFF "
+
+export BOFF+="-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF "
+
+# Turn off features that cause compiler-rt to NOT reference backtrace symbols from libexecinfo
+export BOFF+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_ORC=OFF "
+
+
+# Configure source:
+cmake -B build -G Ninja -Wno-dev -S llvm \
+      -DLLVM_ENABLE_PROJECTS="compiler-rt" -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
+      ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DCLANG_VENDOR="cgnutools 3.0.0" \
+      -DBOOTSTRAP_LIBCXX_ENABLE_LOCALIZATION=ON -DBENCHMARK_INSTALL_DOCS=OFF -DBENCHMARK_USE_BUNDLED_GTEST=OFF \
+      -DBUILD_SHARED_LIBS=ON -DCLANG_DEFAULT_UNWINDLIB=libunwind -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+      -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF  
+
+# Build
+ninja -C build builtins #...  165 targets ... pass
+ninja -C build compiler-rt #  553 ........... pass
+
+# Install
+ninja -C build install-compiler-rt
+ninja -C build install-compiler-rt-headers
+ninja -C build install-builtins
+ninja -C build install-crt
+ninja -C build install-tsan
+ninja -C build install-clang_rt.asan-dynamic-x86_64 
+ninja -C build install-clang_rt.asan-preinit-x86_64 
+ninja -C build install-clang_rt.asan-x86_64 
+ninja -C build install-clang_rt.asan_cxx-x86_64 
+ninja -C build install-clang_rt.asan_static-x86_64 
