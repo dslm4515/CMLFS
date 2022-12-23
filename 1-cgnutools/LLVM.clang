@@ -1,51 +1,11 @@
-# cgnutools: LLVM Clang
+# cgnutools: LLVM clang
 #
 # Build as cmlfs
 #
-# libunwind, libcxxabi, and libcxx now need to be built together.
-
 # Reused unpacked LLVM source from building LLVM runtimes
 
 # Set cxxflags for cross-gcc to build clang with the 
 # just built LLVM runtimes
-
-export  CXXFLAGS="-nostdinc++ -nodefaultlibs "
-export CXXFLAGS+="-isystem /cgnutools/include/c++/v1 "
-export CXXFLAGS+="-L/cgnutools/lib/x86_64-pc-linux-musl "
-export CXXFLAGS+="-Wl,-rpath,/cgnutools/lib/x86_64-pc-linux-musl "
-export CXXFLAGS+="-lc++ -lc++abi -lm -lc -lgcc_s -lgcc " 
-
-# Test that cross-gcc will use the LLVM runtime libraries :
-cat > atomics-test.cpp << "EOF"
-#include <atomic>
-std::atomic<int> x;
-std::atomic<short> y;
-std::atomic<char> z;
-int main() {
-  ++z;
-    ++y;
-      return ++x;
-      }
-EOF
-
-${CMLFS_TARGET}-g++ $CXXFLAGS atomics-test.cpp  -v -Wl,--verbose &> atomics-test.log
-
-# Check if runtime lbraries are used:
-grep libc++  atomics-test.log | grep succeeded
-
-# Should output:
-# attempt to open /cgnutools/lib/x86_64-pc-linux-musl/libc++.so succeeded
-# attempt to open /cgnutools/lib/x86_64-pc-linux-musl/libc++.so.1 succeeded
-# attempt to open /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.so succeeded
-# attempt to open /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.so succeeded
-
-# If all is good, clean up:
-rm -rf atomics-test.cpp atomics-test.log
-
-# Set flags to greatly reduce debugging symbols
-CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo'
-CXXFLAGS+=" -g -g1 -Wl,--as-needed -lexecinfo "
-export CFLAGS
 
 # Set the compiler and linker flags...
 export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
@@ -67,18 +27,6 @@ export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native "
 export  CPATHS="-DCMAKE_INSTALL_PREFIX=/cgnutools "
 export CPATHS+="-DDEFAULT_SYSROOT=/cgnutools "
 export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
-
-# Set bootstrap options..
-# # https://discourse.llvm.org/t/bootstrapping-standalone-llvm-clang-libc-lld-toolchain/3069
-export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
-export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
-export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
-export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
-export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "
-export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "
-export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON "
-export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
-#export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
 
 # Set the standard C++ library that clang will use to LLVM's libc++:
 export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
@@ -122,12 +70,32 @@ export BOFF+="-DCOMPILER_RT_BUILD_ORC=OFF "
 
 # Configure source:
 cmake -B build -G Ninja -Wno-dev -S llvm \
-      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PROJECTS="clang" -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
-      ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DBOOTSTRAP_LIBCXX_ENABLE_LOCALIZATION=OFF
+      ${CTOOLS} ${CTARG} ${CPATHS}  ${COPTS}  ${BOFF} -DCLANG_VENDOR="cgnutools 3.0.0" \
+      -DBOOTSTRAP_LIBCXX_ENABLE_LOCALIZATION=ON -DBENCHMARK_INSTALL_DOCS=OFF -DBENCHMARK_USE_BUNDLED_GTEST=OFF \
+      -DBUILD_SHARED_LIBS=ON -DCLANG_DEFAULT_UNWINDLIB=libunwind -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+      -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF  
 
 # Build
-ninja -C build builtins #...  165 targets
-ninja -C build compiler-rt #  598
-ninja -C build lld #.........1652 ... Fails: The iostreams library is not supported since libc++ has been configured without support for localization
-ninja -C build libclang #....2219
+ninja -C build libclang #... 2101 ...........Fail:
+
+
+[173/2101] Building CXX object utils/TableGen/CMakeFiles/llvm-tblgen.dir/CodeGenSchedule.cpp.o
+FAILED: utils/TableGen/CMakeFiles/llvm-tblgen.dir/CodeGenSchedule.cpp.o 
+/cgnutools/bin/x86_64-cmlfs-linux-musl-g++ -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/mnt/cmlfs/sources/llvm-project-14.0.6.src/build/utils/TableGen -I/mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/utils/TableGen -I/mnt/cmlfs/sources/llvm-project-14.0.6.src/build/include -I/mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/include -nostdinc++ -nodefaultlibs -isystem /cgnutools/include/c++/v1 -L/cgnutools/lib -Wl,-rpath,/cgnutools/lib -lc++ -lc++abi -lm -lc -lgcc_s -lgcc  -g -g1 -Wl,--as-needed -lexecinfo -fPIC -fno-semantic-interposition -fvisibility-inlines-hidden -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wimplicit-fallthrough -Wno-maybe-uninitialized -Wno-class-memaccess -Wno-redundant-move -Wno-pessimizing-move -Wno-noexcept-type -Wdelete-non-virtual-dtor -Wsuggest-override -Wno-comment -Wmisleading-indentation -fdiagnostics-color -ffunction-sections -fdata-sections -O3 -DNDEBUG -std=c++14 -MD -MT utils/TableGen/CMakeFiles/llvm-tblgen.dir/CodeGenSchedule.cpp.o -MF utils/TableGen/CMakeFiles/llvm-tblgen.dir/CodeGenSchedule.cpp.o.d -o utils/TableGen/CMakeFiles/llvm-tblgen.dir/CodeGenSchedule.cpp.o -c /mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/utils/TableGen/CodeGenSchedule.cpp
+In file included from /cgnutools/include/c++/v1/limits:105,
+                 from /cgnutools/include/c++/v1/math.h:308,
+                 from /cgnutools/include/c++/v1/cmath:308,
+                 from /mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/include/llvm/Support/MathExtras.h:19,
+                 from /mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/include/llvm/ADT/APInt.h:19,
+                 from /mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/utils/TableGen/CodeGenSchedule.h:17,
+                 from /mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/utils/TableGen/CodeGenSchedule.cpp:14:
+/cgnutools/include/c++/v1/type_traits: In instantiation of 'struct std::__1::__decay<const llvm::APInt&, true>':
+/cgnutools/include/c++/v1/type_traits:1591:89:   required from 'struct std::__1::decay<const llvm::APInt&&>'
+/cgnutools/include/c++/v1/__utility/pair.h:132:16:   required by substitution of 'template<class _Tuple, typename std::__1::enable_if<typename std::__1::conditional<(std::__1::__tuple_like_with_size<_Tuple, 2, typename std::__1::__uncvref<_Tp>::type>::value && (! std::__1::is_same<typename std::__1::decay<_Tp>::type, std::__1::pair<const llvm::Record*, llvm::OpcodeInfo> >::value)), std::__1::pair<const llvm::Record*, llvm::OpcodeInfo>::_CheckTupleLikeConstructor, std::__1::__check_tuple_constructor_fail>::type::__enable_implicit<_Tuple>(), void>::type* <anonymous> > constexpr std::__1::pair<const llvm::Record*, llvm::OpcodeInfo>::pair(_Tuple&&) [with _Tuple = const llvm::APInt&&; typename std::__1::enable_if<typename std::__1::conditional<(std::__1::__tuple_like_with_size<_Tuple, 2, typename std::__1::__uncvref<_Tp>::type>::value && (! std::__1::is_same<typename std::__1::decay<_Tp>::type, std::__1::pair<const llvm::Record*, llvm::OpcodeInfo> >::value)), std::__1::pair<const llvm::Record*, llvm::OpcodeInfo>::_CheckTupleLikeConstructor, std::__1::__check_tuple_constructor_fail>::type::__enable_implicit<_Tuple>(), void>::type* <anonymous> = <missing>]'
+/mnt/cmlfs/sources/llvm-project-14.0.6.src/llvm/utils/TableGen/CodeGenSchedule.cpp:373:69:   required from here
+/cgnutools/include/c++/v1/type_traits:1582:30: error: forming pointer to reference type 'std::__1::remove_extent<const llvm::APInt&>::type' {aka 'const llvm::APInt&'}
+ 1582 |                      >::type type;
+      |                              ^~~~
+     
