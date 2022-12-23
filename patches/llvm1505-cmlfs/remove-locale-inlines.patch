@@ -1,0 +1,36 @@
+# PATCH [ 2 of 2 ] : Remove the need for name mangling for locale.h for musl builds
+#
+--- llvm-project-15.0.5.src.orig/llvm/utils/gn/secondary/libcxx/include/BUILD.gn	2022-11-16 00:28:29.000000000 -0600
++++ llvm-project-15.0.5.src/llvm/utils/gn/secondary/libcxx/include/BUILD.gn	2022-12-23 15:40:12.621515898 -0600
+@@ -554,7 +554,6 @@
+       "__support/ibm/locale_mgmt_zos.h",
+       "__support/ibm/nanosleep.h",
+       "__support/ibm/xlocale.h",
+-      "__support/musl/xlocale.h",
+       "__support/newlib/xlocale.h",
+       "__support/openbsd/xlocale.h",
+       "__support/solaris/floatingpoint.h",
+--- llvm-project-15.0.5.src.orig/libcxx/include/__locale	2022-11-16 00:28:29.000000000 -0600
++++ llvm-project-15.0.5.src/libcxx/include/__locale	2022-12-23 15:39:35.080517981 -0600
+@@ -37,11 +37,6 @@
+ # include <xlocale.h>
+ #elif defined(__Fuchsia__)
+ # include <__support/fuchsia/xlocale.h>
+-#elif defined(__wasi__)
+-// WASI libc uses musl's locales support.
+-# include <__support/musl/xlocale.h>
+-#elif defined(_LIBCPP_HAS_MUSL_LIBC)
+-# include <__support/musl/xlocale.h>
+ #endif
+ 
+ #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+--- llvm-project-15.0.5.src.orig/libcxx/include/CMakeLists.txt	2022-11-16 00:28:29.000000000 -0600
++++ llvm-project-15.0.5.src/libcxx/include/CMakeLists.txt	2022-12-23 15:38:28.631521670 -0600
+@@ -492,7 +492,6 @@
+   __support/ibm/locale_mgmt_zos.h
+   __support/ibm/nanosleep.h
+   __support/ibm/xlocale.h
+-  __support/musl/xlocale.h
+   __support/newlib/xlocale.h
+   __support/openbsd/xlocale.h
+   __support/solaris/floatingpoint.h
