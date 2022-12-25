@@ -5,6 +5,15 @@
 # Ensure that gawk is found first during configuration: 
 sed -i s/mawk// configure
 
+# Run the following commands to build the “tic” program 
+# on the build host:
+mkdir build
+pushd build
+  ../configure
+  make -C include
+  make -C progs tic
+popd
+
 # Configure source with clang
 CC=$CC CXX=$CXX \
 AR=llvm-ar \
@@ -19,10 +28,10 @@ STRIP=llvm-strip \
             --without-debug \
             --without-ada   \
             --enable-widec  \
-            --enable-overwrite
+            --enable-overwrite --with-cxx-shared --without-normal
 
 # Build and install to toolchain
-make && make install
+make && make TIC_PATH=$(pwd)/build/progs/tic install
 
 # Bash build expects to find libcurses.so:
 ln -sv libncursesw.so.6.2 /llvmtools/lib/libcurses.so
