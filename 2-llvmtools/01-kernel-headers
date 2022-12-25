@@ -1,14 +1,11 @@
 # llvmtools: Kernel headers
 # Build and install as cmlfs
 
-# Kernel version greater than 5.9.16 will not compile under musl 
-patch -Np1 -i ../patches/kernel/include-uapi-linux-swab-Fix-potentially-missing-__always_inline.patch
-
 # Clean
 make mrproper
 
 # Generate headers
-make ARCH=${CMLFS_ARCH} LLVM=1 CC=clang CXX=clang++ HOSTCC=${CMLFS_TARGET}-clang headers
+make ARCH=${CMLFS_ARCH} LLVM=1 CC=$CC CXX=$CXX HOSTCC=${TARGET_TUPLE}-clang headers
 
 # Install to llvmtools
 find usr/include \( -name .install -o -name ..install.cmd \) -delete
