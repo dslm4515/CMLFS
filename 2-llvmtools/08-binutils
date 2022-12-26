@@ -1,60 +1,26 @@
-# Llvmtools Chain: Binutils
+# Llvmtools: Binutils
 # Build and install as cmlfs
-
-# Link directories so libraries can be found in both lib & lib64
-#case $(uname -m) in
-#        x86_64) ln -sv lib /llvmtools/gnu/lib64 ;;
-#esac
-# ^ looks like binutils doesnt create a lib64 directory
 
 # Configure in dedicated build directory
 mkdir -v build && cd build
 
-# Configure to cross-compile with clang
-# but use binutils/GCC assembler
-CC_FOR_BUILD=x86_64-cmlfs-linux-musl-clang \
-CXX=x86_64-cmlfs-linux-musl-clang++ \
-CC=x86_64-cmlfs-linux-musl-clang \
-AR=llvm-ar \
-AS="${CMLFS_TARGET}-as" \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-../configure --prefix=/llvmtools    \
-             --with-lib-path=/llvmtools/lib \
-             --build=${CMLFS_HOST}       \
-             --host=${CMLFS_TARGET}      \
-             --target=${CMLFS_TARGET}    \
-             --disable-nls               \
-             --disable-werror            \
-             --with-sysroot
+# binutils-2.38
+CC=$CC CXX=$CXX AR=llvm-ar AS=llvm-as \
+RANLIB=llvm-ranlib LD=ld.lld STRIP=llvm-strip \
+../configure --prefix=/llvmtools \
+  --with-lib-path=/llvmtools/lib \
+  --build=${TARGET_TUPLE} \
+  --host=${TARGET_TUPLE} \
+  --target=${TARGET_TUPLE} \
+  --disable-nls \
+  --disable-werror \
+  --with-sysroot
+
 # Build
 make
 
 # Install
 make install
-
-# Binary tools from LLVM will be the default.
-for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip
-do
-  mv -v  /llvmtools/bin/{$b,$b.gnu}
-  ln -sv llvm-$b /llvmtools/bin/$b
-done
-# There are no LLVM counterparts for dwp, c++filt, gprof, elfedit
-
-# Create script to siwth back from LLVM to binutils as
-# some packages are hardcoded.
-cat > /llvmtools/bin/set-gnu-bin-mode << "EOF"
-#! /bin/bash
-echo "[ 1 / 1 ] Setting GNU binutils as system binary tools..." && \
-for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip
-do
-  rm -v         /llvmtools/bin/$b
-  ln -sv $b.gnu /llvmtools/bin/$b
-done                                          && \
-echo "[ info  ] GNU Binutils  set as system default binary tools"
-EOF
-chmod -v +x /llvmtools/bin/set-gnu-bin-mode
 
 # Clean source to rebuild linker
 make -C ld clean
@@ -66,3 +32,60 @@ cp -v ld/ld-new /llvmtools/bin/ld.bfd-new
 # Set lld as default linker
 rm -rf /llvmtools/bin/ld
 ln -sv lld /llvmtools/bin/ld
+
+# Binary tools from LLVM will be the default.
+for b in addr2line ar as nm objcopy objdump ranlib readelf \
+         size strings strip
+do
+  mv -v  /llvmtools/bin/{$b,$b.gnu}
+  ln -sv llvm-$b /llvmtools/bin/$b
+done
+
+mv -v /llvmtools/bin/{dwp,dwp.gnu}
+ln -sv llvm-dwp /llvmtools/bin/dwp
+
+ln -sv  llvm-cxxfilt /llvmtools/bin/c++filt
+
+# There are no LLVM counterparts for gprof & elfedit
+
+# Create script to binutils as the default binary tools
+# since some packages are hardcoded.
+cat > /llvmtools/bin/set-gnu-bin-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GNU binutils as system binary tools..." && \
+for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip dwp c++filt
+do
+  rm -v         /llvmtools/bin/$b
+  ln -sv $b.gnu /llvmtools/bin/$b
+done                                          && \
+echo "[ info  ] GNU Binutils  set as system default binary tools"
+EOF
+chmod -v +x /llvmtools/bin/set-gnu-bin-mode
+
+# Create another script to set the LLVM binary tools
+# as the system defaults
+
+cat > /llvmtools/bin/set-llvm-bin-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting LLVM tools as system binary tools..." && \
+for b in  addr2line ar as nm objcopy objdump ranlib readelf size strings strip dwp 
+do
+  rm -v /llvmtools/bin/$b
+done
+
+for b in ar as nm objcopy objdump size strings dwp
+do
+  ln -sv llvm-$b /llvmtools/bin/$b
+done
+
+rm -rf /llvmtools/bin/c++filt
+ln -sv llvm-cxxfilt /llvmtools/bin/c++filt
+
+ln -sv llvm-symbolizer /llvmtools/bin/addr2line     && \
+ln -sv llvm-ar         /llvmtools/bin/ranlib        && \
+ln -sv llvm-readobj    /llvmtools/bin/readelf       && \
+ln -sv llvm-objcopy    /llvmtools/bin/strip         && \
+
+echo "[ info  ] LLVM Binary tools set as system default"
+EOF
+chmod -v +x /llvmtools/bin/set-llvm-bin-mode
