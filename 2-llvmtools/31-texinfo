@@ -1,5 +1,4 @@
-# Toolchain: Texinfo 6.8
-# Source: https://ftp.gnu.org/gnu/texinfo/texinfo-6.8.tar.xz
+# llvmtools: Texinfo
 # Build and install as cmlfs
 
 # Configure source with clang
