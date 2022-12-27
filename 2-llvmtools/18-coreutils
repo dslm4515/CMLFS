@@ -1,5 +1,4 @@
-# Toolchain: Coreutils 9.0
-# Source: https://ftp.gnu.org/gnu/coreutils/coreutils-9.0.tar.xz
+# llvmtools: Coreutils 
 # Build and install as cmlfs
 
 # Re-create configure script
