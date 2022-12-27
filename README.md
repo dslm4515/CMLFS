@@ -3,7 +3,7 @@
 CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on Linux From Scratch (www.linuxfromscratch.org) and my previous work MLFS (https://github.com/dslm4515/Musl-LFS).
 
 # Project Status
-Attempted to upgrade CMLFS to LLVM-15.0.5... required new build methods. Currently, cgnutools can be built with a stage 0 clang but cannot build stage 1 clang for llvmtools.
+Attempted to upgrade CMLFS to LLVM-15.0.5... required new build methods. Currently, cgnutools can be built with a stage 0 clang and now can build stage 1 clang.
 
 ## Specification
 <ul>
