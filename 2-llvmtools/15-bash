@@ -1,5 +1,4 @@
-# Toolchain: Bash 5.1.8
-# Source: https://ftp.gnu.org/gnu/bash/bash-5.1.8.tar.gz
+# llvmtools: Bash 
 # Build and install as cmlfs
 
 # Cross Compiling the configure script 
