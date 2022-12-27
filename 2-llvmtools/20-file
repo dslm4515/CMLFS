@@ -1,4 +1,4 @@
-# Toolchain: File 5.40
+# llvmtools: File
 # Build and install as cmlfs
 # Must use same version for cross-tools, cgnutools, 
 # and final system. 
