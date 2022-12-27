@@ -1,5 +1,4 @@
-# Toolchain: Grep 3.7
-# Source: https://ftp.gnu.org/gnu/grep/grep-3.7.tar.xz
+# llvmtools: Grep
 # Build and install as cmlfs
 
 # Configure source with clang
