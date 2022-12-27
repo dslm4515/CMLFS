@@ -1,5 +1,4 @@
-# Toolchain: Findutils - 4.8.0
-# Source: http://ftp.gnu.org/gnu/findutils/findutils-4.8.0.tar.xz
+# llvmtools: Findutils
 # Build and install as cmlfs
 
 # Configure source with clang
