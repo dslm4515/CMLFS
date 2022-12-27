@@ -1,5 +1,4 @@
-# Toolchain: Make 4.3
-# Source: http://ftp.gnu.org/gnu/make/make-4.3.tar.gz 
+# llvmtools: Make 
 # Build and install as cmlfs
 
 # Configure source with clang
