@@ -1,5 +1,4 @@
-# ToolChain: Bzip2 1.0.8
-# Source: http://anduin.linuxfromscratch.org/LFS/bzip2-1.0.8.tar.gz
+# llvmtools: Bzip2 
 # Build and install as cmlfs
 
 # Fix the Makefiles for  ensures installation of symbolic 
