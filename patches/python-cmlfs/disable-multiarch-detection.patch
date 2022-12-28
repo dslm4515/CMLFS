@@ -1,0 +1,50 @@
+--- Python-3.11.1.orig/configure	2022-12-06 13:05:27.000000000 -0600
++++ Python-3.11.1/configure	2022-12-27 19:48:44.936505217 -0600
+@@ -6197,28 +6197,28 @@
+ fi
+ rm -f conftest.c conftest.out
+ 
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch" >&5
+-$as_echo_n "checking for multiarch... " >&6; }
+-case $ac_sys_system in #(
+-  Darwin*) :
+-    MULTIARCH="" ;; #(
+-  FreeBSD*) :
+-    MULTIARCH="" ;; #(
+-  *) :
+-    MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+- ;;
+-esac
++#{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch" >&5
++#$as_echo_n "checking for multiarch... " >&6; }
++#case $ac_sys_system in #(
++#  Darwin*) :
++#    MULTIARCH="" ;; #(
++#  FreeBSD*) :
++#    MULTIARCH="" ;; #(
++#  *) :
++#    MULTIARCH=$($CC --print-multiarch 2>/dev/null)
++# ;;
++#esac
+ 
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MULTIARCH" >&5
+-$as_echo "$MULTIARCH" >&6; }
++#{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MULTIARCH" >&5
++#$as_echo "$MULTIARCH" >&6; }
+ 
+-if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
+-  if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
+-    as_fn_error $? "internal configure error for the platform triplet, please file a bug report" "$LINENO" 5
+-  fi
+-elif test x$PLATFORM_TRIPLET != x && test x$MULTIARCH = x; then
++#if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
++#  if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
++#    as_fn_error $? "internal configure error for the platform triplet, please file a bug report" "$LINENO" 5
++#  fi
++#elif test x$PLATFORM_TRIPLET != x && test x$MULTIARCH = x; then
+   MULTIARCH=$PLATFORM_TRIPLET
+-fi
++#fi
+ 
+ 
+ if test x$MULTIARCH != x; then
