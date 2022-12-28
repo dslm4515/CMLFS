@@ -34,4 +34,4 @@ STRIP=llvm-strip \
 make && make TIC_PATH=$(pwd)/build/progs/tic install
 
 # Bash build expects to find libcurses.so:
-ln -sv libncursesw.so.6.2 /llvmtools/lib/libcurses.so
+ln -sv libncursesw.so.6.3 /llvmtools/lib/libcurses.so
