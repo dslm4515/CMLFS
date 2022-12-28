@@ -123,5 +123,29 @@ grep error:  atomics-test.log
 
 # Should return nothing if there are no errors.
 
+# Test if stage0 clang support C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+${TARGET_TUPLE}-clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+
+# Should return nothing if there are no errors.
+
 # If all is good, clean up:
-rm -v dummy.log dummy.c a.out atomics-test.cpp atomics-test.log
+rm -v dummy.log dummy.c a.out atomics-test.cpp atomics-test.log cxx11-test.cpp cxx11-test.log
