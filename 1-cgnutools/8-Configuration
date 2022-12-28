@@ -7,9 +7,11 @@
 ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang
 ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang++
 
-#cat > /cgnutools/bin/${CMLFS_TARGET}.cfg << "EOF"
+# ... also configure stage0 clang to use newly built libc++ headers & libraries
 cat > /cgnutools/bin/${TARGET_TUPLE}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
+stdinc++ -nostdlib++ -isystem /cgnutools/include/x86_64-pc-linux-musl/c++/v1
+-L/cgnutools/lib -lc++
 EOF
 
 # Set LLD as default toolchain linker
@@ -95,6 +97,10 @@ grep ld.lld:  dummy.log
 # ld.lld: /cgnutools/lib/Scrt1.o
 # ld.lld: /cgnutools/lib/crti.o
 # ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-cmlfs-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /mnt/cmlfs/cgnutools/bin/../lib/x86_64-pc-linux-musl/libc++.so
+# ld.lld: /mnt/cmlfs/cgnutools/bin/../lib/x86_64-pc-linux-musl/libc++.so.1
+# ld.lld: /mnt/cmlfs/cgnutools/bin/../lib/x86_64-pc-linux-musl/libc++abi.so
+# ld.lld: /cgnutools/lib/libunwind.so
 # ld.lld: /tmp/dummy-0ef0e1.o
 # ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-cmlfs-linux-musl/libclang_rt.builtins.a
 # ld.lld: /cgnutools/lib/libc.so
