@@ -10,8 +10,7 @@ ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang++
 # ... also configure stage0 clang to use newly built libc++ headers & libraries
 cat > /cgnutools/bin/${TARGET_TUPLE}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
-stdinc++ -nostdlib++ -isystem /cgnutools/include/x86_64-pc-linux-musl/c++/v1
--L/cgnutools/lib -lc++
+-cxx-isystem/cgnutools/include/x86_64-pc-linux-musl/c++/v1
 EOF
 
 # Set LLD as default toolchain linker
