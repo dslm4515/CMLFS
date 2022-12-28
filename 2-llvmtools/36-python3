@@ -1,10 +1,8 @@
-# Toolchain: Python3
-# Source: https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tar.xz
+# llvmtools: Python3
 # Build and install as cmlfs
 
-# Apply fixes to build under musl
-patch -Np0 -i ../patches/python3-void/musl-find_library.patch &&
-patch -Np0 -i ../patches/python3-void/tweak-MULTIARCH-for-powerpc-linux-musl.patch
+# Apply fixes to build under musl, from Alpine Linux
+patch -Np1 -i ../patches/python-alpine/musl-find_library.patch 
 
 # Make sure ctypes for darwin isnt built
 rm -r Modules/_ctypes/darwin
@@ -13,6 +11,9 @@ rm -r Modules/_ctypes/darwin
 # uses hard-coded paths to the host /usr/include and /usr/lib 
 # directories. Prevent this:
 sed -i '/def add_multiarch_paths/a \        return' setup.py
+
+# Disable multiarch detection in configure:
+patch -Np1 -i ../patches/python-cmlfs/disable-multiarch-detection.patch
 
 # Configure source with clang
 CC=x86_64-pc-linux-musl-clang \
@@ -30,5 +31,5 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
-chmod -v 755 /llvmtools/lib/libpython3.9.so &&
+chmod -v 755 /llvmtools/lib/libpython3.11.so &&
 chmod -v 755 /llvmtools/lib/libpython3.so  
