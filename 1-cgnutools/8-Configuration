@@ -6,12 +6,13 @@
 # file is modified to set the dynamic linker in /tools instead of host's /lib.
 ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang
 ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang++
-
-# ... also configure stage0 clang to use newly built libc++ headers & libraries
 cat > /cgnutools/bin/${TARGET_TUPLE}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
--cxx-isystem/cgnutools/include/x86_64-pc-linux-musl/c++/v1
 EOF
+
+# ... also configure stage0 clang to use newly built libc++ headers & libraries
+echo "-stdlib=libc++ " >> /cgnutools/bin/${TARGET_TUPLE}.cfg 
+echo "-stdlib++-isystem/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
 
 # Set LLD as default toolchain linker
 ln -sv lld /cgnutools/bin/ld
