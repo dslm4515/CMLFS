@@ -1,6 +1,9 @@
 # Llvmtools: Binutils
 # Build and install as cmlfs
 
+# Set stage0 clang as C/C++ compiler
+export CC=${TARGET_TUPLE}-clang CXX=${TARGET_TUPLE}-clang++
+
 # Configure in dedicated build directory
 mkdir -v build && cd build
 
@@ -41,9 +44,7 @@ do
   ln -sv llvm-$b /llvmtools/bin/$b
 done
 
-mv -v /llvmtools/bin/{dwp,dwp.gnu}
-ln -sv llvm-dwp /llvmtools/bin/dwp
-
+mv -v    /llvmtools/bin/{c++filt,c++filt.gnu}
 ln -sv  llvm-cxxfilt /llvmtools/bin/c++filt
 
 # There are no LLVM counterparts for gprof & elfedit
@@ -53,7 +54,7 @@ ln -sv  llvm-cxxfilt /llvmtools/bin/c++filt
 cat > /llvmtools/bin/set-gnu-bin-mode << "EOF"
 #! /bin/bash
 echo "[ 1 / 1 ] Setting GNU binutils as system binary tools..." && \
-for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip dwp c++filt
+for b in addr2line ar as nm objcopy objdump ranlib readelf size strings strip c++filt
 do
   rm -v         /llvmtools/bin/$b
   ln -sv $b.gnu /llvmtools/bin/$b
@@ -68,12 +69,12 @@ chmod -v +x /llvmtools/bin/set-gnu-bin-mode
 cat > /llvmtools/bin/set-llvm-bin-mode << "EOF"
 #! /bin/bash
 echo "[ 1 / 1 ] Setting LLVM tools as system binary tools..." && \
-for b in  addr2line ar as nm objcopy objdump ranlib readelf size strings strip dwp 
+for b in  addr2line ar as nm objcopy objdump ranlib readelf size strings strip 
 do
   rm -v /llvmtools/bin/$b
 done
 
-for b in ar as nm objcopy objdump size strings dwp
+for b in ar as nm objcopy objdump size strings 
 do
   ln -sv llvm-$b /llvmtools/bin/$b
 done
