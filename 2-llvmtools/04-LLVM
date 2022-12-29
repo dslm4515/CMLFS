@@ -1,6 +1,8 @@
 # llvmtools: Stage1 LLVM  ( with clang,compiler-rt,libcxx,libcxxabi,libunwind,lld )
 # Build as cmlfs
 #
+# NOTE: stage1 clang has broken C++ support.
+#
 # NOTE Reused unpacked LLVM source from building cgnutools 
 
 # Set CC and CXX compiler with stage0 clang
@@ -8,7 +10,8 @@ export CXX=${TARGET_TUPLE}-clang++
 export  CC=${TARGET_TUPLE}-clang
 
 # Set flags to greatly reduce debugging symbols
-CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC '
+#CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC '
+CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
 CXXFLAGS=$CFLAGS
 export CFLAGS CXXFLAGS
 
@@ -127,6 +130,22 @@ export BUILD_OFF+="-DLLVM_TOOL_BUGPOINT_BUILD=OFF "
 export BUILD_OFF+="-DLIBCXX_INCLUDE_BENCHMARKS=OFF "
 export BUILD_OFF+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF -DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
 
+# Turn off more clang features not needed:
+export  BOFF="-DCLANG_ENABLE_ARCMT=OFF      -DCLANG_ENABLE_STATIC_ANALYZER=OFF "
+export BOFF+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_CHECK_BUILD=OFF   -DCLANG_TOOL_CLANG_DIFF_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_EXTDEF_MAPPING_BUILD=OFF -DCLANG_TOOL_CLANG_FORMAT_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_FORMAT_VS_BUILD=OFF -DCLANG_TOOL_CLANG_FUZZER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF -DCLANG_TOOL_CLANG_NVLINK_WRAPPER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD=OFF -DCLANG_TOOL_CLANG_OFFLOAD_PACKAGER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_WRAPPER_BUILD=OFF -DCLANG_TOOL_CLANG_REFACTOR_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_RENAME_BUILD=OFF -DCLANG_TOOL_CLANG_REPL_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_SCAN_DEPS_BUILD=OFF -DCLANG_TOOL_CLANG_SHLIB_BUILD=OFF"
+export BOFF+="-DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF -DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_DIAGTOOL_BUILD=OFF -DCLANG_TOOL_SCAN_BUILD_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_SCAN_BUILD_PY_BUILD=OFF -DCLANG_TOOL_SCAN_VIEW_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
+
 # Configure source
 cmake -B build -G Ninja -Wno-dev -S llvm  \
       -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}"    \
@@ -134,14 +153,15 @@ cmake -B build -G Ninja -Wno-dev -S llvm  \
       ${CONFIG_TOOLS} ${CONFIG_TUPLES} \
       ${CONFIG_CRT} ${CONFIG_CLANG} ${CONFIG_OPTIONS} \
       ${CONFIG_LIBUNWIND} ${CONFIG_LIBCXXABI} \
-      ${CONFIG_LIBCXX} ${CONFIG_PATHS} ${BUILD_OFF}  \
+      ${CONFIG_LIBCXX} ${CONFIG_PATHS} ${BUILD_OFF} ${BOFF}  \
       -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld;libunwind" \
       -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0" 
 
 # Since -fPIC was added to CFLAGS/CXXFLAGS,
 # Configure llvmtools dynamic linker to search for shared objects in the build directory
-echo "${PWD}/build/lib "                  >> /llvmtools/etc/ld-musl-x86_64.path 
-echo "${PWD}/build/lib/${TARGET_TUPLE} "  >> /llvmtools/etc/ld-musl-x86_64.path
+#echo "${PWD}/build/lib "                  >> /llvmtools/etc/ld-musl-x86_64.path 
+#echo "${PWD}/build/lib/${TARGET_TUPLE} "  >> /llvmtools/etc/ld-musl-x86_64.path
+# lld still fails even with the above ^
 
 # Compile
 ninja -C build 
@@ -150,14 +170,14 @@ ninja -C build
 #ninja -C build builtins #166 targets .............. PASS
 #ninja -C build unwind   #10 ....................... PASS
 #ninja -C build cxxabi   #809 ...................... PASS
-#ninja -C build cxx      #45 ....................... PASS: cgnutools needs kheaders in /cgnutools/include
+#ninja -C build cxx      #45 ....................... PASS
 #ninja -C build compiler-rt #578 ................... PASS
-#ninja -C build lld      #1711 ..................... PASS
+#ninja -C build llvm-tblgen #246 ................... PASS
+#ninja -C build lld      #1465 ..................... PASS
 #ninja -C build libclang #795 ...................... PASS
-#ninja -C build clang    #104 ...................... PASS
+#ninja -C build clang    #96 ....................... PASS
 #ninja -C build llvm-lib #8 ........................ PASS
-#ninja -C build          #1053 ..................... PASS
-
+#ninja -C build          #1024 ..................... PASS 
 
 # Install to /cgnutools
 
@@ -192,7 +212,7 @@ ninja -C build install
 
 # Clean up current environment...
 unset CFLAGS CXXFLAGS CONFIG_TOOLS CONFIG_TUPLES
-unset CONFIG_CRT CONFIG_CLANG CONFIG_OPTIONS
+unset CONFIG_CRT CONFIG_CLANG CONFIG_OPTIONS BOFF
 unset CONFIG_LIBUNWIND CONFIG_LIBCXXABI CONFIG_LIBCXX
 unset CONFIG_PATHS BUILD_OFF LLVMSRC LINKERFLAGS CC CXX
 
@@ -201,8 +221,8 @@ unset CONFIG_PATHS BUILD_OFF LLVMSRC LINKERFLAGS CC CXX
 mkdir -pv /llvmtools/lib/clang/15.0.5/lib
 ln -sv ../x86_64-pc-linux-musl   /llvmtools/lib/clang/15.0.5/lib/linux
 ln -sv  libclang_rt.builtins.a   /llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins-x86_64.a
-ln -sv clang/15.0.5/x86_64-pc-linux-musl/clang_rt.crtbegin.o /llvmtools/lib/crtbeginS.o
-ln -sv clang/15.0.5/x86_64-pc-linux-musl/clang_rt.crtend.o /llvmtools/lib/crtendS.o
+ln -sv  clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtbeginS.o
+ln -sv  clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtendS.o
 
 # Configure stage 1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 
 # instead of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
@@ -213,6 +233,10 @@ ln -sv clang-15   /llvmtools/bin/${TARGET_TUPLE}-clang++
 cat > /llvmtools/bin/${TARGET_TUPLE}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
 EOF
+
+# ... also configure stage1 clang to use newly built libc++ headers & libraries
+echo "-stdlib=libc++ -lc++abi" >> /llvmtools/bin/${TARGET_TUPLE}.cfg
+echo "-stdlib++-isystem/llvmtools/include/c++/v1 "  >> /llvmtools/bin/${TARGET_TUPLE}.cfg
 
 # Test stage 1 clang
 echo "int main(){}" > dummy.c
@@ -235,14 +259,14 @@ grep ld.lld:  dummy.log
 # Should output:
 # ld.lld: /llvmtools/lib/Scrt1.o
 # ld.lld: /llvmtools/lib/crti.o
-# ld.lld: /llvmtools/lib/crtbeginS.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/crtbeginS.o
 # ld.lld: /tmp/dummy-001093.o
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins-x86_64.a
 # ld.lld: /llvmtools/lib/libunwind.so
 # ld.lld: /llvmtools/lib/libc.so
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins-x86_64.a
 # ld.lld: /llvmtools/lib/libunwind.so
-# ld.lld: /llvmtools/lib/crtendS.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/crtendS.o
 # ld.lld: /llvmtools/lib/crtn.o
 
 # Check if clang++ [in llvmtools] has atomics.
@@ -276,9 +300,34 @@ readelf -d /llvmtools/lib/libc++.so.1.0 | grep Shared | cut -d ":" -f 2
 readelf -d /llvmtools/lib/libc++abi.so.1.0 | grep Shared | cut -d ":" -f 2
 # Should output
 # [libc.so]
-# [libc++abi.so.1]
 # [libunwind.so.1]
+
+# Test if stage0 clang support C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+/llvmtools/bin/${TARGET_TUPLE}-clang++ cxx11-test.cpp \
+-v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+
+# Should return nothing if there are no errors.
 
 # Clean up
 rm -rf build
+
 # Source tree will be used later. Save time by not removing
