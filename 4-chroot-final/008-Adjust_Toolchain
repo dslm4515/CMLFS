@@ -1,119 +1,88 @@
 # Final System - Adjust Tool Chain
 # This section is done in Chroot environment
 
-# Re-configure clang to use new sysroot (/usr) with newly built musl Libc
-echo " --sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-$(uname -m).so.1" > \
-     /llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg
+# Retire stage 1 clang [cross] configuration
+mv -v /llvmtools/bin/x86_64-pc-linux-musl.{cfg,cfg.cross}
 
-ln -sv clang-12 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang
-ln -sv clang-12 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang++
-
-# Update the build environment
-export CC=$(uname -m)-cmlfs-linux-musl-clang
-export CXX=$(uname -m)-cmlfs-linux-musl-clang++
-
-# Create links to make sure clang is used and not GCC
-#mv /llvmtools/bin/cc  /llvmtools/bin/cc.gnu
-#mv /llvmtools/bin/g++ /llvmtools/bin/g++.gnu
-#ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
-#ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
-
-# Use script (from when buillding llvmtools) to make sure clang is
-# the default compiler and LLVM as default binary tools
-set-llvm-mode 
-set-llvm-bin-mode
+# Re-configure stage1 clang to use new sysroot (/usr) with newly built musl Libc
+echo "--sysroot=/usr " > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 
 # Adjust binutils linker of llvmtools:
 mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
-mv -v  /llvmtools/x86_64-cmlfs-linux-musl/bin/{ld.bfd,ld-old}
+mv -v  /llvmtools/x86_64-pc-linux-musl/bin/{ld.bfd,ld-old}
 mv -v  /llvmtools/bin/{ld.bfd-new,ld.bfd}
-rm -v /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
-ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
+rm -v /llvmtools/x86_64-pc-linux-musl/bin/ld
+ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-pc-linux-musl/bin/ld
 
-# Modify the specs file so that gcc of llvmtools builds
-# binaries with /lib/ld-musl-x86_64.so.1 as dynamic linker:
-export SPECFILE=`dirname $(/llvmtools/bin/gcc.gnu -print-libgcc-file-name)`/specs
-gcc.gnu -dumpspecs | sed -e 's@/llvmtools@@g' \
-                        -e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
-                        -e '/\*cpp:/{n;s@$@ -isystem /usr/include@}' >  tempspecfile
-mv -vf tempspecfile $SPECFILE
-unset SPECFILE
+# Make sure the  build environment has the default compilers set
+export CC=$(uname -m)-pc-linux-musl-clang
+export CXX=$(uname -m)-pc-linux-musl-clang++
 
-
-# Check the basic functions (compiling and linking) of 
-# the adjusted toolchain (clang) are working as expected. To do 
-# this, perform the following sanity checks:
-echo 'int main(){}' > dummy.c
-$CC dummy.c -v -Wl,--verbose &> dummy.log
-llvm-readelf -l a.out | grep ': /lib'
-# Should output:
-# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-i386.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-arm.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-arch64.so.1]
-
-# Make sure that we're setup to use the correct start files: 
-grep 'ld.lld:' dummy.log | grep 'crt[1in]'
-#ld.lld: /usr/lib/Scrt1.o
-#ld.lld: /usr/lib/crti.o
-#ld.lld: /usr/lib/crtn.o
-
-# Verify that the compiler is searching for the correct 
-# header files: 
-grep -B1 '^ /usr/include' dummy.log
-# Should output:
-# #include <...> search starts here:
-# /usr/include
-
-# Verify that the new linker is being used with the 
-# correct search paths: 
-grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
-#-L/usr/lib
-
-# Once everything is working correctly, clean up 
-# the test files:
-rm -v a.out dummy.log
-
-# Now test GCC of llvmtools
-gcc.gnu dummy.c -v -Wl,--verbose &> dummy.log
+# Test stage 1 clang
+echo "int main(){}" > dummy.c
+${CC} dummy.c -v -Wl,--verbose &> dummy.log
 readelf -l a.out | grep ': /lib'
 
 # Should output:
 # [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-i386.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-arm.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-arch64.so.1]
 
-# Make sure that we're setup to use the correct start files: 
-grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
-# Should output:
-# /usr/lib/crt1.o succeeded
-# /usr/lib/crti.o succeeded
-# /usr/lib/crtn.o succeeded
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
 
-# Verify that the compiler is searching for the correct 
-# header files: 
-grep -B1 '^ /usr/include' dummy.log
 # Should output:
-# #include <...> search starts here:
-# /usr/include
+# ld.lld: /usr/lib/Scrt1.o
+# ld.lld: /usr/lib/crti.o
+# ld.lld: /usr/lib/crtn.o
 
-# Verify that the new linker is being used with the 
-# correct search paths: 
-grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
-# Should output:
-# SEARCH_DIR("=/llvmtools/x86_64-mlfs-linux-musl/lib64")
-# SEARCH_DIR("/usr/lib")
-# SEARCH_DIR("/lib")
-# SEARCH_DIR("=/llvmtools/x86_64-mlfs-linux-musl/lib")
-# ^ first and last line can be ignored
+# Check if stage1 clang++ has atomics. Usually atomics are provided by gcc,
+# therefore, stage 1 clang++ should not depend on gcc. Building the native
+# final clang (stage 2) requires stage 1 clang++ to support std::atomic
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+    ++y;
+      return ++x;
+      }
+EOF
+
+${CXX} atomics-test.cpp  -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+
+# Should return nothing if there are no errors.
+
+# Test if stage1 clang still supports C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+   
+   return 0;
+}
+EOF
+
+${CXX} cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# FAIL -- Not sure if this test matters.
+# ld.lld: error: undefined symbol: __cxa_begin_catch
+# ld.lld: error: undefined symbol: __cxa_end_catch
+# ld.lld: error: undefined symbol: std::terminate()
+# ld.lld: error: undefined symbol: __gxx_personality_v0
 
 # Once everything is working correctly, clean up 
 # the test files:
-rm -v dummy.c a.out dummy.log
+rm -v dummy.c a.out dummy.log atomics-test.cpp atomics-test.log cxx11-test.cpp cxx11-test.log
