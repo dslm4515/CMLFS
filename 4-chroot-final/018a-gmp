@@ -8,6 +8,12 @@
 # cp -v configfsf.guess config.guess
 # cp -v configfsf.sub   config.sub
 
+# Apply patches from OpenMandriva... build still fails
+#patch -Np1 -i ../patches/gmp-openmandriva/gmp-5.1.0-x32-build-fix.patch
+#patch -Np1 -i ../patches/gmp-openmandriva/gmp-6.1.2-execstackfix.patch 
+#patch -Np1 -i ../patches/gmp-openmandriva/gmp-6.2.1-CVE-2021-43618.patch 
+#patch -Np1 -i ../patches/gmp-openmandriva/gmp-6.2.1-arm64-invert_limb.patch
+
 # Configure source
 ./configure --prefix=/usr   \
             --enable-cxx        \
@@ -16,6 +22,13 @@
 
 # Build
 make
+
+# FAIL: #####################################################################################################
+ld.lld: error: relocation R_X86_64_PC32 cannot be used against symbol '__gmp_errno'; recompile with -fPIC
+>>> defined in .libs/errno.o                                                                                                                           
+>>> referenced by errno.c                                                                                                                              
+>>>               .libs/errno.o:(__gmp_exception)
+##############################################################################################################
 
 # Test if desired:
 make check 2>&1 | tee gmp-check-log
