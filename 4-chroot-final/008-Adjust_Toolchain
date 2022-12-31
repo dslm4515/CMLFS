@@ -7,6 +7,11 @@ mv -v /llvmtools/bin/x86_64-pc-linux-musl.{cfg,cfg.cross}
 # Re-configure stage1 clang to use new sysroot (/usr) with newly built musl Libc
 echo "--sysroot=/usr " > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 
+# For creating static binaries & libraries, create links for
+# missing object files
+ln -sv clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtbeginT.o
+ln -sv clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtend.o
+
 # Adjust binutils linker of llvmtools:
 mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
 mv -v  /llvmtools/x86_64-pc-linux-musl/bin/{ld.bfd,ld-old}
