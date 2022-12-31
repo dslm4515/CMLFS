@@ -1,0 +1,51 @@
+diff -up binutils-2.34.0/gold/fileread.cc.omv~ binutils-2.34.0/gold/fileread.cc
+--- binutils-2.34.0/gold/fileread.cc.omv~	2020-06-23 00:57:05.342616974 +0200
++++ binutils-2.34.0/gold/fileread.cc	2020-06-23 00:58:45.002751788 +0200
+@@ -32,9 +32,7 @@
+ #include <sys/mman.h>
+ #endif
+ 
+-#ifdef HAVE_READV
+ #include <sys/uio.h>
+-#endif
+ 
+ #include <sys/stat.h>
+ #include "filenames.h"
+@@ -83,15 +81,6 @@ gold_munmap(void *, size_t)
+ 
+ #endif
+ 
+-#ifndef HAVE_READV
+-struct iovec { void* iov_base; size_t iov_len; };
+-ssize_t
+-readv(int, const iovec*, int)
+-{
+-  gold_unreachable();
+-}
+-#endif
+-
+ namespace gold
+ {
+ 
+@@ -692,9 +681,7 @@ File_read::do_readv(off_t base, const Re
+ 
+ // Portable IOV_MAX.
+ 
+-#if !defined(HAVE_READV)
+-#define GOLD_IOV_MAX 1
+-#elif defined(IOV_MAX)
++#if defined(IOV_MAX)
+ #define GOLD_IOV_MAX IOV_MAX
+ #else
+ #define GOLD_IOV_MAX (File_read::max_readv_entries * 2)
+diff -up binutils-2.34.0/gold/plugin.cc.omv~ binutils-2.34.0/gold/plugin.cc
+--- binutils-2.34.0/gold/plugin.cc.omv~	2020-06-23 02:36:41.075038434 +0200
++++ binutils-2.34.0/gold/plugin.cc	2020-06-23 02:37:03.204294388 +0200
+@@ -30,6 +30,7 @@
+ #include <vector>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <sys/stat.h>
+ #include "libiberty.h"
+ 
+ #ifdef ENABLE_PLUGINS

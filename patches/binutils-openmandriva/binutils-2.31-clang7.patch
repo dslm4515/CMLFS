@@ -1,0 +1,12 @@
+diff -up binutils-2.36/gold/x86_64.cc.20~ binutils-2.36/gold/x86_64.cc
+--- binutils-2.36/gold/x86_64.cc.20~	2021-01-25 01:38:26.627472970 +0100
++++ binutils-2.36/gold/x86_64.cc	2021-01-25 01:39:40.334810370 +0100
+@@ -1596,7 +1596,7 @@ Target_x86_64<size>::record_gnu_property
+ {
+   uint32_t val = 0;
+ 
+-  switch (pr_type)
++  switch (static_cast<uint32_t>(pr_type))
+     {
+     case elfcpp::GNU_PROPERTY_X86_COMPAT_ISA_1_USED:
+     case elfcpp::GNU_PROPERTY_X86_COMPAT_ISA_1_NEEDED:

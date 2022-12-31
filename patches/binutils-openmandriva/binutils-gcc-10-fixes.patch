@@ -1,0 +1,146 @@
+diff -up binutils-2.36/binutils/dlltool.c.10~ binutils-2.36/binutils/dlltool.c
+--- binutils-2.36/binutils/dlltool.c.10~	2021-01-09 11:47:33.000000000 +0100
++++ binutils-2.36/binutils/dlltool.c	2021-01-24 21:00:09.046451923 +0100
+@@ -1266,7 +1266,7 @@ run (const char *what, char *args)
+   int pid, wait_status;
+   int i;
+   const char **argv;
+-  char *errmsg_fmt, *errmsg_arg;
++  char *errmsg_fmt = "", *errmsg_arg = "";
+   char *temp_base = choose_temp_base ();
+ 
+   inform (_("run: %s %s"), what, args);
+diff -up binutils-2.36/binutils/mclex.c.10~ binutils-2.36/binutils/mclex.c
+--- binutils-2.36/binutils/mclex.c.10~	2021-01-09 11:47:33.000000000 +0100
++++ binutils-2.36/binutils/mclex.c	2021-01-24 21:00:09.059785361 +0100
+@@ -207,7 +207,7 @@ enum_severity (int e)
+ static void
+ mc_add_keyword_ascii (const char *sz, int rid, const char *grp, rc_uint_type nv, const char *sv)
+ {
+-  unichar *usz, *usv = NULL;
++  unichar *usz = NULL, *usv = NULL;
+   rc_uint_type usz_len;
+ 
+   unicode_from_codepage (&usz_len, &usz, sz, CP_ACP);
+diff -up binutils-2.36/binutils/srconv.c.10~ binutils-2.36/binutils/srconv.c
+--- binutils-2.36/binutils/srconv.c.10~	2021-01-09 11:47:33.000000000 +0100
++++ binutils-2.36/binutils/srconv.c	2021-01-24 21:00:09.059785361 +0100
+@@ -316,6 +316,7 @@ wr_hd (struct coff_ofile *p)
+   struct IT_hd hd;
+ 
+   hd.spare1 = 0;
++  hd.spare2 = 0;
+   if (bfd_get_file_flags (abfd) & EXEC_P)
+     hd.mt = MTYPE_ABS_LM;
+   else
+diff -up binutils-2.36/binutils/windmc.c.10~ binutils-2.36/binutils/windmc.c
+--- binutils-2.36/binutils/windmc.c.10~	2021-01-09 11:47:33.000000000 +0100
++++ binutils-2.36/binutils/windmc.c	2021-01-24 21:00:09.059785361 +0100
+@@ -338,7 +338,7 @@ mc_add_node_lang (mc_node *root, const m
+ static char *
+ convert_unicode_to_ACP (const unichar *usz)
+ {
+-  char *s;
++  char *s = NULL;
+   rc_uint_type l;
+ 
+   if (! usz)
+@@ -607,10 +607,10 @@ mc_generate_bin_item (mc_node_lang *n, r
+   else
+     {
+       rc_uint_type txt_len, l;
+-      char *cvt_txt;
++      char *cvt_txt = NULL;
+ 
+       codepage_from_unicode( &l, n->message, &cvt_txt, n->lang->lang_info.wincp);
+-      if (! cvt_txt)
++      if (cvt_txt == NULL)
+ 	fatal ("Failed to convert message to language codepage.\n");
+       txt_len = strlen (cvt_txt);
+       if (mcset_automatic_null_termination && txt_len > 0)
+@@ -1107,7 +1107,7 @@ main (int argc, char **argv)
+ 
+   /* Load the input file and do code page transformations to UTF16.  */
+   {
+-    unichar *u;
++    unichar *u = NULL;
+     rc_uint_type ul;
+     char *buff;
+     bfd_size_type flen;
+diff -up binutils-2.36/gas/config/tc-arm.c.10~ binutils-2.36/gas/config/tc-arm.c
+--- binutils-2.36/gas/config/tc-arm.c.10~	2021-01-09 11:47:33.000000000 +0100
++++ binutils-2.36/gas/config/tc-arm.c	2021-01-25 01:31:59.780594664 +0100
+@@ -28963,9 +28963,8 @@ md_apply_fix (fixS *	fixP,
+ 	 perform relaxation.  */
+       if ((offsetT) value == -2)
+ 	{
+-	  newval = md_chars_to_number (buf, THUMB_SIZE);
+ 	  newval = 0xbf00; /* NOP encoding T1 */
+-	  md_number_to_chars (buf, newval, THUMB_SIZE);
++	  goto jim;
+ 	}
+       else
+ 	{
+@@ -28976,6 +28975,7 @@ md_apply_fix (fixS *	fixP,
+ 	    {
+ 	      newval = md_chars_to_number (buf, THUMB_SIZE);
+ 	      newval |= ((value & 0x3e) << 2) | ((value & 0x40) << 3);
++	    jim:
+ 	      md_number_to_chars (buf, newval, THUMB_SIZE);
+ 	    }
+ 	}
+@@ -29178,17 +29178,14 @@ md_apply_fix (fixS *	fixP,
+     case BFD_RELOC_ARM_GOTFUNCDESC:
+     case BFD_RELOC_ARM_GOTOFFFUNCDESC:
+     case BFD_RELOC_ARM_FUNCDESC:
+-      if (arm_fdpic)
+-	{
+-	  if (fixP->fx_done || !seg->use_rela_p)
+-	    md_number_to_chars (buf, 0, 4);
+-	}
+-      else
++      if (!arm_fdpic)
+ 	{
+ 	  as_bad_where (fixP->fx_file, fixP->fx_line,
+ 			_("Relocation supported only in FDPIC mode"));
+-      }
+-      break;
++	  break;
++	}
++      value = 0;
++      goto fred;
+ #endif
+ 
+     case BFD_RELOC_RVA:
+@@ -29200,6 +29197,7 @@ md_apply_fix (fixS *	fixP,
+ #ifdef TE_PE
+     case BFD_RELOC_32_SECREL:
+ #endif
++    fred:
+       if (fixP->fx_done || !seg->use_rela_p)
+ #ifdef TE_WINCE
+ 	/* For WinCE we only do this for pcrel fixups.  */
+diff -up binutils-2.36/gold/gdb-index.cc.10~ binutils-2.36/gold/gdb-index.cc
+--- binutils-2.36/gold/gdb-index.cc.10~	2021-01-09 11:47:34.000000000 +0100
++++ binutils-2.36/gold/gdb-index.cc	2021-01-24 21:00:09.046451923 +0100
+@@ -817,7 +817,7 @@ Gdb_index_info_reader::get_qualified_nam
+ void
+ Gdb_index_info_reader::record_cu_ranges(Dwarf_die* die)
+ {
+-  unsigned int shndx;
++  unsigned int shndx = 0;
+   unsigned int shndx2;
+ 
+   off_t ranges_offset = die->ref_attribute(elfcpp::DW_AT_ranges, &shndx);
+diff -up binutils-2.36/gold/layout.cc.10~ binutils-2.36/gold/layout.cc
+--- binutils-2.36/gold/layout.cc.10~	2021-01-24 21:00:09.039785203 +0100
++++ binutils-2.36/gold/layout.cc	2021-01-24 21:00:09.046451923 +0100
+@@ -1986,7 +1986,7 @@ Layout::attach_allocated_section_to_segm
+   seg_flags |= os->extra_segment_flags();
+ 
+   // Check for --section-start.
+-  uint64_t addr;
++  uint64_t addr = 0;
+   bool is_address_set = parameters->options().section_start(os->name(), &addr);
+ 
+   // In general the only thing we really care about for PT_LOAD

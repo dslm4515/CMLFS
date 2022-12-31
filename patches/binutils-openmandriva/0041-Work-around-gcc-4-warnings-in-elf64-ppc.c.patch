@@ -1,0 +1,93 @@
+From 7183434818ec77ff8d81063c4cd2a5083f89f30a Mon Sep 17 00:00:00 2001
+From: Alan Modra <amodra@gmail.com>
+Date: Wed, 9 Feb 2022 16:21:02 +1030
+Subject: [PATCH 41/91] Work around gcc-4 warnings in elf64-ppc.c
+
+elf64-ppc.c: In function 'ppc64_elf_size_dynamic_sections':
+elf64-ppc.c:10309:45: error: value computed is not used [-Werror=unused-value]
+     ++lgot_ents, ++lgot_masks, isym != NULL && isym++)
+
+It is of course a silly warning, fixed in later versions of gcc.  I
+wrote "isym != NULL && isym++" rather than the simpler "isym++" to
+stop sanitisers complaining about incrementing a NULL pointer.  isym
+is of course unused in any code path where it might start off as
+NULL.  Sometimes you can't win.  So don't try to be clever in reading
+local symbols only when needed.  99 times out of 100 they will be
+cached anyway.
+
+	* elf64-ppc.c (ppc64_elf_size_dynamic_sections): Avoid annoying
+	warnings by always reading local syms.
+	(ppc64_elf_layout_multitoc): Likewise.
+
+(cherry picked from commit c9fecd62838e481d9902a7fba42a6928370c9b10)
+---
+ bfd/elf64-ppc.c | 36 ++++++++++++++----------------------
+ 1 file changed, 14 insertions(+), 22 deletions(-)
+
+diff --git a/bfd/elf64-ppc.c b/bfd/elf64-ppc.c
+index e7a9ffef089..bfa2f61604c 100644
+--- a/bfd/elf64-ppc.c
++++ b/bfd/elf64-ppc.c
+@@ -10292,22 +10292,18 @@ ppc64_elf_size_dynamic_sections (bfd *output_bfd,
+       local_plt = (struct plt_entry **) end_lgot_ents;
+       end_local_plt = local_plt + locsymcount;
+       lgot_masks = (unsigned char *) end_local_plt;
+-      local_syms = NULL;
+-      if (bfd_link_pic (info))
++      local_syms = (Elf_Internal_Sym *) symtab_hdr->contents;
++      if (local_syms == NULL && locsymcount != 0)
+ 	{
+-	  local_syms = (Elf_Internal_Sym *) symtab_hdr->contents;
+-	  if (local_syms == NULL && locsymcount != 0)
+-	    {
+-	      local_syms = bfd_elf_get_elf_syms (ibfd, symtab_hdr, locsymcount,
+-						 0, NULL, NULL, NULL);
+-	      if (local_syms == NULL)
+-		return false;
+-	    }
++	  local_syms = bfd_elf_get_elf_syms (ibfd, symtab_hdr, locsymcount,
++					     0, NULL, NULL, NULL);
++	  if (local_syms == NULL)
++	    return false;
+ 	}
+       s = ppc64_elf_tdata (ibfd)->got;
+       for (isym = local_syms;
+ 	   lgot_ents < end_lgot_ents;
+-	   ++lgot_ents, ++lgot_masks, isym != NULL && isym++)
++	   ++lgot_ents, ++lgot_masks, isym++)
+ 	{
+ 	  struct got_entry **pent, *ent;
+ 
+@@ -12828,22 +12824,18 @@ ppc64_elf_layout_multitoc (struct bfd_link_info *info)
+       local_plt = (struct plt_entry **) end_lgot_ents;
+       end_local_plt = local_plt + locsymcount;
+       lgot_masks = (unsigned char *) end_local_plt;
+-      local_syms = NULL;
+-      if (bfd_link_pic (info))
++      local_syms = (Elf_Internal_Sym *) symtab_hdr->contents;
++      if (local_syms == NULL && locsymcount != 0)
+ 	{
+-	  local_syms = (Elf_Internal_Sym *) symtab_hdr->contents;
+-	  if (local_syms == NULL && locsymcount != 0)
+-	    {
+-	      local_syms = bfd_elf_get_elf_syms (ibfd, symtab_hdr, locsymcount,
+-						 0, NULL, NULL, NULL);
+-	      if (local_syms == NULL)
+-		return false;
+-	    }
++	  local_syms = bfd_elf_get_elf_syms (ibfd, symtab_hdr, locsymcount,
++					     0, NULL, NULL, NULL);
++	  if (local_syms == NULL)
++	    return false;
+ 	}
+       s = ppc64_elf_tdata (ibfd)->got;
+       for (isym = local_syms;
+ 	   lgot_ents < end_lgot_ents;
+-	   ++lgot_ents, ++lgot_masks, isym != NULL && isym++)
++	   ++lgot_ents, ++lgot_masks, isym++)
+ 	{
+ 	  struct got_entry *ent;
+ 
+-- 
+2.35.1
+

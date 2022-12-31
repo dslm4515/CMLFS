@@ -1,0 +1,379 @@
+From caa6172de4b5100c9b45fd03eae714167a6085c1 Mon Sep 17 00:00:00 2001
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Wed, 9 Feb 2022 15:51:22 -0800
+Subject: [PATCH 04/91] x86: Disallow invalid relocation against protected
+ symbol
+
+I am checking this into master and will backport it to 2.38 branch.
+
+H.J
+----
+On x86, GCC 12 supports -mno-direct-extern-access to enable canonical
+reference to protected function and disable copy relocation.  With
+-mno-direct-extern-access, the canonical protected function symbols must
+be accessed via canonical reference and the protected data symbols in
+shared libraries are non-copyable. Under glibc 2.35, non-canonical
+reference to the canonical protected function will get the run-time error:
+
+./y: internal_f: ./libfoo.so: non-canonical reference to canonical protected function
+
+and copy relocations against the non-copyable protected symbols will get
+the run-time error:
+
+./x: internal_i: ./libfoo.so: copy relocation against non-copyable protected symbol
+
+Update x86 linker to disallow non-canonical reference to the canonical
+protected function:
+
+ld: plt.o: non-canonical reference to canonical protected function `internal_f' in libfoo.so
+ld: failed to set dynamic section sizes: bad value
+
+and copy relocation against the non-copyable protected symbol:
+
+ld: main.o: copy relocation against non-copyable protected symbol `internal_i' in libfoo.so
+
+at link-time.
+
+bfd/
+
+	PR ld/28875
+	* elf-properties.c (_bfd_elf_parse_gnu_properties): Don't skip
+	shared libraries for GNU_PROPERTY_1_NEEDED_INDIRECT_EXTERN_ACCESS.
+	* elf32-i386.c (elf_i386_scan_relocs): Disallow non-canonical
+	reference to canonical protected function.
+	* elf64-x86-64.c (elf_x86_64_scan_relocs): Likewise.
+	* elfxx-x86.c (elf_x86_allocate_dynrelocs): Don't allow copy
+	relocation against non-copyable protected symbol.
+
+ld/
+
+	PR ld/28875
+	* testsuite/ld-i386/i386.exp: Check non-canonical reference to
+	canonical protected function and check copy relocation against
+	non-copyable protected symbol.
+	* testsuite/ld-i386/pr21997-1.err: New file.
+	* testsuite/ld-i386/pr28875.err: Likewise.
+	* testsuite/ld-i386/pr28875a.c: Likewise.
+	* testsuite/ld-i386/pr28875b.c: Likewise.
+	* testsuite/ld-x86-64/pr21997-1a.err: Updated.
+	* testsuite/ld-x86-64/pr21997-1b.err: Likewise.
+	* testsuite/ld-x86-64/pr28875-data.err: New file.
+	* testsuite/ld-x86-64/pr28875-func.err: Likewise.
+	* testsuite/ld-x86-64/x86-64.exp: Check non-canonical reference
+	to canonical protected function and check copy relocation against
+	non-copyable protected symbol.
+
+(cherry picked from commit ebb191adac4ab45498dec0bfaac62f0a33537ba4)
+---
+ bfd/elf-properties.c                    |  5 +---
+ bfd/elf32-i386.c                        | 17 +++++++++++++
+ bfd/elf64-x86-64.c                      | 17 +++++++++++++
+ bfd/elfxx-x86.c                         | 18 ++++++++++++++
+ ld/testsuite/ld-i386/i386.exp           | 33 ++++++++++++++++++-------
+ ld/testsuite/ld-i386/pr21997-1.err      |  2 ++
+ ld/testsuite/ld-i386/pr28875.err        |  2 ++
+ ld/testsuite/ld-i386/pr28875a.c         |  5 ++++
+ ld/testsuite/ld-i386/pr28875b.c         |  7 ++++++
+ ld/testsuite/ld-x86-64/pr21997-1a.err   |  2 +-
+ ld/testsuite/ld-x86-64/pr21997-1b.err   |  2 +-
+ ld/testsuite/ld-x86-64/pr28875-data.err |  2 ++
+ ld/testsuite/ld-x86-64/pr28875-func.err |  2 ++
+ ld/testsuite/ld-x86-64/x86-64.exp       | 27 ++++++++++++--------
+ 14 files changed, 116 insertions(+), 25 deletions(-)
+ create mode 100644 ld/testsuite/ld-i386/pr21997-1.err
+ create mode 100644 ld/testsuite/ld-i386/pr28875.err
+ create mode 100644 ld/testsuite/ld-i386/pr28875a.c
+ create mode 100644 ld/testsuite/ld-i386/pr28875b.c
+ create mode 100644 ld/testsuite/ld-x86-64/pr28875-data.err
+ create mode 100644 ld/testsuite/ld-x86-64/pr28875-func.err
+
+diff --git a/bfd/elf-properties.c b/bfd/elf-properties.c
+index bf4f70d6256..d67aadde16b 100644
+--- a/bfd/elf-properties.c
++++ b/bfd/elf-properties.c
+@@ -195,14 +195,11 @@ _bfd_elf_parse_gnu_properties (bfd *abfd, Elf_Internal_Note *note)
+ 		  prop = _bfd_elf_get_property (abfd, type, datasz);
+ 		  prop->u.number |= bfd_h_get_32 (abfd, ptr);
+ 		  prop->pr_kind = property_number;
+-		  if ((abfd->flags & DYNAMIC) == 0
+-		      && type == GNU_PROPERTY_1_NEEDED
++		  if (type == GNU_PROPERTY_1_NEEDED
+ 		      && ((prop->u.number
+ 			   & GNU_PROPERTY_1_NEEDED_INDIRECT_EXTERN_ACCESS)
+ 			  != 0))
+ 		    {
+-		      /* NB: Skip the shared library since it may not be
+-			 the same at run-time.  */
+ 		      elf_has_indirect_extern_access (abfd) = true;
+ 		      /* GNU_PROPERTY_NO_COPY_ON_PROTECTED is implied.  */
+ 		      elf_has_no_copy_on_protected (abfd) = true;
+diff --git a/bfd/elf32-i386.c b/bfd/elf32-i386.c
+index 25977cc56bd..fb5ed161f50 100644
+--- a/bfd/elf32-i386.c
++++ b/bfd/elf32-i386.c
+@@ -1779,6 +1779,23 @@ elf_i386_scan_relocs (bfd *abfd,
+ 		    func_pointer_ref = true;
+ 		}
+ 
++	      if (h->pointer_equality_needed
++		  && h->type == STT_FUNC
++		  && eh->def_protected
++		  && elf_has_indirect_extern_access (h->root.u.def.section->owner))
++		{
++		  /* Disallow non-canonical reference to canonical
++		     protected function.  */
++		  _bfd_error_handler
++		    /* xgettext:c-format */
++		    (_("%pB: non-canonical reference to canonical "
++		       "protected function `%s' in %pB"),
++		     abfd, h->root.root.string,
++		     h->root.u.def.section->owner);
++		  bfd_set_error (bfd_error_bad_value);
++		  goto error_return;
++		}
++
+ 	      if (!func_pointer_ref)
+ 		{
+ 		  /* If this reloc is in a read-only section, we might
+diff --git a/bfd/elf64-x86-64.c b/bfd/elf64-x86-64.c
+index 02ca55200bb..b5718e71121 100644
+--- a/bfd/elf64-x86-64.c
++++ b/bfd/elf64-x86-64.c
+@@ -2223,6 +2223,23 @@ elf_x86_64_scan_relocs (bfd *abfd, struct bfd_link_info *info,
+ 		    func_pointer_ref = true;
+ 		}
+ 
++	      if (h->pointer_equality_needed
++		  && h->type == STT_FUNC
++		  && eh->def_protected
++		  && elf_has_indirect_extern_access (h->root.u.def.section->owner))
++		{
++		  /* Disallow non-canonical reference to canonical
++		     protected function.  */
++		  _bfd_error_handler
++		    /* xgettext:c-format */
++		    (_("%pB: non-canonical reference to canonical "
++		       "protected function `%s' in %pB"),
++		     abfd, h->root.root.string,
++		     h->root.u.def.section->owner);
++		  bfd_set_error (bfd_error_bad_value);
++		  goto error_return;
++		}
++
+ 	      if (!func_pointer_ref)
+ 		{
+ 		  /* If this reloc is in a read-only section, we might
+diff --git a/bfd/elfxx-x86.c b/bfd/elfxx-x86.c
+index d00dc45677b..acb2cc8528d 100644
+--- a/bfd/elfxx-x86.c
++++ b/bfd/elfxx-x86.c
+@@ -524,6 +524,24 @@ elf_x86_allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
+     {
+       asection *sreloc;
+ 
++      if (eh->def_protected
++	  && elf_has_no_copy_on_protected (h->root.u.def.section->owner))
++	{
++	  /* Disallow copy relocation against non-copyable protected
++	     symbol.  */
++	  asection *s = p->sec->output_section;
++	  if (s != NULL && (s->flags & SEC_READONLY) != 0)
++	    {
++	      info->callbacks->einfo
++		/* xgettext:c-format */
++		(_("%F%P: %pB: copy relocation against non-copyable "
++		   "protected symbol `%s' in %pB\n"),
++		 p->sec->owner, h->root.root.string,
++		 h->root.u.def.section->owner);
++	      return false;
++	    }
++	}
++
+       sreloc = elf_section_data (p->sec)->sreloc;
+ 
+       BFD_ASSERT (sreloc != NULL);
+diff --git a/ld/testsuite/ld-i386/i386.exp b/ld/testsuite/ld-i386/i386.exp
+index 82e14ab38d0..d997c757325 100644
+--- a/ld/testsuite/ld-i386/i386.exp
++++ b/ld/testsuite/ld-i386/i386.exp
+@@ -1288,6 +1288,30 @@ if { [isnative]
+ 	    {} \
+ 	    "pr22842.so" \
+ 	] \
++	[list \
++	    "Build pr28875.so" \
++	    "-shared -Wl,-z,indirect-extern-access" \
++	    "-fPIC" \
++	    { pr28875a.c } \
++	    {} \
++	    "pr28875.so" \
++	] \
++	[list \
++	    "Build pr28875" \
++	    "$NOPIE_LDFLAGS -Wl,--no-as-needed tmpdir/pr28875.so" \
++	    "$NOPIE_CFLAGS" \
++	    { pr28875b.c } \
++	    {{error_output "pr28875.err"}} \
++	    "pr28875" \
++	] \
++	[list \
++	    "Build pr21997-1" \
++	    "$NOPIE_LDFLAGS -Wl,--no-as-needed,-z,notext tmpdir/pr21997-1.so" \
++	    "$NOPIE_CFLAGS -Wa,-mx86-used-note=yes" \
++	    { pr21997-1b.c } \
++	    {{error_output "pr21997-1.err"}} \
++	    "pr21997-1" \
++	] \
+     ]
+ 
+     run_ld_link_exec_tests [list \
+@@ -1343,15 +1367,6 @@ if { [isnative]
+ 	    "pass.out" \
+ 	    "-fPIC" \
+ 	] \
+-	[list \
+-	    "Run pr21997-1" \
+-	    "$NOPIE_LDFLAGS -Wl,--no-as-needed,-z,notext tmpdir/pr21997-1.so" \
+-	    "-Wa,-mx86-used-note=yes" \
+-	    { pr21997-1b.c } \
+-	    "pr21997-1" \
+-	    "pass.out" \
+-	    "$NOPIE_CFLAGS" \
+-	] \
+ 	[list \
+ 	    "Run pr21997-1 (PIC 1)" \
+ 	    "$NOPIE_LDFLAGS -Wl,--no-as-needed tmpdir/pr21997-1.so" \
+diff --git a/ld/testsuite/ld-i386/pr21997-1.err b/ld/testsuite/ld-i386/pr21997-1.err
+new file mode 100644
+index 00000000000..e46f1cebeb9
+--- /dev/null
++++ b/ld/testsuite/ld-i386/pr21997-1.err
+@@ -0,0 +1,2 @@
++.*: tmpdir/pr21997-1b.o: copy relocation against non-copyable protected symbol `protected' in tmpdir/pr21997-1.so
++#...
+diff --git a/ld/testsuite/ld-i386/pr28875.err b/ld/testsuite/ld-i386/pr28875.err
+new file mode 100644
+index 00000000000..46f6f47dfd3
+--- /dev/null
++++ b/ld/testsuite/ld-i386/pr28875.err
+@@ -0,0 +1,2 @@
++.*: tmpdir/pr28875b.o: non-canonical reference to canonical protected function `internal_f' in tmpdir/pr28875.so
++#...
+diff --git a/ld/testsuite/ld-i386/pr28875a.c b/ld/testsuite/ld-i386/pr28875a.c
+new file mode 100644
+index 00000000000..d24cf29faac
+--- /dev/null
++++ b/ld/testsuite/ld-i386/pr28875a.c
+@@ -0,0 +1,5 @@
++__attribute__ ((visibility("protected")))
++void
++internal_f (void)
++{
++}
+diff --git a/ld/testsuite/ld-i386/pr28875b.c b/ld/testsuite/ld-i386/pr28875b.c
+new file mode 100644
+index 00000000000..2c0381d4252
+--- /dev/null
++++ b/ld/testsuite/ld-i386/pr28875b.c
+@@ -0,0 +1,7 @@
++extern void internal_f (void);
++
++int
++main ()
++{
++  return (int) &internal_f;
++}
+diff --git a/ld/testsuite/ld-x86-64/pr21997-1a.err b/ld/testsuite/ld-x86-64/pr21997-1a.err
+index e57ebd1f461..e46f1cebeb9 100644
+--- a/ld/testsuite/ld-x86-64/pr21997-1a.err
++++ b/ld/testsuite/ld-x86-64/pr21997-1a.err
+@@ -1,2 +1,2 @@
+-.*relocation R_X86_64_PC32 against protected symbol `protected' can not be used when making a P(D|I)E object; recompile with -fPIE
++.*: tmpdir/pr21997-1b.o: copy relocation against non-copyable protected symbol `protected' in tmpdir/pr21997-1.so
+ #...
+diff --git a/ld/testsuite/ld-x86-64/pr21997-1b.err b/ld/testsuite/ld-x86-64/pr21997-1b.err
+index a99fc1d5149..af028b7d5e9 100644
+--- a/ld/testsuite/ld-x86-64/pr21997-1b.err
++++ b/ld/testsuite/ld-x86-64/pr21997-1b.err
+@@ -1,2 +1,2 @@
+-.*relocation R_X86_64_32S against protected symbol `protected' can not be used when making a P(D|I)E object; recompile with -fPIE
++.*: tmpdir/pr21997-1c.o: copy relocation against non-copyable protected symbol `protected' in tmpdir/pr21997-1.so
+ #...
+diff --git a/ld/testsuite/ld-x86-64/pr28875-data.err b/ld/testsuite/ld-x86-64/pr28875-data.err
+new file mode 100644
+index 00000000000..62dd5b04223
+--- /dev/null
++++ b/ld/testsuite/ld-x86-64/pr28875-data.err
+@@ -0,0 +1,2 @@
++.*: tmpdir/protected-data-1b.o: copy relocation against non-copyable protected symbol `protected_data_1a' in tmpdir/libprotected-data-1b.so
++#...
+diff --git a/ld/testsuite/ld-x86-64/pr28875-func.err b/ld/testsuite/ld-x86-64/pr28875-func.err
+new file mode 100644
+index 00000000000..64e961cb3d4
+--- /dev/null
++++ b/ld/testsuite/ld-x86-64/pr28875-func.err
+@@ -0,0 +1,2 @@
++.*: tmpdir/protected-func-1b.o: non-canonical reference to canonical protected function `protected_func_1a' in tmpdir/libprotected-func-2b.so
++#...
+diff --git a/ld/testsuite/ld-x86-64/x86-64.exp b/ld/testsuite/ld-x86-64/x86-64.exp
+index 3bfc5e6e467..c6d88a97f49 100644
+--- a/ld/testsuite/ld-x86-64/x86-64.exp
++++ b/ld/testsuite/ld-x86-64/x86-64.exp
+@@ -1381,6 +1381,14 @@ if { [isnative] && [check_compiler_available] } {
+ 	    {{readelf -n indirect-extern-access.rd}}  \
+ 	    "libprotected-func-2b.so" \
+ 	] \
++	[list \
++	    "Build protected-func-2 without PIE" \
++	    "$NOPIE_LDFLAGS -Wl,--no-as-needed tmpdir/libprotected-func-2b.so" \
++	    "$NOPIE_CFLAGS -Wa,-mx86-used-note=yes" \
++	    { protected-func-1b.c } \
++	    {{error_output "pr28875-func.err"}} \
++	    "protected-func-2" \
++	] \
+ 	[list \
+ 	    "Build libprotected-data-1a.so" \
+ 	    "-shared -z noindirect-extern-access" \
+@@ -1402,7 +1410,7 @@ if { [isnative] && [check_compiler_available] } {
+ 	    "$NOPIE_LDFLAGS -Wl,--no-as-needed tmpdir/libprotected-data-1b.so" \
+ 	    "$NOPIE_CFLAGS -Wa,-mx86-used-note=yes" \
+ 	    { protected-data-1b.c } \
+-	    {} \
++	    {{error_output "pr28875-data.err"}} \
+ 	    "protected-data-1" \
+ 	] \
+ 	[list \
+@@ -1468,6 +1476,14 @@ if { [isnative] && [check_compiler_available] } {
+ 		"-Wa,-mx86-used-note=yes" \
+ 		{ pr25416-5d.s } \
+ 	    ] \
++	    [list \
++		"Build pr21997-1b" \
++		"$NOPIE_LDFLAGS -Wl,--no-as-needed,-z,notext tmpdir/pr21997-1.so" \
++		"$NOPIE_CFLAGS -Wa,-mx86-used-note=yes" \
++		{ pr21997-1c.c } \
++		{{error_output "pr21997-1b.err"}} \
++		"pr21997-1b" \
++	    ] \
+ 	]
+ 
+ 	run_ld_link_exec_tests [list \
+@@ -1480,15 +1496,6 @@ if { [isnative] && [check_compiler_available] } {
+ 		"pass.out" \
+ 		"$NOPIE_CFLAGS" \
+ 	    ] \
+-	    [list \
+-		"Run pr21997-1b" \
+-		"$NOPIE_LDFLAGS -Wl,--no-as-needed,-z,notext tmpdir/pr21997-1.so" \
+-		"-Wa,-mx86-used-note=yes" \
+-		{ pr21997-1c.c } \
+-		"pr21997-1b" \
+-		"pass.out" \
+-		"$NOPIE_CFLAGS" \
+-	    ] \
+ 	    [list \
+ 		"Run pr25416-5a (GDesc -> IE -maddress-mode=short)" \
+ 		"$NOPIE_LDFLAGS -Wl,--no-as-needed tmpdir/pr25416-5b.so" \
+-- 
+2.35.1
+

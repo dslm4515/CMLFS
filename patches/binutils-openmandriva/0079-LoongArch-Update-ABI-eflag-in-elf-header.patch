@@ -1,0 +1,188 @@
+From d54081c642ac0f3bd2d057fdbccebd2163c91233 Mon Sep 17 00:00:00 2001
+From: Liuzhen Song <liuzhensong@loongson.cn>
+Date: Wed, 13 Apr 2022 10:39:38 +0100
+Subject: [PATCH 79/91] LoongArch: Update ABI eflag in elf header.
+
+---
+ bfd/elfnn-loongarch.c     |  2 +-
+ gas/config/tc-loongarch.c | 46 +++++++++++++++++----------------------
+ include/elf/loongarch.h   | 37 +++++++++++++++++++------------
+ 3 files changed, 44 insertions(+), 41 deletions(-)
+
+diff --git a/bfd/elfnn-loongarch.c b/bfd/elfnn-loongarch.c
+index 00ebe5daeb2..1d129dba6e6 100644
+--- a/bfd/elfnn-loongarch.c
++++ b/bfd/elfnn-loongarch.c
+@@ -401,7 +401,7 @@ elfNN_loongarch_merge_private_bfd_data (bfd *ibfd, struct bfd_link_info *info)
+     }
+ 
+   /* Disallow linking different ABIs.  */
+-  if ((out_flags ^ in_flags) & EF_LOONGARCH_ABI)
++  if (EF_LOONGARCH_ABI(out_flags ^ in_flags) & EF_LOONGARCH_ABI_MASK)
+     {
+       _bfd_error_handler (_("%pB: can't link different ABI object."), ibfd);
+       goto fail;
+diff --git a/gas/config/tc-loongarch.c b/gas/config/tc-loongarch.c
+index 2fe40adfc85..3c9b3faa3ed 100644
+--- a/gas/config/tc-loongarch.c
++++ b/gas/config/tc-loongarch.c
+@@ -122,7 +122,6 @@ enum options
+ struct option md_longopts[] =
+ {
+   { "mabi", required_argument, NULL, OPTION_ABI },
+-  { "mfloat-abi", required_argument, NULL, OPTION_FLOAT_ABI },
+ 
+   { "mfpu", required_argument, NULL, OPTION_FLOAT_ISA },
+ 
+@@ -139,35 +138,36 @@ int
+ md_parse_option (int c, const char *arg)
+ {
+   int ret = 1;
++  char lp64[256] = "";
++  char ilp32[256] = "";
++  unsigned char *suf = (unsigned char *)arg;
++
++  lp64['s'] = lp64['S'] = EF_LOONGARCH_ABI_LP64_SOFT_FLOAT;
++  lp64['f'] = lp64['F'] = EF_LOONGARCH_ABI_LP64_SINGLE_FLOAT;
++  lp64['d'] = lp64['D'] = EF_LOONGARCH_ABI_LP64_DOUBLE_FLOAT;
++
++  ilp32['s'] = ilp32['S'] = EF_LOONGARCH_ABI_ILP32_SOFT_FLOAT;
++  ilp32['f'] = ilp32['F'] = EF_LOONGARCH_ABI_ILP32_SINGLE_FLOAT;
++  ilp32['d'] = ilp32['D'] = EF_LOONGARCH_ABI_ILP32_DOUBLE_FLOAT;
++
+   switch (c)
+     {
+     case OPTION_ABI:
+-      if (strcasecmp (arg, "lp64") == 0)
++      if (strncasecmp (arg, "lp64", 4) == 0 && lp64[suf[4]] != 0)
+ 	{
+-	  LARCH_opts.ase_abi |= EF_LOONGARCH_ABI_LP64;
+ 	  LARCH_opts.ase_ilp32 = 1;
+ 	  LARCH_opts.ase_lp64 = 1;
++	  LARCH_opts.ase_abi = lp64[suf[4]];
+ 	}
+-      else if (strcasecmp (arg, "ilp32") == 0)
++      else if (strncasecmp (arg, "ilp32", 5) == 0 && ilp32[suf[5]] != 0)
+ 	{
+-	  LARCH_opts.ase_abi |= EF_LOONGARCH_ABI_ILP32;
++	  LARCH_opts.ase_abi = ilp32[suf[5]];
+ 	  LARCH_opts.ase_ilp32 = 1;
+ 	}
+       else
+ 	ret = 0;
+       break;
+ 
+-    case OPTION_FLOAT_ABI:
+-      if (strcasecmp (arg, "soft") == 0)
+-	LARCH_opts.ase_abi |= EF_LOONGARCH_FLOAT_ABI_SOFT;
+-      else if (strcasecmp (arg, "single") == 0)
+-	LARCH_opts.ase_abi |= EF_LOONGARCH_FLOAT_ABI_SINGLE;
+-      else if (strcasecmp (arg, "double") == 0)
+-	LARCH_opts.ase_abi |= EF_LOONGARCH_FLOAT_ABI_DOUBLE;
+-      else
+-	ret = 0;
+-      break;
+-
+     case OPTION_FLOAT_ISA:
+       if (strcasecmp (arg, "soft") == 0)
+ 	LARCH_opts.ase_nf = 1;
+@@ -214,31 +214,25 @@ static struct htab *x_htab = NULL;
+ void
+ loongarch_after_parse_args ()
+ {
+-  /* Set default ABI/ISA LP64.  */
++  /* Set default ABI/ISA LP64D.  */
+   if (!EF_LOONGARCH_IS_LP64(LARCH_opts.ase_abi)
+       && !EF_LOONGARCH_IS_ILP32(LARCH_opts.ase_abi))
+     {
+       if (strcmp (default_arch, "loongarch64") == 0)
+ 	{
+-	  LARCH_opts.ase_abi |= EF_LOONGARCH_ABI_LP64;
++	  LARCH_opts.ase_abi = EF_LOONGARCH_ABI_LP64_DOUBLE_FLOAT;
+ 	  LARCH_opts.ase_ilp32 = 1;
+ 	  LARCH_opts.ase_lp64 = 1;
+ 	}
+       else if (strcmp (default_arch, "loongarch32") == 0)
+ 	{
+-	  LARCH_opts.ase_abi |= EF_LOONGARCH_ABI_ILP32;
++	  LARCH_opts.ase_abi = EF_LOONGARCH_ABI_ILP32_DOUBLE_FLOAT;
+ 	  LARCH_opts.ase_ilp32 = 1;
+ 	}
+       else
+ 	as_bad ("unknown default architecture `%s'", default_arch);
+     }
+ 
+-  /* Set default ABI double-float.  */
+-  if (!EF_LOONGARCH_IS_SOFT_FLOAT(LARCH_opts.ase_abi)
+-      && !EF_LOONGARCH_IS_SINGLE_FLOAT(LARCH_opts.ase_abi)
+-      && !EF_LOONGARCH_IS_DOUBLE_FLOAT(LARCH_opts.ase_abi))
+-    LARCH_opts.ase_abi |= EF_LOONGARCH_FLOAT_ABI_DOUBLE;
+-
+   /* Set default ISA double-float.  */
+   if (!LARCH_opts.ase_nf
+       && !LARCH_opts.ase_sf
+@@ -1378,5 +1372,5 @@ loongarch_handle_align (fragS *fragp)
+ void
+ loongarch_elf_final_processing (void)
+ {
+-  elf_elfheader (stdoutput)->e_flags |= LARCH_opts.ase_abi;
++  elf_elfheader (stdoutput)->e_flags = LARCH_opts.ase_abi;
+ }
+diff --git a/include/elf/loongarch.h b/include/elf/loongarch.h
+index 1893ef5faae..b7aa4ff069c 100644
+--- a/include/elf/loongarch.h
++++ b/include/elf/loongarch.h
+@@ -93,27 +93,36 @@ RELOC_NUMBER (R_LARCH_GNU_VTENTRY, 58)
+ END_RELOC_NUMBERS (R_LARCH_count)
+ 
+ /* Processor specific flags for the ELF header e_flags field.  */
+-#define EF_LOONGARCH_ABI_ILP32	    0x1
+-#define EF_LOONGARCH_ABI_LP64	    0x3
+-#define EF_LOONGARCH_ABI_MASK	    0x3
++/*The flag lp64s/lp64f/lp64d/ilp32s/ilp32f/ilp32d 3bits. */
++#define EF_LOONGARCH_ABI_LP64_SOFT_FLOAT	0x1
++#define EF_LOONGARCH_ABI_LP64_SINGLE_FLOAT	0x2
++#define EF_LOONGARCH_ABI_LP64_DOUBLE_FLOAT	0x3
+ 
+-#define EF_LOONGARCH_FLOAT_ABI_SOFT    0x0c
+-#define EF_LOONGARCH_FLOAT_ABI_SINGLE  0x08
+-#define EF_LOONGARCH_FLOAT_ABI_DOUBLE  0x00
+-#define EF_LOONGARCH_FLOAT_ABI_MASK    0x3c
++#define EF_LOONGARCH_ABI_ILP32_SOFT_FLOAT	0x5
++#define EF_LOONGARCH_ABI_ILP32_SINGLE_FLOAT	0x6
++#define EF_LOONGARCH_ABI_ILP32_DOUBLE_FLOAT	0x7
++
++#define EF_LOONGARCH_ABI_MASK	    		0x7
++#define EF_LOONGARCH_ABI_ILP32_MASK	    	0x4
++#define EF_LOONGARCH_ABI_FLOAT_MASK	    	0x3
++#define EF_LOONGARCH_ABI_SOFT_FLOAT_MASK	0x1
++#define EF_LOONGARCH_ABI_SINGLE_FLOAT_MASK	0x2
++#define EF_LOONGARCH_ABI_DOUBLE_FLOAT_MASK	0x3
++
++#define EF_LOONGARCH_ABI(abi)	(EF_LOONGARCH_ABI_MASK & (abi))
+ 
+ #define EF_LOONGARCH_IS_LP64(abi) \
+-  ((abi & EF_LOONGARCH_ABI_MASK) == EF_LOONGARCH_ABI_LP64)
++  (EF_LOONGARCH_ABI(abi) && (!(EF_LOONGARCH_ABI(abi) & EF_LOONGARCH_ABI_ILP32_MASK)))
+ #define EF_LOONGARCH_IS_ILP32(abi) \
+-  ((abi & EF_LOONGARCH_ABI_MASK) == EF_LOONGARCH_ABI_ILP32)
++  (EF_LOONGARCH_ABI(abi) && (EF_LOONGARCH_ABI(abi) & EF_LOONGARCH_ABI_ILP32_MASK))
+ 
+ #define EF_LOONGARCH_IS_SOFT_FLOAT(abi) \
+-  ((abi & EF_LOONGARCH_FLOAT_ABI_MASK) == EF_LOONGARCH_FLOAT_ABI_SOFT)
++  (!((EF_LOONGARCH_ABI(abi) & EF_LOONGARCH_ABI_FLOAT_MASK) ^ EF_LOONGARCH_ABI_SOFT_FLOAT_MASK))
++
+ #define EF_LOONGARCH_IS_SINGLE_FLOAT(abi) \
+-  ((abi & EF_LOONGARCH_FLOAT_ABI_MASK) == EF_LOONGARCH_FLOAT_ABI_SINGLE)
+-#define EF_LOONGARCH_IS_DOUBLE_FLOAT(abi) \
+-  ((abi & EF_LOONGARCH_FLOAT_ABI_MASK) == EF_LOONGARCH_FLOAT_ABI_DOUBLE)
++  (!((EF_LOONGARCH_ABI(abi) & EF_LOONGARCH_ABI_FLOAT_MASK) ^ EF_LOONGARCH_ABI_SINGLE_FLOAT_MASK))
+ 
+-#define EF_LOONGARCH_ABI (EF_LOONGARCH_ABI_MASK | EF_LOONGARCH_FLOAT_ABI_MASK)
++#define EF_LOONGARCH_IS_DOUBLE_FLOAT(abi) \
++  (!((EF_LOONGARCH_ABI(abi) & EF_LOONGARCH_ABI_FLOAT_MASK) ^ EF_LOONGARCH_ABI_DOUBLE_FLOAT_MASK))
+ 
+ #endif /* _ELF_LOONGARCH_H */
+-- 
+2.35.1
+

@@ -2,10 +2,40 @@
 # This section is done in Chroot environment
 
 # Apply security fixes from Adelie Linux
-patch -Np1 -i ../patches/binutils-alpine/binutils-ld-fix-static-linking.patch
-patch -Np1 -i ../patches/binutils-alpine/binutils-mips-disable-assert.patch
-patch -Np1 -i ../patches/binutils-alpine/gold-mips.patch
-patch -Np1 -i ../patches/binutils-alpine/ld-bfd-mips.patch
+#patch -Np1 -i ../patches/binutils-alpine/0001-Revert-PR25882-.gnu.attributes-are-not-checked-for-s.patch 
+#patch -Np1 -i ../patches/binutils-alpine/binutils-ld-fix-static-linking.patch
+#patch -Np1 -i ../patches/binutils-alpine/binutils-clang-dwarf-5.patch 
+
+# Apply patches from OpenMandriva
+patch -Np1 -i ../patches/binutils-openmandriva/0004-x86-Disallow-invalid-relocation-against-protected-sy.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/0006-Only-generate-an-RPATH-entry-if-LD_RUN_PATH-is-not-e.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/0008-PR28882-build-failure-with-gcc-4.2-due-to-use-of-0b-.patch
+patch -Np1 -i ../patches/binutils-openmandriva/0010-i386-Update-I386_NEED_DYNAMIC_RELOC_TYPE_P-for-DT_TE.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/0012-ld-Keep-indirect-symbol-from-IR-if-referenced-from-s.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/0014-Updated-Serbian-translations-for-the-bfd-gold-ld-and.patch
+patch -Np1 -i ../patches/binutils-openmandriva/0028-Revert-Check-thin-archive-element-file-size-against-.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/0055-dlltool-Use-the-output-name-as-basis-for-determinist.patch
+patch -Np1 -i ../patches/binutils-openmandriva/0057-libctf-ld-diagnose-corrupted-CTF-header-cth_strlen.patch
+patch -Np1 -i ../patches/binutils-openmandriva/0072-IBM-zSystems-Add-support-for-z16-as-CPU-name.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.20.51.0.2-libtool-lib64.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.21.51.0.8-skip-gold-check.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.22.52.0.4-no-config-h-check.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.24-2013-10-04.ld.gold-default-setttings.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.24.51.0.3.ld-default.settings.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.25.51-linux32.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.27-aarch64-ifunc.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.27.90-fix-warnings.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.31-clang7.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2.34.0-arm32-build-workaround.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-2015.01-accept-musl-libintl.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-do-not-link-with-static-libstdc++.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-export-demangle.h.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-gcc-10-fixes.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-gold-mismatched-section-flags.patch
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-special-sections-in-groups.patch 
+patch -Np1 -i ../patches/binutils-openmandriva/binutils-warnings.patch
+#Need to regenerate lex files
+rm -f binutils/syslex.c binutils/arlex.c binutils/deflex.c gas/config/bfin-lex.c gas/itbl-lex.c ld/ldlex.c
 
 # Create build directory
 mkdir -v build && cd build
@@ -13,11 +43,13 @@ mkdir -v build && cd build
 case $(uname -m) in
   x86_64)  export EXTRA_CONFIG=" --enable-targets=x86_64-pep --enable-64-bit-bfd"
            ;;
-  i686)    export EXTRA_CONFIG=" --disable-separate-code --enable-64-bit-bfd --enable-targets=x86_64-linux-gnu,x86_64-pep"
+  i686)    export EXTRA_CONFIG=" --disable-separate-code --enable-64-bit-bfd "
            ;;
 esac
 
-# Configure
+# Configure 
+CC="$CC -D_GNU_SOURCE=1 -DHAVE_DECL_ASPRINTF=1 " \
+CXX="$CXX -D_GNU_SOURCE=1 -std=gnu++14" \
 ../configure --prefix=/usr   \
              --enable-gold       \
              --enable-ld=default \
@@ -25,6 +57,7 @@ esac
              --enable-shared     \
              --disable-werror    \
              --with-system-zlib  \
+             --with-pic \
              --enable-relro \
              --enable-lto \
              --disable-nls \
@@ -33,10 +66,50 @@ esac
              --enable-threads \
              --disable-multilib \
              --disable-compressed-debug-sections \
-             --with-mmap $EXTRA_CONFIG 
+             --with-mmap $EXTRA_CONFIG --enable-initfini-array --disable-isl-version-check --enable-generate-build-notes=no  
 
 # Build
 make tooldir=/usr
+
+# FAIL: #####################################################################################################################
+make[1]: Entering directory '/sources/binutils-2.38/build'                                                                                             
+make[2]: Entering directory '/sources/binutils-2.38/build/libiberty'                                                                                   
+if [ x"-fpic" != x ]; then \                                                                                                                           
+  x86_64-pc-linux-musl-clang -c -DHAVE_CONFIG_H -g -O2      -I. -I../../libiberty/../include  -W -Wall -Wwrite-strings -Wc++-compat -Wstrict-prototypes
+ -Wshadow=local -pedantic  -D_GNU_SOURCE -fcf-protection -fpic ../../libiberty/fibheap.c -o pic/fibheap.o; \                                           
+else true; fi
+llvmtools 3.0.0 clang version 15.0.5                                                                                                                   
+Target: x86_64-pc-linux-musl                                                                                                                           
+Thread model: posix                                                                                                                                    
+InstalledDir: /llvmtools/bin
+Configuration file: /llvmtools/bin/x86_64-pc-linux-musl.cfg
+ (in-process)
+ "/llvmtools/bin/clang-15" -cc1 -triple x86_64-pc-linux-musl -emit-obj --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name fibheap.c -mrelocation-model pic -pic-level 1 -fhalf-no-semantic-interposition -mframe-pointer=none -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=5 -debugger-tuning=gdb -v -fcoverage-compilation-dir=/sources/binutils-2.38/build/libiberty -resource-dir /llvmtools/lib/clang/15.0.5 -D HAVE_CONFIG_H -I . -I ../../libiberty/../include -D _GNU_SOURCE -isysroot /usr -internal-isystem /usr/usr/local/include -internal-externc-isystem /usr/include -internal-externc-isystem /usr/usr/include -internal-isystem /llvmtools/lib/clang/15.0.5/include -O2 -W -Wall -Wwrite-strings -Wc++-compat -Wstrict-prototypes -Wshadow=local -pedantic -fconst-strings -fdebug-compilation-dir=/sources/binutils-2.38/build/libiberty -ferror-limit 1 -fcf-protection=full -fgnuc-version=4.2.1 -fcolor-diagnostics -vectorize-loops -vectorize-slp -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o pic/fibheap.o -x c ../../libiberty/fibheap.c
+warning: unknown warning option '-Wshadow=local' [-Wunknown-warning-option] 
+clang -cc1 version 15.0.5 based upon LLVM 15.0.5 default target x86_64-pc-linux-musl
+ignoring nonexistent directory "/usr/usr/local/include"
+ignoring nonexistent directory "/usr/usr/include"
+#include "..." search starts here:
+##include <...> search starts here:
+ .
+ ../../libiberty/../include
+ /usr/include
+ /llvmtools/lib/clang/15.0.5/include
+End of search list.
+../../libiberty/fibheap.c:220:30: error: use of undeclared identifier 'LONG_MIN'
+  if (okey == key && okey != FIBHEAPKEY_MIN)
+                             ^
+../../libiberty/fibheap.c:38:24: note: expanded from macro 'FIBHEAPKEY_MIN'
+#define FIBHEAPKEY_MIN  LONG_MIN
+                        ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+1 warning and 2 errors generated.
+make[2]: *** [Makefile:793: fibheap.o] Error 1
+make[2]: Leaving directory '/sources/binutils-2.38/build/libiberty'
+make[1]: *** [Makefile:9560: all-libiberty] Error 2
+make[1]: Leaving directory '/sources/binutils-2.38/build'
+make: *** [Makefile:1000: all] Error 2
+###########################################################################################################################
 
 # Rebuild libiberty.a with -fPIC
 cp -a libiberty libiberty-pic

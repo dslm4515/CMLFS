@@ -1,0 +1,246 @@
+From 975b5540232ffe37c6c2ce37fa2b480c2d6cc0ab Mon Sep 17 00:00:00 2001
+From: Nick Alcock <nick.alcock@oracle.com>
+Date: Fri, 18 Mar 2022 00:49:11 +0000
+Subject: [PATCH 57/91] libctf, ld: diagnose corrupted CTF header cth_strlen
+
+The last section in a CTF dict is the string table, at an offset
+represented by the cth_stroff header field.  Its length is recorded in
+the next field, cth_strlen, and the two added together are taken as the
+size of the CTF dict.  Upon opening a dict, we check that none of the
+header offsets exceed this size, and we check when uncompressing a
+compressed dict that the result of the uncompression is the same length:
+but CTF dicts need not be compressed, and short ones are not.
+Uncompressed dicts just use the ctf_size without checking it.  This
+field is thankfully almost unused: it is mostly used when reserializing
+a dict, which can't be done to dicts read off disk since they're
+read-only.
+
+However, when opening an uncompressed foreign-endian dict we have to
+copy it out of the mmaped region it is stored in so we can endian-
+swap it, and we use ctf_size when doing that.  When the cth_strlen is
+corrupt, this can overrun.
+
+Fix this by checking the ctf_size in all uncompressed cases, just as we
+already do in the compressed case.  Add a new test.
+
+This came to light because various corrupted-CTF raw-asm tests had an
+incorrect cth_strlen: fix all of them so they produce the expected
+error again.
+
+libctf/
+	PR libctf/28933
+	* ctf-open.c (ctf_bufopen_internal): Always check uncompressed
+	CTF dict sizes against the section size in case the cth_strlen is
+	corrupt.
+
+ld/
+	PR libctf/28933
+	* testsuite/ld-ctf/diag-strlen-invalid.*: New test,
+	derived from diag-cttname-invalid.s.
+	* testsuite/ld-ctf/diag-cttname-invalid.s: Fix incorrect cth_strlen.
+	* testsuite/ld-ctf/diag-cttname-null.s: Likewise.
+	* testsuite/ld-ctf/diag-cuname.s: Likewise.
+	* testsuite/ld-ctf/diag-parlabel.s: Likewise.
+	* testsuite/ld-ctf/diag-parname.s: Likewise.
+---
+ ld/testsuite/ld-ctf/diag-cttname-invalid.s |  2 +-
+ ld/testsuite/ld-ctf/diag-cttname-null.s    |  2 +-
+ ld/testsuite/ld-ctf/diag-cuname.s          |  2 +-
+ ld/testsuite/ld-ctf/diag-parlabel.s        |  2 +-
+ ld/testsuite/ld-ctf/diag-parname.s         |  2 +-
+ ld/testsuite/ld-ctf/diag-strlen-invalid.d  |  5 +++
+ ld/testsuite/ld-ctf/diag-strlen-invalid.s  | 44 +++++++++++++++++++++
+ libctf/ctf-open.c                          | 45 ++++++++++++++--------
+ 8 files changed, 83 insertions(+), 21 deletions(-)
+ create mode 100644 ld/testsuite/ld-ctf/diag-strlen-invalid.d
+ create mode 100644 ld/testsuite/ld-ctf/diag-strlen-invalid.s
+
+diff --git a/ld/testsuite/ld-ctf/diag-cttname-invalid.s b/ld/testsuite/ld-ctf/diag-cttname-invalid.s
+index dbfdd21fe27..f025254665d 100644
+--- a/ld/testsuite/ld-ctf/diag-cttname-invalid.s
++++ b/ld/testsuite/ld-ctf/diag-cttname-invalid.s
+@@ -15,7 +15,7 @@
+ 	.long	0x8
+ 	.long	0x10
+ 	.long	0x40
+-	.long	0x42
++	.long	0x37
+ 	.long	0x1
+ 	.long	0x7
+ 	.long	0x7
+diff --git a/ld/testsuite/ld-ctf/diag-cttname-null.s b/ld/testsuite/ld-ctf/diag-cttname-null.s
+index ad6ce60f964..f3ba2129fef 100644
+--- a/ld/testsuite/ld-ctf/diag-cttname-null.s
++++ b/ld/testsuite/ld-ctf/diag-cttname-null.s
+@@ -15,7 +15,7 @@
+ 	.long	0x8
+ 	.long	0x10
+ 	.long	0x40
+-	.long	0x42
++	.long	0x37
+ 	.long	0x1
+ 	.long	0x7
+ 	.long	0x7
+diff --git a/ld/testsuite/ld-ctf/diag-cuname.s b/ld/testsuite/ld-ctf/diag-cuname.s
+index dcdbd62aa73..95f3d72feea 100644
+--- a/ld/testsuite/ld-ctf/diag-cuname.s
++++ b/ld/testsuite/ld-ctf/diag-cuname.s
+@@ -15,7 +15,7 @@
+ 	.long	0x8
+ 	.long	0x10
+ 	.long	0x40
+-	.long	0x42
++	.long	0x37
+ 	.long	0x1
+ 	.long	0x7
+ 	.long	0x7
+diff --git a/ld/testsuite/ld-ctf/diag-parlabel.s b/ld/testsuite/ld-ctf/diag-parlabel.s
+index e0ce57ca535..b31fb8181a3 100644
+--- a/ld/testsuite/ld-ctf/diag-parlabel.s
++++ b/ld/testsuite/ld-ctf/diag-parlabel.s
+@@ -15,7 +15,7 @@
+ 	.long	0x8
+ 	.long	0x10
+ 	.long	0x40
+-	.long	0x42
++	.long	0x37
+ 	.long	0x1
+ 	.long	0x7
+ 	.long	0x7
+diff --git a/ld/testsuite/ld-ctf/diag-parname.s b/ld/testsuite/ld-ctf/diag-parname.s
+index da30e4a7c85..d30178de39b 100644
+--- a/ld/testsuite/ld-ctf/diag-parname.s
++++ b/ld/testsuite/ld-ctf/diag-parname.s
+@@ -15,7 +15,7 @@
+ 	.long	0x8
+ 	.long	0x10
+ 	.long	0x40
+-	.long	0x42
++	.long	0x37
+ 	.long	0x1
+ 	.long	0x7
+ 	.long	0x7
+diff --git a/ld/testsuite/ld-ctf/diag-strlen-invalid.d b/ld/testsuite/ld-ctf/diag-strlen-invalid.d
+new file mode 100644
+index 00000000000..8a7b69b41df
+--- /dev/null
++++ b/ld/testsuite/ld-ctf/diag-strlen-invalid.d
+@@ -0,0 +1,5 @@
++#as:
++#source: diag-strlen-invalid.s
++#ld: -shared
++#name: Diagnostics - String offset invalid.
++#warning: .* byte long CTF dictionary overruns .* byte long CTF section
+diff --git a/ld/testsuite/ld-ctf/diag-strlen-invalid.s b/ld/testsuite/ld-ctf/diag-strlen-invalid.s
+new file mode 100644
+index 00000000000..dbfdd21fe27
+--- /dev/null
++++ b/ld/testsuite/ld-ctf/diag-strlen-invalid.s
+@@ -0,0 +1,44 @@
++	.file	"A.c"
++	.section	.ctf,"",@progbits
++.Lctf0:
++	.2byte	0xdff2
++	.byte	0x4
++	.byte	0
++	.long	0
++	.long	0
++	.long	0x9
++	.long	0
++	.long	0
++	.long	0x4
++	.long	0x4
++	.long	0x8
++	.long	0x8
++	.long	0x10
++	.long	0x40
++	.long	0x42
++	.long	0x1
++	.long	0x7
++	.long	0x7
++	.long	0x1
++	.long	0xff00
++	.long	0x1a000001
++	.long	0x8
++	.long	0x5
++	.long	0
++	.long	0x3
++	.long	0x3
++	.long	0x26000000
++	.long	0x6
++	.long	0
++	.long	0xe000000
++	.long	0x2
++	.ascii "\0"
++	.ascii "A\0"
++	.ascii "B\0"
++	.ascii "b\0"
++	.ascii "a\0"
++	.ascii "/usr/src/binutils-gdb/ld/testsuite/ld-ctf/A.c\0"
++	.text
++	.comm	a,8,8
++	.ident	"GCC: (GNU) 8.3.1 20191121 (Red Hat 8.3.1-5.0.1)"
++	.section	.note.GNU-stack,"",@progbits
+diff --git a/libctf/ctf-open.c b/libctf/ctf-open.c
+index c7ca37e5249..3f8d336f895 100644
+--- a/libctf/ctf-open.c
++++ b/libctf/ctf-open.c
+@@ -1517,26 +1517,39 @@ ctf_bufopen_internal (const ctf_sect_t *ctfsect, const ctf_sect_t *symsect,
+ 	  goto bad;
+ 	}
+     }
+-  else if (foreign_endian)
++  else
+     {
+-      if ((fp->ctf_base = malloc (fp->ctf_size)) == NULL)
++      if (_libctf_unlikely_ (ctfsect->cts_size < hdrsz + fp->ctf_size))
+ 	{
+-	  err = ECTF_ZALLOC;
++	  ctf_err_warn (NULL, 0, ECTF_CORRUPT,
++			_("%lu byte long CTF dictionary overruns %lu byte long CTF section"),
++			(unsigned long) ctfsect->cts_size,
++			(unsigned long) (hdrsz + fp->ctf_size));
++	  err = ECTF_CORRUPT;
+ 	  goto bad;
+ 	}
+-      fp->ctf_dynbase = fp->ctf_base;
+-      memcpy (fp->ctf_base, ((unsigned char *) ctfsect->cts_data) + hdrsz,
+-	      fp->ctf_size);
+-      fp->ctf_buf = fp->ctf_base;
+-    }
+-  else
+-    {
+-      /* We are just using the section passed in -- but its header may be an old
+-	 version.  Point ctf_buf past the old header, and never touch it
+-	 again.  */
+-      fp->ctf_base = (unsigned char *) ctfsect->cts_data;
+-      fp->ctf_dynbase = NULL;
+-      fp->ctf_buf = fp->ctf_base + hdrsz;
++
++      if (foreign_endian)
++	{
++	  if ((fp->ctf_base = malloc (fp->ctf_size)) == NULL)
++	    {
++	      err = ECTF_ZALLOC;
++	      goto bad;
++	    }
++	  fp->ctf_dynbase = fp->ctf_base;
++	  memcpy (fp->ctf_base, ((unsigned char *) ctfsect->cts_data) + hdrsz,
++		  fp->ctf_size);
++	  fp->ctf_buf = fp->ctf_base;
++	}
++      else
++	{
++	  /* We are just using the section passed in -- but its header may
++	     be an old version.  Point ctf_buf past the old header, and
++	     never touch it again.  */
++	  fp->ctf_base = (unsigned char *) ctfsect->cts_data;
++	  fp->ctf_dynbase = NULL;
++	  fp->ctf_buf = fp->ctf_base + hdrsz;
++	}
+     }
+ 
+   /* Once we have uncompressed and validated the CTF data buffer, we can
+-- 
+2.35.1
+
