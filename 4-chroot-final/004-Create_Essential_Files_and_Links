@@ -12,7 +12,7 @@ ln -sv /llvmtools/bin/{install,perl}    /usr/bin
 ln -sv /llvmtools/lib/libc++.so{,.1}    /usr/lib
 ln -sv /llvmtools/lib/libc++abi.so{,.1} /usr/lib
 ln -sv /llvmtools/lib/libunwind.so{,.1} /usr/lib
-#ln -sv /llvmtools/lib/libunwind.a       /usr/lib
+ln -sv /llvmtools/lib/libunwind.a       /usr/lib
 #ln -sv /llvmtools/lib/libgcc_s.so{,.1}  /usr/lib
 #ln -sv /llvmtools/lib/libstdc++.{a,so{,.6}} /usr/lib
 ln -sv bash /bin/sh 

@@ -1,0 +1,35 @@
+# Llvmtools: static libunwind
+# Build and install in chroot
+
+# NOTE: Static libunwind was not built when bootstrapping the
+#       stage1 clang in llvmtools. This is needed when building
+#       static libraries. 
+# NOTE: Reused unpacked LLVM source from building cgnutools 
+
+cd libunwind
+
+# Set the build options ..
+export  CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release "
+export CONFIG_OPTIONS+="-DBUILD_SHARED_LIBS=OFF "
+
+# Set the compiler and linker flags...
+export  CONFIG_TOOLS="-DCMAKE_C_COMPILER=${CC} "
+export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER=${CXX} "
+
+# Make sure libunwind is built as static
+export  CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=ON "
+export CONFIG_LIBUNWIND+="-DLIBUNWIND_ENABLE_SHARED=OFF "
+
+# Set paths...
+export  CONFIG_PATHS="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/llvmtools/lib "
+
+cmake -B build -G Ninja -Wno-dev \
+      $CONFIG_OPTIONS $CONFIG_TOOLS $CONFIG_LIBUNWIND \
+      $CONFIG_PATHS
+
+# Compile
+ninja -C build unwind
+
+# Install
+ninja -C build install-unwind
