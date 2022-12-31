@@ -3,22 +3,17 @@
 
 # Set version for pkgconfig file
 cp -v ../files/utmps-alpine/*.pc /tmp/
-sed -i -e "s/@@VERSION@@/0.1.0.2/g" -- /tmp/*.pc 
+sed -i -e "s/@@VERSION@@/0.1.2.0/g" -- /tmp/*.pc 
 
-# utmps segfaults if built with clang.
-# Configure source with GCC
-set-gcc-mode && set-gnu-bin-mode
-
-CC=gcc CXX=g++ \
-LD=ld.bfd \
+# Configure source
 ./configure --enable-shared      \
             --enable-static      \
             --disable-allstatic  \
             --enable-static-libc \
             --libdir=/usr/lib    \
-            --with-dynlib=/lib   \
-            --libexecdir="/lib/utmps" \
-            --with-dynlib=/lib \
+            --with-dynlib=/usr/lib   \
+            --libexecdir="/usr/lib/utmps" \
+            --with-dynlib=/usr/lib \
             --build=${TUPLE}
 # Build and Install
 make
