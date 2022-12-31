@@ -11,7 +11,10 @@ tar xf ../pkgs/posixtz-0.5.tar.xz &&
 
 patch -Np1 -i ../patches/posixtz-adelie/0001-posixtz-fix-up-lseek.patch
 
-make CFLAGS="$CFLAGS -DHAVE_STDINT_H=1" TZDIR="/usr/share/zoneinfo"  
+# Top-level Makefile assumes cc exists. Remove the hard-coded "cc"
+sed -i '511d'  Makefile 
+
+cc=$CC make CFLAGS="$CFLAGS -DHAVE_STDINT_H=1" TZDIR="/usr/share/zoneinfo"  
 make -C posixtz-0.5 posixtz
 
 ./zic -y ./yearistype -d /usr/share/zoneinfo ${timezones}
