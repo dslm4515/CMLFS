@@ -1,6 +1,6 @@
 # Toolchain: Nano 7.1
 # Source: https://www.nano-editor.org/dist/v7/nano-7.1.tar.xz
-# Build and install as mlfs
+# Build in chroot
 # Optional package: Text editor for convenience or trouble shooting
 
 # Set flags, so ncurses header can be found in /tools/include
@@ -18,8 +18,8 @@ AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
+./configure --build=${TUPLE} \
+            --host=${TUPLE} \
             --prefix=/llvmtools \
             --enable-tiny
 
