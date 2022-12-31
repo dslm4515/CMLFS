@@ -1,15 +1,12 @@
 # Final System: TimeZone Utilites & Data
-# Source: https://www.iana.org/time-zones/repository/releases/tzdata2021a.tar.gz 
-# Source: https://www.iana.org/time-zones/repository/releases/tzcode2021a.tar.gz
-# Source: https://dev.alpinelinux.org/archive/posixtz/posixtz-0.5.tar.xz
 # This section is done in Chroot environment
 # https://www.iana.org/time-zones
 
 export timezones="africa antarctica asia australasia europe northamerica \
                   southamerica etcetera backward factory"
 mkdir tzdb && cd tzdb && 
-tar xf ../pkgs/tzdata2021a.tar.gz &&
-tar xf ../pkgs/tzcode2021a.tar.gz &&
+tar xf ../pkgs/tzdata2022g.tar.gz &&
+tar xf ../pkgs/tzcode2022g.tar.gz &&
 tar xf ../pkgs/posixtz-0.5.tar.xz &&
 
 patch -Np1 -i ../patches/posixtz-adelie/0001-posixtz-fix-up-lseek.patch
