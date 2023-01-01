@@ -7,13 +7,8 @@ make mrproper
 # Build the headers
 ARCH=${CMLFS_ARCH} make headers
 
-# Install the headers for cross-gcc
+# Install the headers for stage 0 clang
 find usr/include \( -name .install -o -name ..install.cmd \) -exec rm -vf {} \;
-mkdir -pv /cgnutools/${CMLFS_TARGET}/include
-cp -rv usr/include/* /cgnutools/${CMLFS_TARGET}/include/
-rm -v /cgnutools/${CMLFS_TARGET}/include/Makefile
-
-# And install headers for stage 0 clang
-mkdir -pv /cgnutools/include
 cp -rv usr/include/* /cgnutools/include/
-rm -v  /cgnutools/include/Makefile
+rm -v /cgnutools/include/Makefile
+
