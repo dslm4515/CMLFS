@@ -1,16 +1,24 @@
 # Final System: PkgConf
-# Source: https://distfiles.dereferenced.org/pkgconf/pkgconf-1.7.3.tar.xz
 # This section is done in Chroot environment
 
 # Configure source
 ./configure --prefix=/usr              \
-            --docdir=/usr/share/doc/pkgconf-1.7.3 \
+            --docdir=/usr/share/doc/pkgconf-1.9.3 \
             --sysconfdir=/etc          \
             --localstatedir=/var       \
             --with-pkg-config-dir=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/opt/qt5/lib/pkgconfig
 
 # Build and Install
-make && make install
+make #..................... FAIL
+
+# FAIL: ##################################################################################################################3
+ld.lld: error: relocation R_X86_64_PC32 cannot be used against symbol 'pkgconf_default_error_handler'; recompile with -fPIC
+>>> defined in libpkgconf/.libs/client.o
+>>> referenced by client.c:611 (/sources/pkgconf-1.9.3/libpkgconf/client.c:611)
+>>>               libpkgconf/.libs/client.o:(pkgconf_client_init)
+############################################################################################################################ 
+
+make install
 
 # Compatibility for pkgconfig
 ln -s pkgconf /usr/bin/pkg-config
