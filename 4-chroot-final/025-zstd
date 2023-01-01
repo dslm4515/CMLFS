@@ -1,9 +1,23 @@
 # Final System: Zstd
-# Source: https://github.com/facebook/zstd/releases/download/v1.4.5/zstd-1.4.5.tar.gz 
 # This section is done in Chroot environment
 
-CC=clang CXX=clang++ make 
-CC=clang CXX=clang++ make -C contrib/pzstd
+CC=$CC  CXX=$CXX make # ....................PASS 
+CC=$CC  CXX=$CXX make -C contrib/pzstd # ...FAIL
+
+# FAIL:
+ld.lld: error: undefined symbol: operator delete(void*)                                                                                                
+>>> referenced by main.cpp                                                                                                                             
+>>>               main.o:(main)                                                                                                                        
+>>> referenced by main.cpp                                                                                                                             
+>>>               main.o:(main)                                                                                                                        
+>>> referenced by main.cpp                                                                                                                             
+>>>               main.o:(main)                                                                                                                        
+>>> referenced 177 more times                                                                                                                          
+
+ld.lld: error: undefined symbol: __gxx_personality_v0
+>>> referenced by main.cpp
+>>>               main.o:(DW.ref.__gxx_personality_v0)
+
 
 make prefix=/usr install
 make prefix=/usr -C contrib/pzstd install
