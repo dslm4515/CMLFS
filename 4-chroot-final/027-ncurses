@@ -1,5 +1,4 @@
 # Final System: Ncurses
-# Source: http://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
 # This section is done in Chroot environment
 
 # Don't install a static library that is not 
