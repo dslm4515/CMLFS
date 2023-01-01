@@ -1,33 +1,36 @@
-# Final System: Libunwind
-# Source: https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/libunwind-11.0.0.src.tar.xz
-# This section is done in Chroot environment
+# Final System: libunwind
+# Build and install in chroot
 
-# libunwind requires being built in a monorepo layout with libcxx available
-export LLVMSRC=/sources/llvm
-tar xf pkgs/llvm-12.0.0.src.tar.xz
-mv llvm-12.0.0.src llvm
-tar xf pkgs/libunwind-12.0.0.src.tar.xz
-mv libunwind-12.0.0.src llvm/projects/libunwind
-tar xf pkgs/libcxx-12.0.0.src.tar.xz 
-mv libcxx-12.0.0.src llvm/projects/libcxx
+# NOTE: Reused unpacked LLVM source from building cgnutools 
 
-# Configure
-cd ${LLVMSRC}/projects/libunwind
-cmake -B build -G Ninja \
-      -DLLVM_PATH=${LLVMSRC} \
-      -DCMAKE_INSTALL_PREFIX=/usr \
-      -DLIBUNWIND_ENABLE_SHARED=ON \
-      -DCMAKE_C_FLAGS="-fPIC" \
-      -DCMAKE_CXX_FLAGS="-fPIC" \
-      -DLIBUNWIND_USE_COMPILER_RT=ON
+cd libunwind
 
-# Build
-ninja -C build
+# Set the build options ..
+export  CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release "
+export CONFIG_OPTIONS+="-DBUILD_SHARED_LIBS=ON "
+
+# Set the compiler and linker flags...
+export  CONFIG_TOOLS="-DCMAKE_C_COMPILER=${CC} "
+export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER=${CXX} "
+
+# Make sure libunwind is built as static and shared
+export  CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=ON "
+export CONFIG_LIBUNWIND+="-DLIBUNWIND_ENABLE_SHARED=ON "
+export CONFIG_LIBUNWIND+="-DLIBUNWIND_INSTALL_HEADERS=ON "
+export CONFIG_LIBUNWIND+="-D LIBUNWIND_USE_COMPILER_RT=ON "
+
+# Set paths...
+export  CONFIG_PATHS="-DCMAKE_INSTALL_PREFIX=/usr "
+export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/usr/lib "
+
+cmake -B build -G Ninja -Wno-dev \
+      $CONFIG_OPTIONS $CONFIG_TOOLS $CONFIG_LIBUNWIND \
+      $CONFIG_PATHS
+
+# Compile
+ninja -C build unwind
 
 # Install
-ninja -C build install
+ninja -C build install-unwind
 
-# Save LLVM tree for later. But libunwind
-# tree can be removed
-cd ${LLVMSRC}/projects
-rm -rf libunwind
+unset CONFIG_OPTIONS CONFIG_TOOLS CONFIG_LIBUNWIND CONFIG_PATHS
