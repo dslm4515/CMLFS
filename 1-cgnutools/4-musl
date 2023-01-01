@@ -10,11 +10,6 @@
 # Buid and install
 make && make DESTDIR=/cgnutools install
 
-# GCC will look for system headers in /cgnutools/usr/include. 
-# Create directory and symlink:
-mkdir -pv /cgnutools/usr
-ln -sv ../include /cgnutools/usr/include
-
 # Fix a symlink
 rm -v /cgnutools/lib/ld-musl-$(uname -m).so.1
 ln -sv libc.so /cgnutools/lib/ld-musl-$(uname -m).so.1
