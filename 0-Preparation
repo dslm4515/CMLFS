@@ -54,6 +54,7 @@ mkdir -pv $CMLFS/sources/{patches,files,pkgs}
 groupadd cmlfs
 useradd -s /bin/bash -g cmlfs -m -k /dev/null cmlfs
 passwd cmlfs
+useradd -a -G sudo cmlfs
 
 chown -v  cmlfs $CMLFS/cgnutools
 chown -v  cmlfs $CMLFS/llvmtools
