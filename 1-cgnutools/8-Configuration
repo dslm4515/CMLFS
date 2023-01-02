@@ -10,27 +10,32 @@ cat > /cgnutools/bin/${TARGET_TUPLE}.cfg << "EOF"
 -Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
 EOF
 
+# .. configure stage0 clang to use compiler-rt instead of GCC's runtime. This
+# will allow to build stage1 clang with GCC independence.
+echo "-rtlib=compiler-rt "  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
+
 # ... also configure stage0 clang to use newly built libc++ headers & libraries
 echo "-stdlib=libc++ " >> /cgnutools/bin/${TARGET_TUPLE}.cfg 
-echo "-stdlib++-isystem/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
+#echo "-stdlib++-isystem/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
+echo "-lunwind"  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
 
 # Set LLD as default toolchain linker
 ln -sv lld /cgnutools/bin/ld
 
 # Configure cross-GCC of cgnutools to match the same output as clang
 # Dump current specs 
-export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
-${CMLFS_TARGET}-gcc -dumpspecs > specs
+#export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
+#${CMLFS_TARGET}-gcc -dumpspecs > specs
 
 # Modify dumped specs file 
-sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/llvmtools\/lib\/ld-musl-x86_64.so.1/g' specs
+#sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/llvmtools\/lib\/ld-musl-x86_64.so.1/g' specs
 
 # Check:
-grep "/llvmtools/lib/ld-musl-x86_64.so.1" specs  --color=auto
+#grep "/llvmtools/lib/ld-musl-x86_64.so.1" specs  --color=auto
 
 # Install modified specs to the cgnutools toolchain
-mv -v specs $SPECFILE
-unset SPECFILE
+#mv -v specs $SPECFILE
+#unset SPECFILE
 
 # Create link for libc.so. It will be replaced with a clang-built
 # one next
@@ -97,9 +102,6 @@ grep ld.lld:  dummy.log
 # ld.lld: /cgnutools/lib/Scrt1.o
 # ld.lld: /cgnutools/lib/crti.o
 # ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-cmlfs-linux-musl/clang_rt.crtbegin.o
-# ld.lld: /mnt/cmlfs/cgnutools/bin/../lib/x86_64-pc-linux-musl/libc++.so
-# ld.lld: /mnt/cmlfs/cgnutools/bin/../lib/x86_64-pc-linux-musl/libc++.so.1
-# ld.lld: /mnt/cmlfs/cgnutools/bin/../lib/x86_64-pc-linux-musl/libc++abi.so
 # ld.lld: /cgnutools/lib/libunwind.so
 # ld.lld: /tmp/dummy-0ef0e1.o
 # ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-cmlfs-linux-musl/libclang_rt.builtins.a
