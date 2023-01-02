@@ -43,6 +43,10 @@ sed -i "/OrcCAPITest.cpp/d" unittests/ExecutionEngine/Orc/CMakeLists.txt
 # Return to top-level
 cd ..
 
+# Force clang to use dynamic linux loader in /cgnutools
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader.patch
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-test-dynamic-loader.patch
+
 # Set flags to greatly reduce debugging symbols
 CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo'
 CXXFLAGS=$CFLAGS
@@ -56,7 +60,7 @@ export CTOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
 
 # Set the tuples & build target ...
 export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
-export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-cmlfs-linux-musl " ## Change vendor from pc to cmlfs?
+export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-cmlfs-linux-musl " 
 export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
 export CTARG+="-DLLVM_TARGETS_TO_BUILD=host "
 export CTARG+="-DLLVM_TARGET_ARCH=host "
@@ -159,7 +163,7 @@ cmake -B build -G Ninja -Wno-dev -S llvm  \
   ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0" \
   -DBacktrace_INCLUDE_DIR=/cgnutools/include -DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd
 
-# Build [lld]  expects execinfo.h in /cgnutools/x86_64-cmlfs-linux-musl/include
+# Build [lld] expects execinfo.h in /cgnutools/x86_64-cmlfs-linux-musl/include
 ln -sv /cgnutools/include/execinfo.h /cgnutools/x86_64-cmlfs-linux-musl/include/
 
 # Compile only what we need for a stage 0 clang
@@ -226,7 +230,8 @@ do
   ninja -C build install-llvm-$b
 done
 
-# Add library paths to use newly compiled [stage0] libc++, libc++abi, and libunwind:
-echo "/cgnutools/lib/x86_64-pc-linux-musl" >> /cgnutools/etc/ld-musl-x86_64.path
+# Create link for missng runtime objects:
+ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtbeginS.o  /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
+ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtendS.o    /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
 
 unset CC CXX CFLAGS CXXFLAGS CTOOLS CTARG CPATHS CBSTRAP COPTS BOFF LINKERFLAGS
