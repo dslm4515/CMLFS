@@ -5,6 +5,7 @@
 make mrproper
 
 # Generate headers
+LD_LIBRARY_PATH=/cgnutools/lib/x86_64-pc-linux-musl \
 make ARCH=${CMLFS_ARCH} LLVM=1 CC=$CC CXX=$CXX HOSTCC=${TARGET_TUPLE}-clang headers
 
 # Install to llvmtools
