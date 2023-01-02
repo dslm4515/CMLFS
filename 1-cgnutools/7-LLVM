@@ -2,6 +2,9 @@
 #
 # Build as cmlfs
 #
+# o Used default paths for installing libraries and headers.
+# o Stage 0 clang depends on [cross]-GCC
+#
 
 # Rename for shorter paths:
 mv llvm-project-15.0.5.src llvm-prj
@@ -55,35 +58,35 @@ export CTOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
 export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
 export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-cmlfs-linux-musl " ## Change vendor from pc to cmlfs?
 export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
-export CTARG+="-DLLVM_TARGETS_TO_BUILD=X86 "
-export CTARG+="-DLLVM_TARGET_ARCH=X86 "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=host "
+export CTARG+="-DLLVM_TARGET_ARCH=host "
 export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
 
 # Set the paths ...
 export  CPATHS="-DCMAKE_INSTALL_PREFIX=/cgnutools "
 export CPATHS+="-DDEFAULT_SYSROOT=/cgnutools "
-export CPATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/cgnutools/lib "
-export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
-export CPATHS+="-DLIBCXXABI_INSTALL_INCLUDE_DIR=/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "
-export CPATHS+="-DLIBCXX_INSTALL_INCLUDE_DIR=/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "
+#export CPATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/cgnutools/lib "
+#export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
+#export CPATHS+="-DLIBCXXABI_INSTALL_INCLUDE_DIR=/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "
+#export CPATHS+="-DLIBCXX_INSTALL_INCLUDE_DIR=/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "
 
 # Set bootstrap options..
 # https://discourse.llvm.org/t/bootstrapping-standalone-llvm-clang-libc-lld-toolchain/3069
-export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
-export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
-export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
-export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
-export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "       
-export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "    
-export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON " 
-export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
-export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
+#export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
+#export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
+#export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
+#export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
+#export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "       
+#export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "    
+#export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON " 
+#export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
+#export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
 
 # Set the standard C++ library that clang will use to LLVM's libc++:
-export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+#export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
 
 # Set the runtime library that clang will use to compiler-rt:
-export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+#export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
 
 # Enable musl support in libc++
 export COPTS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
@@ -92,11 +95,11 @@ export COPTS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
 export COPTS+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
 
 # Set libc++abi & libc++ to use compiler-rt instead of gcc's runtime:
-export COPTS+="-DLIBCXX_USE_COMPILER_RT=ON " 
-export COPTS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+#export COPTS+="-DLIBCXX_USE_COMPILER_RT=ON " 
+#export COPTS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
 
 # Set libc++abi to use libunwind to avoid dependace on GCC:
-export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+#export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
 
 # Make sure to install libunwind headers
 export COPTS+="-DLIBUNWIND_INSTALL_HEADERS=ON "
@@ -111,8 +114,8 @@ export COPTS+="-DLLVM_ENABLE_RTTI=ON "
 export COPTS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
 
 # Enable atomics to avoid using atomics from GCC:
-export COPTS+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF "
-export COPTS+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
+#export COPTS+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF "
+#export COPTS+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
 
 # Turn off features that cause compiler-rt to NOT reference backtrace symbols from libexecinfo
 export  BOFF="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
@@ -153,7 +156,11 @@ cmake -B build -G Ninja -Wno-dev -S llvm  \
   -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
   -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
   -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
-  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DCLANG_VENDOR="cgnutools 3.0.0"  
+  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0" \
+  -DBacktrace_INCLUDE_DIR=/cgnutools/include -DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd
+
+# Build [lld]  expects execinfo.h in /cgnutools/x86_64-cmlfs-linux-musl/include
+ln -sv /cgnutools/include/execinfo.h /cgnutools/x86_64-cmlfs-linux-musl/include/
 
 # Compile only what we need for a stage 0 clang
 
@@ -187,10 +194,10 @@ done
 #ninja -C build install-crt #...................... /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/{clang_rt.crtbegin.o,clang_rt.crtend.o}
 #ninja -C build install-unwind #................... /cgnutools/lib/libunwind.so.1.0 & /cgnutools/include/libunwind.h
 #ninja -C build install-cxxabi #................... /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.{so*,a}
-#ninja -C build install-cxxabi-headers #........... /cgnutools/include/x86_64-pc-linux-musl/c++/v1/{__cxxabi_config.h,cxxabi.h}
+#ninja -C build install-cxxabi-headers #........... /cgnutools/include/c++/v1/{__cxxabi_config.h,cxxabi.h}
 #ninja -C build install-cxx #...................... /cgnutools/lib/x86_64-pc-linux-musl/libc++.{so*,a}
                             #...................... /cgnutools/include/x86_64-pc-linux-musl/c++/v1/__config_site 
-#ninja -C build install-cxx-headers # ............. /cgnutools/include/x86_64-pc-linux-musl/c++/v1/{__config,*}
+#ninja -C build install-cxx-headers # ............. /cgnutools/include/c++/v1/{__config,*}
 #ninja -C build install-compiler-rt # ............. /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
                                     # ............. {libclang_rt.asan-preinit.a,clang_rt.crtend.o,libclang_rt.ubsan_standalone_cxx.a,...}
 #ninja -C build install-lld # ..................... /cgnutools/bin/{lld-link,ld.lld,ld64.lld,wasm-ld}
@@ -218,5 +225,8 @@ for b in addr2line ar as config cxxdump diff link lipo \
 do
   ninja -C build install-llvm-$b
 done
+
+# Add library paths to use newly compiled [stage0] libc++, libc++abi, and libunwind:
+echo "/cgnutools/lib/x86_64-pc-linux-musl" >> /cgnutools/etc/ld-musl-x86_64.path
 
 unset CC CXX CFLAGS CXXFLAGS CTOOLS CTARG CPATHS CBSTRAP COPTS BOFF LINKERFLAGS
