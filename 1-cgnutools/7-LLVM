@@ -230,7 +230,11 @@ do
   ninja -C build install-llvm-$b
 done
 
-# Create link for missng runtime objects:
+# Stage0 lld cannot decompress zlib debug info. Strip the c-runtime objects
+strip --strip-debug /mnt/cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+strip --strip-debug /mnt/cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+
+# Create link for missng c-runtime objects:
 ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtbeginS.o  /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
 ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtendS.o    /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
 
