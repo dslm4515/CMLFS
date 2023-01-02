@@ -24,8 +24,5 @@ ln -sv ../lib/libc.so /cgnutools/bin/ldd
 cat > /cgnutools/etc/ld-musl-$(uname -m).path <<EOF
 /cgnutools/lib
 /cgnutools/${CMLFS_TARGET}/lib
-/usr/lib64
-/lib64
-/usr/lib
-/lib
+/cgnutools/lib/${CMLFS_TARGET}
 EOF
