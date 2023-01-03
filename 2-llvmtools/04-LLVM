@@ -95,17 +95,17 @@ export CONFIG_PATHS+="-DDEFAULT_SYSROOT=/llvmtools "
 export CONFIG_PATHS+="-DBacktrace_LIBRARY=/llvmtools/lib/libexecinfo.so.1 "
 export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_BINARY_DIR=/llvmtools/bin "
 export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_DATA_DIR=/llvmtools/share "
-export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_INCLUDE_DIR=/llvmtools/include/clang/15.0.5 "   #default: lib/clang/15.0.5/include
-export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_LIBRARY_DIR=/llvmtools/lib/clang/15.0.5 "       #default: lib/clang/15.0.5/lib
-export CONFIG_PATHS+="-DLIBCXXABI_INSTALL_INCLUDE_DIR=/llvmtools/include/c++/v1 "           #default: include/c++/v1
-export CONFIG_PATHS+="-DLIBCXXABI_INSTALL_LIBRARY_DIR=/llvmtools/lib "                      #default: lib/x86_64-pc-linux-musl
-export CONFIG_PATHS+="-DLIBCXX_INSTALL_INCLUDE_DIR=/llvmtools/include/c++/v1 "              #default: include/c++/v1
-export CONFIG_PATHS+="-DLIBCXX_INSTALL_INCLUDE_TARGET_DIR=/llvmtools/include/c++/v1 "       #default: include/c++/v1
-export CONFIG_PATHS+="-DLIBCXX_INSTALL_LIBRARY_DIR=/llvmtools/lib "                         #default: lib/x86_64-pc-linux-musl
-export CONFIG_PATHS+="-DLIBCXX_INSTALL_RUNTIME_DIR=/llvmtools/bin "                         #default: bin
-export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/llvmtools/lib "
-export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_INCLUDE_DIR=/llvmtools/include "
-export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_RUNTIME_DIR=/llvmtools/lib"
+#export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_INCLUDE_DIR=/llvmtools/include/clang/15.0.5 "   #default: lib/clang/15.0.5/include
+#export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_LIBRARY_DIR=/llvmtools/lib/clang/15.0.5 "       #default: lib/clang/15.0.5/lib
+#export CONFIG_PATHS+="-DLIBCXXABI_INSTALL_INCLUDE_DIR=/llvmtools/include/c++/v1 "           #default: include/c++/v1
+#export CONFIG_PATHS+="-DLIBCXXABI_INSTALL_LIBRARY_DIR=/llvmtools/lib "                      #default: lib/x86_64-pc-linux-musl
+#export CONFIG_PATHS+="-DLIBCXX_INSTALL_INCLUDE_DIR=/llvmtools/include/c++/v1 "              #default: include/c++/v1
+#export CONFIG_PATHS+="-DLIBCXX_INSTALL_INCLUDE_TARGET_DIR=/llvmtools/include/c++/v1 "       #default: include/c++/v1
+#export CONFIG_PATHS+="-DLIBCXX_INSTALL_LIBRARY_DIR=/llvmtools/lib "                         #default: lib/x86_64-pc-linux-musl
+#export CONFIG_PATHS+="-DLIBCXX_INSTALL_RUNTIME_DIR=/llvmtools/bin "                         #default: bin
+#export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/llvmtools/lib "
+#export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_INCLUDE_DIR=/llvmtools/include "
+#export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_RUNTIME_DIR=/llvmtools/lib"
 
 # Turn off unwanted features, docs and tests
 export  BUILD_OFF="-DLLVM_BUILD_TESTS=OFF "
