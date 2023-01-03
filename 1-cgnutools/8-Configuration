@@ -22,6 +22,9 @@ echo "-lunwind"  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
 # Set LLD as default toolchain linker
 ln -sv lld /cgnutools/bin/ld
 
+# When stage0 clang compiles, output expects libunwind in /llvmtools/lib
+ln -sv /cgnutools/lib/x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
+
 # Configure cross-GCC of cgnutools to match the same output as clang
 # Dump current specs 
 #export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
