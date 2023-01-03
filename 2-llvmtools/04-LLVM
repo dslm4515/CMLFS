@@ -3,7 +3,11 @@
 #
 # NOTE: stage1 clang has broken C++ support.
 #
-# NOTE Reused unpacked LLVM source from building cgnutools 
+# NOTE Reused unpacked LLVM source from building cgnutools
+
+# Force clang to use dynamic linux loader in /llvmtools
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-test-dynamic-loader_llvmtools.patch
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader_llvmtools.patch
 
 # Set CC and CXX compiler with stage0 clang
 export CXX=${TARGET_TUPLE}-clang++
@@ -71,7 +75,7 @@ export  CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=OFF "
 export CONFIG_LIBCXX+="-DLIBCXX_USE_COMPILER_RT=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_EXTRA_SITE_DEFINES=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
-export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_LOCALIZATION=ON " 
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_VENDOR_AVAILABILITY_ANNOTATIONS=OFF "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF "
 
@@ -155,16 +159,16 @@ cmake -B build -G Ninja -Wno-dev -S llvm  \
       ${CONFIG_LIBUNWIND} ${CONFIG_LIBCXXABI} \
       ${CONFIG_LIBCXX} ${CONFIG_PATHS} ${BUILD_OFF} ${BOFF}  \
       -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld;libunwind" \
-      -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0" 
+      -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0"
 
 # Since -fPIC was added to CFLAGS/CXXFLAGS,
 # Configure llvmtools dynamic linker to search for shared objects in the build directory
-#echo "${PWD}/build/lib "                  >> /llvmtools/etc/ld-musl-x86_64.path 
+#echo "${PWD}/build/lib "                  >> /llvmtools/etc/ld-musl-x86_64.path
 #echo "${PWD}/build/lib/${TARGET_TUPLE} "  >> /llvmtools/etc/ld-musl-x86_64.path
 # lld still fails even with the above ^
 
 # Compile
-ninja -C build 
+ninja -C build
 
 # When build fails, troubleshoot by building individual targets:
 #ninja -C build builtins #166 targets .............. PASS
@@ -177,7 +181,7 @@ ninja -C build
 #ninja -C build libclang #795 ...................... PASS
 #ninja -C build clang    #96 ....................... PASS
 #ninja -C build llvm-lib #8 ........................ PASS
-#ninja -C build          #1024 ..................... PASS 
+#ninja -C build          #1024 ..................... PASS
 
 # Install to /cgnutools
 
@@ -224,8 +228,8 @@ ln -sv  libclang_rt.builtins.a   /llvmtools/lib/clang/15.0.5/lib/linux/libclang_
 ln -sv  clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtbeginS.o
 ln -sv  clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtendS.o
 
-# Configure stage 1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 
-# instead of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs 
+# Configure stage 1 clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1
+# instead of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs
 # file is modified to set the dynamic linker in /tools instead of host's /lib.
 ln -sv clang-15   /llvmtools/bin/${TARGET_TUPLE}-clang
 ln -sv clang-15   /llvmtools/bin/${TARGET_TUPLE}-clang++
@@ -255,7 +259,7 @@ grep  'crt[1in]' dummy.log | grep ld.lld:
 
 # Make sure no libraries are loaded from the host or
 # from cgnutools
-grep ld.lld:  dummy.log 
+grep ld.lld:  dummy.log
 # Should output:
 # ld.lld: /llvmtools/lib/Scrt1.o
 # ld.lld: /llvmtools/lib/crti.o
@@ -286,9 +290,9 @@ EOF
 atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
 
 # Check for errors during compile or link:
-grep error:  atomics-test.log 
+grep error:  atomics-test.log
 
-# Should return nothing if there are no errors. 
+# Should return nothing if there are no errors.
 
 # Make sure stage 1 libc++ & libc++abi do not depend on GCC
 readelf -d /llvmtools/lib/libc++.so.1.0 | grep Shared | cut -d ":" -f 2
