@@ -1,0 +1,43 @@
+Build Notes for llvmtools
+
+To avoid contamination from host, the bare minimum will be cross-compiled and the rest under chroot.  All packages should be installed in llvmtools.
+
+An example of contamination is building vim. It will try to link against host's xorg libraries.
+
+Cross-compiled:
+o Musl libc
+o Kernel Headers
+o libexecinfo
+o ncurses
+o LLVM
+o m4
+o Bash
+o coreutils
+o diffutils
+o findutils
+o gawk
+o Grep
+o gzip
+o Make
+o patch
+o sed
+o tar
+o xz-utils
+o GCC (optional?)
+o Libstdc++ (optional?)
+
+Compiled under chroot
+o gettext-tiny
+o bison
+o perl
+o python3
+o texinfo
+o util-linux
+o cmake
+o Samurai/Ninja
+o vim/nano (optonal)
+o tcl (optional)
+o expect (optional)
+o dejaGNU (optional)
+o libtree (optional, good for troubleshooting)
+o package manager (optional, remonder, out-of-scope)
