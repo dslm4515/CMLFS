@@ -1,5 +1,4 @@
-# Toolchain: Ncurses-6.2
-# Source: http://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
+# llvmtools: Ncurses
 # Build and install as cmlfs
 
 # Ensure that gawk is found first during configuration: 
@@ -31,7 +30,8 @@ STRIP=llvm-strip \
             --enable-overwrite --with-cxx-shared --without-normal
 
 # Build and install to toolchain
-make && make TIC_PATH=$(pwd)/build/progs/tic install
+make && 
+make TIC_PATH=$(pwd)/build/progs/tic install
 
 # Bash build expects to find libcurses.so:
 ln -sv libncursesw.so.6.3 /llvmtools/lib/libcurses.so
