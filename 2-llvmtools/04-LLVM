@@ -16,7 +16,7 @@ export  CC=${TARGET_TUPLE}-clang
 # Set flags to greatly reduce debugging symbols
 #CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC '
 #CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
-CFLAGS=' -g -g1 
+CFLAGS=' -g -g1
 CXXFLAGS=$CFLAGS
 export CFLAGS CXXFLAGS
 
@@ -66,11 +66,11 @@ export CONFIG_CLANG+="-DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
 export CONFIG_CLANG+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF "
 export CONFIG_CLANG+="-DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
 
-# Set the flags to prevent build static libraries for
+# Set the flags to allow build static libraries for
 # libunwind, libcxxabi, and libcxx:
-export  CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=OFF "
-export  CONFIG_LIBCXXABI="-DLIBCXXABI_ENABLE_STATIC=OFF "
-export  CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=OFF "
+export  CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=ON "
+export  CONFIG_LIBCXXABI="-DLIBCXXABI_ENABLE_STATIC=ON "
+export  CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=ON "
 
 # Set the options for libc++
 export CONFIG_LIBCXX+="-DLIBCXX_USE_COMPILER_RT=ON "
@@ -78,7 +78,7 @@ export CONFIG_LIBCXX+="-DLIBCXX_EXTRA_SITE_DEFINES=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_VENDOR_AVAILABILITY_ANNOTATIONS=OFF "
-export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF "
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=ON "
 
 # Set the options for libc++abi
 export CONFIG_LIBCXXABI+="-DLIBCXXABI_ENABLE_FORGIVING_DYNAMIC_CAST=ON "
