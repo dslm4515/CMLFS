@@ -16,7 +16,7 @@ export  CC=${TARGET_TUPLE}-clang
 # Set flags to greatly reduce debugging symbols
 #CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC '
 #CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
-CFLAGS=' -g -g1
+CFLAGS=' -g -g1 -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
 CXXFLAGS=$CFLAGS
 export CFLAGS CXXFLAGS
 
@@ -173,9 +173,9 @@ ninja -C build
 
 # When build fails, troubleshoot by building individual targets:
 #ninja -C build builtins #166 targets .............. PASS
-#ninja -C build unwind   #10 ....................... PASS
-#ninja -C build cxxabi   #809 ...................... PASS
-#ninja -C build cxx      #45 ....................... PASS
+#ninja -C build unwind   #19 ....................... PASS
+#ninja -C build cxxabi   #828 ...................... PASS
+#ninja -C build cxx      #89 ....................... PASS
 #ninja -C build compiler-rt #578 ................... PASS
 #ninja -C build llvm-tblgen #246 ................... PASS
 #ninja -C build lld      #1465 ..................... PASS
