@@ -15,7 +15,8 @@ export  CC=${TARGET_TUPLE}-clang
 
 # Set flags to greatly reduce debugging symbols
 #CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC '
-CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
+#CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
+CFLAGS=' -g -g1 
 CXXFLAGS=$CFLAGS
 export CFLAGS CXXFLAGS
 
