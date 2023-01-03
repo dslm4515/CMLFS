@@ -1,5 +1,4 @@
-# Toolchain: M4-1.4.19
-# Source: https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
+# llvmtools: M4
 # Build and install as cmlfs
 
 # Configure source with clang
@@ -11,8 +10,8 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 ./configure --prefix=/llvmtools \
-            --build=${MLFS_HOST} \
-            --host=${TARGET_TUPLE} 
+            --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE}
 
 # Build and install to toolchain
 make && make install
