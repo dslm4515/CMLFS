@@ -102,7 +102,7 @@ Build a gcc toolchain with [mussel](https://github.com/firasuke/mussel) to cross
 </ol>
 
 ## Issues
-None at the moment.
+GCC will not compile with stage1 clang under chroot, but can be cross-compiled with cross-gcc in cgnutools (during build, xgcc fails configure testing for libatomic).
 
 ## Change log
 
