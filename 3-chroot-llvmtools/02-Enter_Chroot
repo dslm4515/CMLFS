@@ -17,6 +17,5 @@ case $(uname -m) in
      armv6*)  export TUPLE="armv6l-linux-musleabihf"  ;;
 esac
 
-# Use the configured clang until Musl is built
-export CC=${TUPLE}-clang CXX=${TUPLE}-clang++
-
+# Set clang as default Compiler
+export CC=clang CXX=clang++
