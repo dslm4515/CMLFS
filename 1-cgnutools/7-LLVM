@@ -14,11 +14,11 @@ cd $LLVMSRC
 
 # Musl doesn't support strtoll_l(), so replace it with a simple strtoll() call.
 # Apply patches to allow localization of libc++: Force 'abi' changes (glibc->musl)
-# to source and disable xlocale.h (holds abi changes).  
-patch -Np1 -i ../patches/llvm1505-cmlfs/libcxx-use-strtoll_strtoul.patch 
+# to source and disable xlocale.h (holds abi changes).
+patch -Np1 -i ../patches/llvm1505-cmlfs/libcxx-use-strtoll_strtoul.patch
 
-# Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes). 
-patch -Np1 -i ../patches/llvm1505-cmlfs/remove-locale-inlines.patch 
+# Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
+patch -Np1 -i ../patches/llvm1505-cmlfs/remove-locale-inlines.patch
 
 # Known broken test on musl
 cd llvm
@@ -57,11 +57,12 @@ export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
 export  CTOOLS="-DCMAKE_C_COMPILER=${CMLFS_TARGET}-gcc "
 export CTOOLS+="-DCMAKE_CXX_COMPILER=${CMLFS_TARGET}-g++ "
 export CTOOLS+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
+export CTOOLS+="-DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd "
 
 # Set the tuples & build target ...
-export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
-export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-cmlfs-linux-musl " 
-export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl " 
+export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-cmlfs-linux-musl "
+export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
 export CTARG+="-DLLVM_TARGETS_TO_BUILD=host "
 export CTARG+="-DLLVM_TARGET_ARCH=host "
 export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
@@ -69,22 +70,7 @@ export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
 # Set the paths ...
 export  CPATHS="-DCMAKE_INSTALL_PREFIX=/cgnutools "
 export CPATHS+="-DDEFAULT_SYSROOT=/cgnutools "
-#export CPATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/cgnutools/lib "
-#export CPATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include "
-#export CPATHS+="-DLIBCXXABI_INSTALL_INCLUDE_DIR=/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "
-#export CPATHS+="-DLIBCXX_INSTALL_INCLUDE_DIR=/cgnutools/include/x86_64-pc-linux-musl/c++/v1 "
-
-# Set bootstrap options..
-# https://discourse.llvm.org/t/bootstrapping-standalone-llvm-clang-libc-lld-toolchain/3069
-#export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
-#export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
-#export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
-#export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
-#export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "       
-#export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "    
-#export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON " 
-#export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
-#export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
+export CPATHS+="-DBacktrace_INCLUDE_DIR=/cgnutools/include "
 
 # Set the standard C++ library that clang will use to LLVM's libc++:
 #export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
@@ -98,11 +84,7 @@ export COPTS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
 # Libc++ has been patched to force localization support:
 export COPTS+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
 
-# Set libc++abi & libc++ to use compiler-rt instead of gcc's runtime:
-#export COPTS+="-DLIBCXX_USE_COMPILER_RT=ON " 
-#export COPTS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
-
-# Set libc++abi to use libunwind to avoid dependace on GCC:
+# Set libc++abi to use libunwind to avoid dependence on GCC:
 #export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
 
 # Make sure to install libunwind headers
@@ -116,10 +98,6 @@ export COPTS+="-DLLVM_ENABLE_RTTI=ON "
 
 # Stage 1 clang's compiler-rt will require new delete definitions in libc++
 export COPTS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
-
-# Enable atomics to avoid using atomics from GCC:
-#export COPTS+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF "
-#export COPTS+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
 
 # Turn off features that cause compiler-rt to NOT reference backtrace symbols from libexecinfo
 export  BOFF="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
@@ -135,7 +113,6 @@ export BOFF+="-DLLVM_INCLUDE_DOCS=OFF    -DLLVM_INCLUDE_EXAMPLES=OFF "
 
 # Turn off more clang features not needed:
 export BOFF+="-DCLANG_ENABLE_ARCMT=OFF      -DCLANG_ENABLE_STATIC_ANALYZER=OFF "
-export BOFF+="-DCLANG_INSTALL_SCANBUILD=OFF -DCLANG_INSTALL_SCANVIEW=OFF "
 export BOFF+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
 export BOFF+="-DCLANG_TOOL_CLANG_CHECK_BUILD=OFF   -DCLANG_TOOL_CLANG_DIFF_BUILD=OFF "
 export BOFF+="-DCLANG_TOOL_CLANG_EXTDEF_MAPPING_BUILD=OFF -DCLANG_TOOL_CLANG_FORMAT_BUILD=OFF "
@@ -146,8 +123,7 @@ export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_WRAPPER_BUILD=OFF -DCLANG_TOOL_CLANG_RE
 export BOFF+="-DCLANG_TOOL_CLANG_RENAME_BUILD=OFF -DCLANG_TOOL_CLANG_REPL_BUILD=OFF "
 export BOFF+="-DCLANG_TOOL_CLANG_SCAN_DEPS_BUILD=OFF -DCLANG_TOOL_CLANG_SHLIB_BUILD=OFF"
 export BOFF+="-DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF -DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF "
-export BOFF+="-DCLANG_TOOL_DIAGTOOL_BUILD=OFF -DCLANG_TOOL_DICTIONARY_BUILD=OFF "
-export BOFF+="-DCLANG_TOOL_HANDLE_CXX_BUILD=OFF -DCLANG_TOOL_HANDLE_LLVM_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_DIAGTOOL_BUILD=OFF "
 export BOFF+="-DCLANG_TOOL_SCAN_BUILD_BUILD=OFF -DCLANG_TOOL_SCAN_BUILD_PY_BUILD=OFF "
 export BOFF+="-DCLANG_TOOL_SCAN_VIEW_BUILD=OFF -DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
 
@@ -160,8 +136,9 @@ cmake -B build -G Ninja -Wno-dev -S llvm  \
   -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
   -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
   -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}  -Wl,--as-needed -lexecinfo" \
-  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0" \
-  -DBacktrace_INCLUDE_DIR=/cgnutools/include -DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd
+  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} \
+  -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0"
+
 
 # Build [lld] expects execinfo.h in /cgnutools/x86_64-cmlfs-linux-musl/include
 ln -sv /cgnutools/include/execinfo.h /cgnutools/x86_64-cmlfs-linux-musl/include/
@@ -200,7 +177,7 @@ done
 #ninja -C build install-cxxabi #................... /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.{so*,a}
 #ninja -C build install-cxxabi-headers #........... /cgnutools/include/c++/v1/{__cxxabi_config.h,cxxabi.h}
 #ninja -C build install-cxx #...................... /cgnutools/lib/x86_64-pc-linux-musl/libc++.{so*,a}
-                            #...................... /cgnutools/include/x86_64-pc-linux-musl/c++/v1/__config_site 
+                            #...................... /cgnutools/include/x86_64-pc-linux-musl/c++/v1/__config_site
 #ninja -C build install-cxx-headers # ............. /cgnutools/include/c++/v1/{__config,*}
 #ninja -C build install-compiler-rt # ............. /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
                                     # ............. {libclang_rt.asan-preinit.a,clang_rt.crtend.o,libclang_rt.ubsan_standalone_cxx.a,...}
