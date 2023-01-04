@@ -208,8 +208,8 @@ do
 done
 
 # Stage0 lld cannot decompress zlib debug info. Strip the c-runtime objects
-strip --strip-debug /cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
-strip --strip-debug /cmlfs/cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 
 # Create link for missing c-runtime objects:
