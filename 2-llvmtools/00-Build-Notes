@@ -19,7 +19,6 @@ o gawk
 o Grep
 o gzip
 o Make
-o patch
 o sed
 o tar
 o xz-utils
@@ -28,6 +27,7 @@ o GCC (optional?)
 o Libstdc++ (optional?)
 
 Compiled under chroot
+o patch
 o gettext-tiny
 o bison
 o perl
