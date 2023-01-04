@@ -18,4 +18,6 @@ if [ -h $CMLFS/dev/shm ]; then
   mkdir -pv $CMLFS/$(readlink $CMLFS/dev/shm)
 fi
 
-
+# Remove a link to /cgnutools
+rm -v /llvmtools/lib/libunwind.so.1
+ln -sv x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
