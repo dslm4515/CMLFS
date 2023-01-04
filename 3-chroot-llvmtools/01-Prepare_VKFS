@@ -21,3 +21,6 @@ fi
 # Remove a link to /cgnutools
 rm -v /llvmtools/lib/libunwind.so.1
 ln -sv x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
+
+# Add additional library path:
+echo "/llvmtools/lib/x86_64-pc-linux-musl/" >>  /llvmtools/etc/ld-musl-x86_64.path 
