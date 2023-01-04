@@ -23,6 +23,7 @@ o patch
 o sed
 o tar
 o xz-utils
+o bintuils
 o GCC (optional?)
 o Libstdc++ (optional?)
 
