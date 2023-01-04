@@ -1,7 +1,7 @@
 # Llvmtools Chain: GCC
 # Build and install as cmlfs
 
-# Additional sources to add as GCC requires them 
+# Additional sources to add as GCC requires them
 xz -cd ../pkgs/mpfr-4.1.1.tar.xz | tar -xf -
 mv -v mpfr-4.1.1 mpfr
 xz -cd ../pkgs/gmp-6.2.1.tar.xz | tar -xf -
@@ -10,11 +10,11 @@ gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
 mv -v mpc-1.2.1 mpc
 
 # Apply patches [from Glaucus]
-patch -Np0 -i ../patches/glaucus/0001-pure64-for-x86-64.patch 
+patch -Np0 -i ../patches/glaucus/0001-pure64-for-x86-64.patch
 
 # The target build is finding the host libstdc++'s <fenv.h>, fix it
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100017#c7
-patch -Np1 -i ../patches/gcc-mlfs-11.2.0/fix_fenv_header.patch
+#patch -Np1 -i ../patches/gcc-mlfs-11.2.0/fix_fenv_header.patch
 
 # Re-create internal header
 cat gcc/{limitx,glimits,limity}.h > \
@@ -53,7 +53,7 @@ export CARGS+="--with-native-system-header-dir=/llvmtools/include "
 # Enable only C++ and C languages
 export CARGS+="--enable-languages=c,c++ "
 
-# Disable features not supported by Musl 
+# Disable features not supported by Musl
 export CARGS+="--disable-libsanitizer "
 export CARGS+="--disable-symvers "
 
@@ -69,6 +69,7 @@ export CARGS+="--disable-libstdcxx-pch "
 
 # Missing cc: create a link, otherwise build will use host's
 ln -sv x86_64-cmlfs-linux-musl-gcc /cgnutools/bin/cc
+#ln -sv x86_64-pc-linux-musl-clang cgnutools/bin/cc
 
 # GCC can only be compiled by GCC
 # Configure source
@@ -83,28 +84,28 @@ CC_FOR_BUILD="${CMLFS_TARGET}-gcc"  \
 CXX_FOR_BUILD="${CMLFS_TARGET}-g++" \
 CFLAGS='-g0 -O0 ' \
 CXXFLAGS=$CFLAGS \
-../configure $CARGS --with-arch=${CMLFS_CPU}   
+../configure $CARGS --with-arch=${CMLFS_CPU}
 
 # Build will look for headers & libraries in /llvmtools/${TARGET_TUPLE} ... made by binutils:
 #ln -sv ../include  /llvmtools/x86_64-pc-linux-musl/include
 #mv /llvmtools/x86_64-pc-linux-musl/lib/ldscripts /llvmtools/lib/
-#ln -sv ../lib /llvmtools/x86_64-pc-linux-musl/lib 
+#ln -sv ../lib /llvmtools/x86_64-pc-linux-musl/lib
 
 # Build - Set the PATHs for binaries and PATHs for libraries
 PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/bin \
 LD_LIBRARY_PATH=/llvmtools/lib:/cgnutools/x86_64-cmlfs-linux-musl/lib:/cgnutools/lib:/usr/lib:/lib \
-make   
+make
 
 # Install
 make install
 
-# FAIL: no gcc binary built/installed in /llvmtools. 
+# FAIL: no gcc binary built/installed in /llvmtools.
 
 # Add library path to llvmtools dynamic linker
 echo "/llvmtools/x86_64-cmlfs-linux-musl/lib" >> /llvmtools/etc/ld-musl-x86_64.path
 
 # Re-create internal header for GCC installed in llvmtools/gnu since
-# the internal header that has just been installed is a partial, 
+# the internal header that has just been installed is a partial,
 # self-contained file and does not include the extended features of the system header
 cp -v /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/include-fixed/limits.h \
       /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/include-fixed/limits.h.old
@@ -121,7 +122,7 @@ done
 # Many programs and scripts run cc instead of gcc, provide a link
 ln -sv clang-12 /llvmtools/bin/cc
 
-# Some packages are hard coded to use GCC . Create script 
+# Some packages are hard coded to use GCC . Create script
 # to set GCC as system compiler
 cat > /llvmtools/bin/set-gcc-mode << "EOF"
 #! /bin/bash
