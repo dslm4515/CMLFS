@@ -15,8 +15,8 @@ RANLIB=llvm-ranlib LD=ld.lld STRIP=llvm-strip \
 ../configure --prefix=/llvmtools \
   --with-lib-path=/llvmtools/lib \
   --build=${CMLFS_HOST} \
-  --host=${TARGET_TUPLE} \
-  --target=${TARGET_TUPLE} \
+  --host=${CMLFS_TARGET} \
+  --target=${CMLFS_TARGET} \
   --disable-nls \
   --disable-werror \
   --with-sysroot
