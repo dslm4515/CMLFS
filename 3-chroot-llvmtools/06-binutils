@@ -2,7 +2,7 @@
 # Build and install as cmlfs
 
 # Set stage0 clang as C/C++ compiler
-export CC=${TARGET_TUPLE}-clang CXX=${TARGET_TUPLE}-clang++
+export CC=clang CXX=clang++
 
 # Configure in dedicated build directory
 mkdir -v build && cd build
@@ -14,15 +14,14 @@ AR=llvm-ar AS=llvm-as \
 RANLIB=llvm-ranlib LD=ld.lld STRIP=llvm-strip \
 ../configure --prefix=/llvmtools \
   --with-lib-path=/llvmtools/lib \
-  --build=${CMLFS_HOST} \
-  --host=${CMLFS_TARGET} \
-  --target=${CMLFS_TARGET} \
   --disable-nls \
   --disable-werror \
   --with-sysroot
 
 # Build
 make
+
+# Fails, need texinfo installed before
 
 # Install
 make install
