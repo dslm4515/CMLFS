@@ -1,17 +1,10 @@
 # llvmtools: Texinfo
-# Build and install as cmlfs
+# Build and install under chroot
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
-            --prefix=/llvmtools
+./configure --prefix=/llvmtools
+
+# Fails to configure. Need perl
 
 # Build and install to toolchain
 make && make install
