@@ -15,8 +15,6 @@ sh Configure -des \
 # Build
 make
 
-# Only a few of the utilities and libraries need to be installed to toolchain
-cp -v perl cpan/podlators/scripts/pod2man /llvmtools/bin
-mkdir -pv /llvmtools/lib/perl5/5.36
-cp -Rv lib/* /llvmtools/lib/perl5/5.36
+# Intall it to llvmtools
+make install
 
