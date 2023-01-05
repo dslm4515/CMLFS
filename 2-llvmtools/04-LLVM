@@ -221,6 +221,10 @@ unset CONFIG_CRT CONFIG_CLANG CONFIG_OPTIONS BOFF
 unset CONFIG_LIBUNWIND CONFIG_LIBCXXABI CONFIG_LIBCXX
 unset CONFIG_PATHS BUILD_OFF LLVMSRC LINKERFLAGS CC CXX
 
+# Fix link for libunwind:
+rm -rf /llvmtools/lib/libunwind.so.1
+ln -sv x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
+
 # Some packages will try to use cc. Make a link for it.
 ln -sv clang-15 /llvmtools/bin/cc
 
