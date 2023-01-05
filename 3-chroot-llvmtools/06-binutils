@@ -64,32 +64,4 @@ echo "[ info  ] GNU Binutils  set as system default binary tools"
 EOF
 chmod -v +x /llvmtools/bin/set-gnu-bin-mode
 
-# Create another script to set the LLVM binary tools
-# as the system defaults
-
-cat > /llvmtools/bin/set-llvm-bin-mode << "EOF"
-#! /bin/bash
-echo "[ 1 / 1 ] Setting LLVM tools as system binary tools..." && \
-for b in  addr2line ar as nm objcopy objdump ranlib readelf size strings strip
-do
-  rm -v /llvmtools/bin/$b
-done
-
-for b in ar as nm objcopy objdump size strings
-do
-  ln -sv llvm-$b /llvmtools/bin/$b
-done
-
-rm -rf /llvmtools/bin/c++filt
-ln -sv llvm-cxxfilt /llvmtools/bin/c++filt
-
-ln -sv llvm-symbolizer /llvmtools/bin/addr2line     && \
-ln -sv llvm-ar         /llvmtools/bin/ranlib        && \
-ln -sv llvm-readobj    /llvmtools/bin/readelf       && \
-ln -sv llvm-objcopy    /llvmtools/bin/strip         && \
-
-echo "[ info  ] LLVM Binary tools set as system default"
-EOF
-chmod -v +x /llvmtools/bin/set-llvm-bin-mode
-
 unset CARGS
