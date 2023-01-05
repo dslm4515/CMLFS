@@ -27,22 +27,21 @@ ln -sv /cgnutools/lib/x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libun
 
 # Configure cross-GCC of cgnutools to match the same output as clang
 # Dump current specs
-#export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
-#${CMLFS_TARGET}-gcc -dumpspecs > specs
+export SPECFILE=`dirname $(${CMLFS_TARGET}-gcc -print-libgcc-file-name)`/specs
+${CMLFS_TARGET}-gcc -dumpspecs > specs
 
 # Modify dumped specs file
-#sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/llvmtools\/lib\/ld-musl-x86_64.so.1/g' specs
+sed -i 's/\/lib\/ld-musl-x86_64.so.1/\/llvmtools\/lib\/ld-musl-x86_64.so.1/g' specs
 
 # Check:
-#grep "/llvmtools/lib/ld-musl-x86_64.so.1" specs  --color=auto
+grep "/llvmtools/lib/ld-musl-x86_64.so.1" specs  --color=auto
 
 # Install modified specs to the cgnutools toolchain
-#mv -v specs $SPECFILE
-#unset SPECFILE
+mv -v specs $SPECFILE
+unset SPECFILE
 
 # Create link for libc.so. It will be replaced with a clang-built
 # one next
-mkdir -v /llvmtools/lib
 ln -sv /cgnutools/lib/libc.so /llvmtools/lib/ld-musl-$(uname -m).so.1
 
 # Check the PATH
