@@ -22,12 +22,12 @@ o Make
 o sed
 o tar
 o xz-utils
-o bintuils
-o GCC (optional?)
-o Libstdc++ (optional?)
 
 Compiled under chroot
 o patch
+o binutils (optiona?)
+o GCC (optional)
+o Libstdc++ (optional?)
 o gettext-tiny
 o bison
 o perl
