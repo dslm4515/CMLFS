@@ -256,6 +256,9 @@ EOF
 
 chmod -v +x /llvmtools/bin/set-llvm-bin-mode
 
+# Make lld as the default linker
+ln -sv ld.lld /llvmtools/bin/ld
+
 # Test stage 1 clang
 echo "int main(){}" > dummy.c
 /llvmtools/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
