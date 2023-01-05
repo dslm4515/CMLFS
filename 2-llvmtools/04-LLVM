@@ -252,7 +252,7 @@ grep ld.lld:  dummy.log
 # ld.lld: /llvmtools/lib/libc.so
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins.a
 # ld.lld: /llvmtools/lib/libunwind.so
-ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 # ld.lld: /llvmtools/lib/crtn.o
 
 # Check if clang++ [in llvmtools] has atomics.
