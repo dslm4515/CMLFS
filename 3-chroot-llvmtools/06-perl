@@ -12,23 +12,6 @@ sh Configure -des \
    -Dvendorlib=/llvmtools/lib/perl5/5.36/vendor_perl \
    -Dvendorarch=/llvmtools/lib/perl5/5.36/vendor_perl
 
-# FAIL:
-Configure: line 6444: nm: command not found
-Where is your C library? [/llvmtools/lib/libc.so]  
-Extracting names from the following files for later perusal:
-        /llvmtools/lib/libc.so
-        /llvmtools/lib/libcrypt.a
-        /llvmtools/lib/libdl.a
-        /llvmtools/lib/libm.a
-        /llvmtools/lib/libpthread.a
-        /llvmtools/lib/libutil.a
-This may take a while..................nm didn't seem to work right. Trying ar instead...
-Configure: line 6682: ar: command not found
-ar didn't seem to work right.
-Maybe this is a Cray...trying bld instead...
-Configure: line 6704: bld: command not found
-That didn't work either.  Giving up.
-
 # Build
 make
 
