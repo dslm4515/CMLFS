@@ -7,7 +7,7 @@
 # links which will be replaced by real files
 # throughout the course of this chapter after
 # the software has been installed:
-ln -sv /llvmtools/bin/{bash,cat,dd,echo,ln,pwd,rm,stty} /bin
+ln -sv /llvmtools/bin/{bash,cat,dd,env,echo,ln,pwd,rm,stty} /bin
 ln -sv /llvmtools/bin/install    /usr/bin/
 ln -sv /llvmtools/lib/x86_64-pc-linux-musl/libc++.so{,.1}    /usr/lib
 ln -sv /llvmtools/lib/x86_64-pc-linux-musl/libc++abi.so{,.1} /usr/lib
