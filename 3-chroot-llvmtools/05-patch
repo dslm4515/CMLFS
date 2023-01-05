@@ -1,18 +1,30 @@
-# Toolchain: Patch 2.7.6
-# Source: http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz
-# Build and install as cmlfs
+# llvmtools: Patch
+# Build and install under chroot
 
-# Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
-            --prefix=/llvmtools
+# Configure source
+./configure --prefix=/llvmtools
+
+# FAILS:
+configure:6012: checking for ar
+configure:6042: result: no
+configure:6012: checking for lib
+configure:6042: result: no
+configure:6012: checking for link
+configure:6028: found /llvmtools/bin/link
+configure:6039: result: link -lib
+configure:6065: checking the archiver (link -lib) interface
+configure:6081: clang -c -g -O2  conftest.c >&5
+configure:6081: $? = 0
+configure:6083: link -lib cru libconftest.a conftest.o >&5
+link: invalid option -- 'l'
+Try 'link --help' for more information.
+configure:6086: $? = 1
+configure:6092: link -lib -NOLOGO -OUT:conftest.lib conftest.o >&5
+link: invalid option -- 'l'
+Try 'link --help' for more information.
+configure:6095: $? = 1
+configure:6114: result: unknown
+configure:6130: error: could not determine link -lib interface
 
 # Build and install to toolchain
 make && make install
