@@ -7,12 +7,14 @@ export CC=${TARGET_TUPLE}-clang CXX=${TARGET_TUPLE}-clang++
 # Configure in dedicated build directory
 mkdir -v build && cd build
 
-# binutils-2.38
-CC=$CC CXX=$CXX AR=llvm-ar AS=llvm-as \
+# Configure source
+CC=$CC CXX=$CXX \
+CC_FOR_BUILD=$CC \
+AR=llvm-ar AS=llvm-as \
 RANLIB=llvm-ranlib LD=ld.lld STRIP=llvm-strip \
 ../configure --prefix=/llvmtools \
   --with-lib-path=/llvmtools/lib \
-  --build=${TARGET_TUPLE} \
+  --build=${CMLFS_HOST} \
   --host=${TARGET_TUPLE} \
   --target=${TARGET_TUPLE} \
   --disable-nls \
@@ -69,12 +71,12 @@ chmod -v +x /llvmtools/bin/set-gnu-bin-mode
 cat > /llvmtools/bin/set-llvm-bin-mode << "EOF"
 #! /bin/bash
 echo "[ 1 / 1 ] Setting LLVM tools as system binary tools..." && \
-for b in  addr2line ar as nm objcopy objdump ranlib readelf size strings strip 
+for b in  addr2line ar as nm objcopy objdump ranlib readelf size strings strip
 do
   rm -v /llvmtools/bin/$b
 done
 
-for b in ar as nm objcopy objdump size strings 
+for b in ar as nm objcopy objdump size strings
 do
   ln -sv llvm-$b /llvmtools/bin/$b
 done
