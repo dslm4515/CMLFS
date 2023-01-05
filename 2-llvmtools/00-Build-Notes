@@ -22,6 +22,7 @@ o Make
 o sed
 o tar
 o xz-utils
+o bzip2
 
 Compiled under chroot
 o patch
