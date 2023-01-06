@@ -34,3 +34,70 @@ make
 make install
 
 unset CARGS
+
+# Test GCC of llvmtools:
+echo "int main(){}" > dummy.c
+gcc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep succeeded
+# Should output:
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/crt1.o succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/crti.o succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/crtn.o succeeded
+
+# Verify that gcc is searching for the correct header files:
+grep -B1 -A1 '^ /llvmtools/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+#  /llvmtools/include
+#  /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include
+
+# verify that the linker gcc is using has the correct search paths
+grep 'SEARCH.*/llvmtools/lib' dummy.log |sed 's|; |\n|g'
+
+# Should output:
+# SEARCH_DIR("=/llvmtools/x86_64-pc-linux-musl/lib64")
+# SEARCH_DIR("/llvmtools/lib")
+# SEARCH_DIR("=/llvmtools/x86_64-pc-linux-musl/lib");
+
+# Make sure gcc is using the correct libc:
+grep libc dummy.log | grep succeeded
+# Should output:
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libc.so succeeded
+
+# Make sure gcc can find libgcc:
+grep succeeded dummy.log | grep libgcc
+# Should output:
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so.1 succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so.1 succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+
+# Check if gcc has atomics or supports atomics:
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+g++ atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# If all goes well, clean up:
+rm a.out atomics-test.cpp atomics-test.log dummy.c dummy.log 
