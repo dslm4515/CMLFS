@@ -1,4 +1,4 @@
-# Llvmtools: Binutils
+# llvmtools: Binutils
 # Build and install as cmlfs
 
 # Set stage0 clang as C/C++ compiler
@@ -8,10 +8,6 @@ export CC=clang CXX=clang++
 mkdir -v build && cd build
 
 # Configure source
-CC=$CC CXX=$CXX \
-CC_FOR_BUILD=$CC \
-AR=llvm-ar AS=llvm-as \
-RANLIB=llvm-ranlib LD=ld.lld STRIP=llvm-strip \
 ../configure --prefix=/llvmtools \
   --with-lib-path=/llvmtools/lib \
   --disable-nls \
@@ -32,10 +28,6 @@ make -C ld clean
 # Build and install linker that will be used later after adjusting toolchain
 make -C ld LIB_PATH=/usr/lib:/lib
 cp -v ld/ld-new /llvmtools/bin/ld.bfd-new
-
-# Set lld as default linker
-rm -rf /llvmtools/bin/ld
-ln -sv lld /llvmtools/bin/ld
 
 # Binary tools from LLVM will be the default.
 for b in addr2line ar as nm objcopy objdump ranlib readelf \

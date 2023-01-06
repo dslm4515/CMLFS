@@ -4,7 +4,5 @@
 # Configure source with clang
 ./configure --prefix=/llvmtools
 
-# Fails to configure. Need perl
-
 # Build and install to toolchain
 make && make install
