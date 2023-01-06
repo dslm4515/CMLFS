@@ -100,4 +100,42 @@ grep error:  atomics-test.log
 # Should return nothing if there are no errors.
 
 # If all goes well, clean up:
-rm a.out atomics-test.cpp atomics-test.log dummy.c dummy.log 
+rm a.out atomics-test.cpp atomics-test.log dummy.c dummy.log
+
+# Some packages are hard coded to use GCC. Force the
+# use of clang:
+for b in gcc cpp g++ c++
+do
+  mv -v /llvmtools/bin/{$b,$b.gnu}
+  ln -sv clang-15 /llvmtools/bin/$b
+done
+
+# Also create a script to set GCC as system compiler, when needed
+cat > /llvmtools/bin/set-gcc-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GCC as system compiler..." && \
+for b in c++ cpp g++ gcc
+do
+  rm -v          /llvmtools/bin/$b
+  ln -sv $b.gnu  /llvmtools/bin/$b
+done
+rm -v /llvmtools/lib/cpp
+rm -v /llvmtools/bin/cc
+ln -sv ../llvmtools/bin/cpp.gnu /llvmtools/lib/cpp
+ln -sv gcc.gnu   /llvmtools/bin/cc
+EOF
+chmod -v +x /llvmtools/bin/set-gcc-mode
+
+# Also create a script to force hard coded packages to use
+# clang:
+cat > /llvmtools/bin/set-llvm-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting LLVM as system compiler..." && \
+for b in c++ cpp g++ gcc cc
+do
+  rm -v  /llvmtools/bin/$b
+  ln -sv clang-15  /llvmtools/bin/$b
+done
+rm -v /llvmtools/lib/cpp
+ln -sv ../llvmtools/bin/clang-15 /llvmtools/lib/cpp
+EOF
