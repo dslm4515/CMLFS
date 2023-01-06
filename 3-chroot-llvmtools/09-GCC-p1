@@ -1,4 +1,4 @@
-# Llvmtools Chain: GCC
+# llvmtools Chain: GCC
 # Build and install as cmlfs
 
 # Additional sources to add as GCC requires them
@@ -17,8 +17,8 @@ patch -Np0 -i ../patches/glaucus/0001-pure64-for-x86-64.patch
 #patch -Np1 -i ../patches/gcc-mlfs-11.2.0/fix_fenv_header.patch
 
 # Re-create internal header
-cat gcc/{limitx,glimits,limity}.h > \
-  $(dirname $($CMLFS_TARGET-gcc -print-libgcc-file-name))/include-fixed/limits.h
+#cat gcc/{limitx,glimits,limity}.h > \
+#  $(dirname $($CMLFS_TARGET-gcc -print-libgcc-file-name))/include-fixed/limits.h
 
 # change the location of GCC's default dynamic linker to use the one installed in /llvmtools
 #
@@ -40,13 +40,14 @@ done
 mkdir -v build && cd build
 
 # Set build options:
-export  CARGS="--target=${CMLFS_TARGET}  "
-export CARGS+="--build=${CMLFS_TARGET} "
-export CARGS+="--host=${CMLFS_HOST} "
+#export  CARGS="--target=${CMLFS_TARGET}  "
+#export CARGS+="--build=${CMLFS_TARGET} "
+#export CARGS+="--host=${CMLFS_HOST} "
 #export  CARGS="--target=${TARGET_TUPLE}  "
-#export CARGS+="--build=${TARGET_TUPLE} "
-#export CARGS+="--host=${CMLFS_TARGET} "
-export CARGS+="--prefix=/llvmtools "
+#export CARGS+="--build=${CMLFS_HOST} "
+#export CARGS+="--host=${CMLFS_HOST} "
+
+export CARGS="--prefix=/llvmtools "
 export CARGS+="--with-local-prefix=/llvmtools "
 export CARGS+="--with-native-system-header-dir=/llvmtools/include "
 
@@ -68,23 +69,19 @@ export CARGS+="--disable-libquadmath "
 export CARGS+="--disable-libstdcxx-pch "
 
 # Missing cc: create a link, otherwise build will use host's
-ln -sv x86_64-cmlfs-linux-musl-gcc /cgnutools/bin/cc
+#ln -sv x86_64-cmlfs-linux-musl-gcc /cgnutools/bin/cc
 #ln -sv x86_64-pc-linux-musl-clang cgnutools/bin/cc
 
-# GCC can only be compiled by GCC
+# set binary utilities to GNU's binutils, instead of LLVM's
+#/llvmtools/bin/set-gnu-bin-mode
+
+# GCC can be compiled by clang!
 # Configure source
-CC="${CMLFS_TARGET}-gcc"    \
-CXX="${CMLFS_TARGET}-g++"   \
-AR="${CMLFS_TARGET}-ar"     \
-AS="${CMLFS_TARGET}-as"     \
-RANLIB="${CMLFS_TARGET}-ranlib"     \
-LD="${CMLFS_TARGET}-ld"             \
-STRIP="${CMLFS_TARGET}-strip"       \
-CC_FOR_BUILD="${CMLFS_TARGET}-gcc"  \
-CXX_FOR_BUILD="${CMLFS_TARGET}-g++" \
 CFLAGS='-g0 -O0 ' \
 CXXFLAGS=$CFLAGS \
-../configure $CARGS --with-arch=${CMLFS_CPU}
+../configure $CARGS --with-newlib --without-headers \
+  --disable-nls --disable-shared --disable-libatomic \
+  --disable-libstdcxx
 
 # Build will look for headers & libraries in /llvmtools/${TARGET_TUPLE} ... made by binutils:
 #ln -sv ../include  /llvmtools/x86_64-pc-linux-musl/include
@@ -92,35 +89,41 @@ CXXFLAGS=$CFLAGS \
 #ln -sv ../lib /llvmtools/x86_64-pc-linux-musl/lib
 
 # Build - Set the PATHs for binaries and PATHs for libraries
-PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/bin \
-LD_LIBRARY_PATH=/llvmtools/lib:/cgnutools/x86_64-cmlfs-linux-musl/lib:/cgnutools/lib:/usr/lib:/lib \
+#PATH=/llvmtools/bin:/cgnutools/bin:/usr/bin:/bin \
+#LD_LIBRARY_PATH=/llvmtools/lib:/llvmtools/lib/${TARGET_TUPLE}:/cgnutools/x86_64-cmlfs-linux-musl/lib:/cgnutools/lib:/usr/lib:/lib \
 make
 
+# Build fails due to zlib-conpressed object files:
+# ld: error: _muldi3_s.o:(.debug_info) is compressed with ELFCOMPRESS_ZLIB, but lld is not built with zlib support
+# Just strip'em of debug symbols and then run the same make command above
+#strip --strip-debug  x86_64-pc-linux-musl/libgcc/*
+
 # Install
+#LD_LIBRARY_PATH=/llvmtools/lib:/llvmtools/lib/${TARGET_TUPLE}:/cgnutools/x86_64-cmlfs-linux-musl/lib:/cgnutools/lib:/usr/lib:/lib \
 make install
 
-# FAIL: no gcc binary built/installed in /llvmtools.
-
 # Add library path to llvmtools dynamic linker
-echo "/llvmtools/x86_64-cmlfs-linux-musl/lib" >> /llvmtools/etc/ld-musl-x86_64.path
+#echo "/llvmtools/lib/x86_64-pc-linux-musl" >> /llvmtools/etc/ld-musl-x86_64.path
 
 # Re-create internal header for GCC installed in llvmtools/gnu since
 # the internal header that has just been installed is a partial,
 # self-contained file and does not include the extended features of the system header
-cp -v /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/include-fixed/limits.h \
-      /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/include-fixed/limits.h.old
+cp -v /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include-fixed/limits.h \
+      /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include-fixed/limits.h.old
 cat ../gcc/limitx.h ../gcc/glimits.h ../gcc/limity.h > \
-    /llvmtools/lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/include-fixed/limits.h
+    /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include-fixed/limits.h
+
+# Skipping below until libstdcxx is installed.
 
 # Make clang the primary compiler system
 for b in gcc cpp g++ c++
 do
   mv -v /llvmtools/bin/{$b,$b.gnu}
-  ln -sv clang-12 /llvmtools/bin/$b
+  ln -sv clang-15 /llvmtools/bin/$b
 done
 
 # Many programs and scripts run cc instead of gcc, provide a link
-ln -sv clang-12 /llvmtools/bin/cc
+ln -sv clang-15 /llvmtools/bin/cc
 
 # Some packages are hard coded to use GCC . Create script
 # to set GCC as system compiler
