@@ -1,19 +1,16 @@
-# Llvmtools Chain: GCC's libstdc++
+# llvmtools Chain: GCC's libstdc++
 # Build and install as cmlfs
 
 # The target build is finding the host libstdc++'s <fenv.h>, fix it
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100017#c7
-patch -Np1 -i ../patches/gcc-mlfs-11.2.0/fix_fenv_header.patch
+#patch -Np1 -i ../patches/gcc-mlfs-11.2.0/fix_fenv_header.patch
 
 # Build in a dedicated directory
-mkdir -v build && cd build          
+mkdir -v build && cd build
 
 # Set the build flags
-export  CARGS="--target=${CMLFS_TARGET} "
-export CARGS+="--build=${CMLFS_HOST} "
-export CARGS+="--host=${CMLFS_TARGET} "
-export CARGS+="--prefix=/llvmtools "
-export CARGS+="--with-gxx-include-dir=/llvmtools/include/c++/11.2.0 "
+export  CARGS="--prefix=/llvmtools "
+export CARGS+="--with-gxx-include-dir=/llvmtools/include/c++/12.2.0 "
 
 # Disable features not needed in chroot
 export CARGS+="--disable-libstdcxx-threads "
@@ -21,27 +18,19 @@ export CARGS+="--disable-libstdcxx-pch "
 export CARGS+="--disable-multilib "
 export CARGS+="--disable-nls "
 
-# Configure the source with
-# GCC from cgnutools
-CC="${CMLFS_TARGET}-gcc"    \
-CXX="${CMLFS_TARGET}-g++"   \
-AR="${CMLFS_TARGET}-ar"     \
-AS="${CMLFS_TARGET}-as"     \
-RANLIB="${CMLFS_TARGET}-ranlib"     \
-LD="${CMLFS_TARGET}-ld"             \
-STRIP="${CMLFS_TARGET}-strip"       \
-../libstdc++-v3/configure ${CARGS}
+# Configure will expect cpp in /lib:
+ ln -sv /llvmtools/bin/cpp /lib/cpp
+
+# Configure the source
+CC=${TUPLE}-gcc CXX=${TUPLE}-g++ \
+../libstdc++-v3/configure ${CARGS} \
+--target=x86_64-linux-musl --host=x86_64-pc-linux-musl \
+--build=x86_64-linux-musl
 
 # Build
-make  
-# Add an absolue path for ranlib in build/libtool script:
-#RANLIB="/cgnutools/bin/x86_64-cmlfs-linux-musl-ranlib"
-# ^ Updated configure command, not sure if this matters anymore
+make
 
 # Install
 make install
 
-# GCC & binutils built. No need for cgnutools.
-export PATH=/llvmtools/bin:/bin:/usr/bin
-
- 
+unset CARGS
