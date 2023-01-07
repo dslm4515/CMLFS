@@ -35,3 +35,7 @@ make TIC_PATH=$(pwd)/build/progs/tic install
 
 # Bash build expects to find libcurses.so:
 ln -sv libncursesw.so.6.3 /llvmtools/lib/libcurses.so
+
+# ccmake (CMake) expects libtinfow.so, create a
+# link for it:
+ln -sv  libncursesw.so.6.3 /llvmtools/lib/libtinfow.so
