@@ -1,15 +1,7 @@
-# Toolchain: Gettext-tiny
-# Source: http://ftp.barfooze.de/pub/sabotage/tarballs/gettext-tiny-0.3.2.tar.xz
-# Build and install as cmlfs
+# llvmtools: Gettext-tiny
+# Build under chroot
 
-# Build with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
+# Build
 make LIBINTL=MUSL prefix=/llvmtools
 
 # Install the msgfmt, msgmerge and xgettext programs to toolchain
