@@ -26,9 +26,7 @@ case $(uname -m) in
 esac
 
 # Configure
-CC=${TUPLE}-clang \
-CXX=${TUPLE}-clang++
-AR=llvm-ar RANLIB=llvm-ranlib \ 
+CC=clang \
 LDFLAGS="$LDFLAGS -Wl,-soname,libc.musl-${CARCH}.so.1" \
 ./configure --prefix=/usr \
             --sysconfdir=/etc \
@@ -39,15 +37,13 @@ LDFLAGS="$LDFLAGS -Wl,-soname,libc.musl-${CARCH}.so.1" \
 make && make  install
 
 # Provide minimal libssp_nonshared.a so we don't need libssp from gcc
-/llvmtools/bin/x86_64-pc-linux-musl-clang -fpie -c \
-../files/musl-alpine/__stack_chk_fail_local.c -o __stack_chk_fail_local.o
-/llvmtools/bin/llvm-ar r \
-libssp_nonshared.a __stack_chk_fail_local.o
+clang -fpie -c ../files/musl-alpine/__stack_chk_fail_local.c -o __stack_chk_fail_local.o
+llvm-ar r libssp_nonshared.a __stack_chk_fail_local.o
 cp -v libssp_nonshared.a /usr/lib/
 
 # Create link for ldd:
 #ln -sv /lib/ld-musl-$CARCH.so.1 /bin/ldd
-ln -sv ../usr/lib/libc.so /bin/ldd
+ln -sv ../lib/libc.so /usr/bin/ldd
 
 # Create config for dynamic library loading:
 cat > /etc/ld-musl-$CARCH.path << "EOF"
@@ -64,7 +60,7 @@ esac
 unset CARCH 
 
 # Create  ldconfig
-install -v -D -m755 ../files/musl-alpine/ldconfig /usr/bin
+install -v -D -m755 ../files/musl-alpine/ldconfig /usr/bin/
 
 # If desired, install legacy compatability headers:
 for h in cdefs queue tree
