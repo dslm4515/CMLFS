@@ -4,7 +4,7 @@
 # This section is done in Chroot environment
 
 # Clean source tree
-LLVM=1 LLVM_IAS=1 make CC=x86_64-pc-linux-musl-clang mrproper
+LLVM=1 LLVM_IAS=1 make CC=clang mrproper
 
 # Extract headers
 # !! The recommended make target “headers_install” cannot 
@@ -13,8 +13,7 @@ LLVM=1 LLVM_IAS=1 make CC=x86_64-pc-linux-musl-clang mrproper
 #
 
 LLVM=1 LLVM_IAS=1 \
-make     CC=x86_64-pc-linux-musl-clang \
-     HOSTCC=x86_64-pc-linux-musl-clang headers
+make CC=clang HOSTCC=clang headers
 
 # There are also some hidden files used by the kernel 
 # developers and not needed by MLFS that are removed 
