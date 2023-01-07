@@ -1,0 +1,15 @@
+# llvmtools: patchelf
+# Build in chroot
+# This tool will be needed to manually set the
+# dynamic linux loader in shared binaries, until
+# stage2 clang is built.
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/llvmtools
+
+# Compile
+make
+
+# Install to llvmtools
+make install

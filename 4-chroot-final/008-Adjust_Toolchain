@@ -1,16 +1,24 @@
 # Final System - Adjust Tool Chain
 # This section is done in Chroot environment
 
-# Retire stage 1 clang [cross] configuration
-mv -v /llvmtools/bin/x86_64-pc-linux-musl.{cfg,cfg.cross}
+# Create configuration for stage1 clang:
+touch /llvmtools/bin/${TUPLE}.cfg
 
 # Re-configure stage1 clang to use new sysroot (/usr) with newly built musl Libc
-echo "--sysroot=/usr " > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
+echo "--sysroot=/usr " > /llvmtools/bin/${TUPLE}.cfg
+
+# Create a link of clang to use configuration:
+ln -sv clang-15 /llvmtools/bin/${TUPLE}-clang
+ln -sv clang-15 /llvmtools/bin/${TUPLE}-clang++
 
 # For creating static binaries & libraries, create links for
 # missing object files
-ln -sv clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtbeginT.o
-ln -sv clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtend.o
+#ln -sv clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtbeginT.o
+#ln -sv clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtend.o
+
+# Prevent stage1 clang from using GCC.
+# If GCC is needed, just revert the change.
+mv -v /llvmtools/lib/gcc /llvmtools/lib/gcc-BLOCKED
 
 # Adjust binutils linker of llvmtools:
 mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
@@ -20,12 +28,13 @@ rm -v /llvmtools/x86_64-pc-linux-musl/bin/ld
 ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-pc-linux-musl/bin/ld
 
 # Make sure the  build environment has the default compilers set
-export CC=$(uname -m)-pc-linux-musl-clang
-export CXX=$(uname -m)-pc-linux-musl-clang++
+export  CC=${TUPLE}-clang
+export CXX=${TUPLE}-clang++
 
 # Test stage 1 clang
 echo "int main(){}" > dummy.c
 ${CC} dummy.c -v -Wl,--verbose &> dummy.log
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 a.out
 readelf -l a.out | grep ': /lib'
 
 # Should output:
@@ -73,7 +82,7 @@ int main(){
    #else
    std::cout << "C++" << std::endl;
    #endif
-   
+
    return 0;
 }
 EOF
@@ -82,12 +91,7 @@ ${CXX} cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
 
 # Check for errors during compile or link:
 grep error: cxx11-test.log
-# FAIL -- Not sure if this test matters.
-# ld.lld: error: undefined symbol: __cxa_begin_catch
-# ld.lld: error: undefined symbol: __cxa_end_catch
-# ld.lld: error: undefined symbol: std::terminate()
-# ld.lld: error: undefined symbol: __gxx_personality_v0
 
-# Once everything is working correctly, clean up 
+# Once everything is working correctly, clean up
 # the test files:
 rm -v dummy.c a.out dummy.log atomics-test.cpp atomics-test.log cxx11-test.cpp cxx11-test.log
