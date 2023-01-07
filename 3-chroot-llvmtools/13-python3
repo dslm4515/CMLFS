@@ -2,13 +2,13 @@
 # Build and install as cmlfs
 
 # Apply fixes to build under musl, from Alpine Linux
-patch -Np1 -i ../patches/python-alpine/musl-find_library.patch 
+patch -Np1 -i ../patches/python-alpine/musl-find_library.patch
 
 # Make sure ctypes for darwin isnt built
 rm -r Modules/_ctypes/darwin
 
-# The main script for building modules is written in Python, and 
-# uses hard-coded paths to the host /usr/include and /usr/lib 
+# The main script for building modules is written in Python, and
+# uses hard-coded paths to the host /usr/include and /usr/lib
 # directories. Prevent this:
 sed -i '/def add_multiarch_paths/a \        return' setup.py
 
@@ -16,20 +16,11 @@ sed -i '/def add_multiarch_paths/a \        return' setup.py
 patch -Np1 -i ../patches/python-cmlfs/disable-multiarch-detection.patch
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE}  \
-            --prefix=/llvmtools      \
+./configure --prefix=/llvmtools      \
             --enable-shared          \
-            --without-ensurepip 
+            --without-ensurepip
 
 # Build and install to toolchain
 make && make install
 chmod -v 755 /llvmtools/lib/libpython3.11.so &&
-chmod -v 755 /llvmtools/lib/libpython3.so  
+chmod -v 755 /llvmtools/lib/libpython3.so
