@@ -1,4 +1,4 @@
-# Llvmtools: CMake 
+# Llvmtools: CMake
 # Build and install in chroot
 
 sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
@@ -30,15 +30,8 @@ export CMARGS+="-DCURSES_FORM_LIBRARY=/llvmtools/lib/libformw.so "
 export CMARGS+="-DCURSES_INCLUDE_PATH=/llvmtools/include "
 export CMARGS+="-DCURSES_NCURSES_LIBRARY=/llvmtools/lib/libncursesw.so "
 
-# Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./bootstrap ${CARGS} -- ${CMARGS} 
+# Configure source
+./bootstrap ${CARGS} -- ${CMARGS}
 
 # Build and install to toolchain
 make && make install
