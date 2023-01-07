@@ -1,5 +1,4 @@
-# Toolchain: Nano 7.1
-# Source: https://www.nano-editor.org/dist/v7/nano-7.1.tar.xz
+# llvmtools: Nano
 # Build in chroot
 # Optional package: Text editor for convenience or trouble shooting
 
@@ -7,20 +6,8 @@
 export LDFLAGS="-L/llvmtools/lib -lncursesw "
 export CPPFLAGS="-I/llvmtools/include"
 
-# Build will fail since libtinfo cannot be found. Link it
-ln -sv libncursesw.so.6.3 /llvmtools/lib/libtinfow.so
-
-# Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./configure --build=${TUPLE} \
-            --host=${TUPLE} \
-            --prefix=/llvmtools \
+# Configure source
+./configure --prefix=/llvmtools \
             --enable-tiny
 
 # Build and install to toolchain
