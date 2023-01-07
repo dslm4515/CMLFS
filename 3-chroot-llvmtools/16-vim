@@ -7,16 +7,7 @@ echo '#define SYS_VIMRC_FILE "/llvmtools/etc/vimrc"' >> src/feature.h
 sed -i '/call/{s/split/xsplit/;s/303/492/}' src/testdir/test_recover.vim
 
 # Configure with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./configure --build=${TUPLE} \
-            --host=${TUPLE} \
-            --prefix=/llvmtools  \
+./configure --prefix=/llvmtools  \
             --disable-gui \
             --without-x
 
