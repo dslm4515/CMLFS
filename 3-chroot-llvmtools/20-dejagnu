@@ -1,18 +1,9 @@
 # llvmtools: DejaGNU
-# Build and install as mlfs
+# Build under chroot
 # Can be optional: Package used for testing final system packages
 
-# Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
-LD=ld.lld \
-STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
-            --prefix=/llvmtools
+# Configure source 
+./configure --prefix=/llvmtools
 
 # Build and install to toolchain
 make && make install
