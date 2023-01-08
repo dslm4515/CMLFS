@@ -1,14 +1,15 @@
 # Final System: Xz
-# Source: https://tukaani.org/xz/xz-5.2.5.tar.xz
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++ \
 ./configure --prefix=/usr    \
             --disable-static \
-            --docdir=/usr/share/doc/xz-5.2.5
+            --docdir=/usr/share/doc/xz-5.4.0
 
 make && make install
-mv -v   /usr/bin/{lzma,unlzma,lzcat,xz,unxz,xzcat} /bin
-mv -v /usr/lib/liblzma.so.* /lib
-ln -svf ../../lib/$(readlink /usr/lib/liblzma.so) /usr/lib/liblzma.so
 
+# Fix the binaries to use the correct dynamic loader:
+for b in lzcat lzmadec lzmainfo xz xzdec
+do
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
+done
