@@ -1,8 +1,8 @@
 # Final System: Ncurses
 # This section is done in Chroot environment
 
-# Don't install a static library that is not 
-# handled by configure: 
+# Don't install a static library that is not
+# handled by configure:
 sed -i '/LIBTOOL_INSTALL/d' c++/Makefile.in
 
 # Configure source
@@ -18,9 +18,11 @@ sed -i '/LIBTOOL_INSTALL/d' c++/Makefile.in
 # Build and install
 make && make install
 
-# Fix misplaced files
-mv -v /usr/lib/libncursesw.so.6* /lib
-ln -sfv ../../lib/$(readlink /usr/lib/libncursesw.so) /usr/lib/libncursesw.so
+# Fix the binaries to use the correct dynamic loader:
+for b in clear infocmp tabs tic toe tput tset
+do
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
+done
 
 # Allow linker to be able to find non-wide-character Ncurses libraries
 for lib in ncurses form panel menu ; do
@@ -29,8 +31,8 @@ for lib in ncurses form panel menu ; do
     ln -sfv ${lib}w.pc        /usr/lib/pkgconfig/${lib}.pc
 done
 
-# Make sure that old applications that look for -lcurses at build time are 
-# still buildable: 
+# Make sure that old applications that look for -lcurses at build time are
+# still buildable:
 rm -vf                     /usr/lib/libcursesw.so
 echo "INPUT(-lncursesw)" > /usr/lib/libcursesw.so
 ln -sfv libncurses.so      /usr/lib/libcurses.so
