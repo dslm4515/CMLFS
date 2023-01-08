@@ -1,4 +1,4 @@
-# Final System: File 
+# Final System: File
 # This section is done in Chroot environment
 
 # Configure
@@ -6,3 +6,6 @@
 
 # Build and install
 make && make install
+
+# Fix the binaries to use the correct dynamic loader:
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/file
