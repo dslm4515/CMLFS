@@ -9,16 +9,12 @@
             --with-pkg-config-dir=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/opt/qt5/lib/pkgconfig
 
 # Build and Install
-make #..................... FAIL
-
-# FAIL: ##################################################################################################################3
-ld.lld: error: relocation R_X86_64_PC32 cannot be used against symbol 'pkgconf_default_error_handler'; recompile with -fPIC
->>> defined in libpkgconf/.libs/client.o
->>> referenced by client.c:611 (/sources/pkgconf-1.9.3/libpkgconf/client.c:611)
->>>               libpkgconf/.libs/client.o:(pkgconf_client_init)
-############################################################################################################################ 
-
+make &&
 make install
 
 # Compatibility for pkgconfig
 ln -s pkgconf /usr/bin/pkg-config
+
+# Fix the binaries to use the correct dynamic loader:
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/bomtool
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/pkgconf
