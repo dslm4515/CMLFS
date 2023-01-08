@@ -1,8 +1,8 @@
-# Final System: M4 
+# Final System: M4
 # This section is done in Chroot environment
 
 # Apply patches from Alpine Linux
-patch -Np1 -i ../patches/m4-alpine/fix-sysval-test.patch 
+patch -Np1 -i ../patches/m4-alpine/fix-sysval-test.patch
 patch -Np1 -i ../patches/m4-alpine/musl-realpath.patch
 patch -Np1 -i ../patches/m4-alpine/test-posix_spawn_file_actions_addclose.patch
 
@@ -11,3 +11,6 @@ patch -Np1 -i ../patches/m4-alpine/test-posix_spawn_file_actions_addclose.patch
 
 # Build and install
 make && make install
+
+# Fix the binaries to use the correct dynamic loader:
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/m4
