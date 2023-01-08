@@ -1,28 +1,15 @@
 # Final System: Zstd
 # This section is done in Chroot environment
 
-CC=$CC  CXX=$CXX make # ....................PASS 
-CC=$CC  CXX=$CXX make -C contrib/pzstd # ...FAIL
-
-# FAIL:
-ld.lld: error: undefined symbol: operator delete(void*)                                                                                                
->>> referenced by main.cpp                                                                                                                             
->>>               main.o:(main)                                                                                                                        
->>> referenced by main.cpp                                                                                                                             
->>>               main.o:(main)                                                                                                                        
->>> referenced by main.cpp                                                                                                                             
->>>               main.o:(main)                                                                                                                        
->>> referenced 177 more times                                                                                                                          
-
-ld.lld: error: undefined symbol: __gxx_personality_v0
->>> referenced by main.cpp
->>>               main.o:(DW.ref.__gxx_personality_v0)
-
+CC=$CC  CXX=$CXX make
+CC=$CC  CXX=$CXX make -C contrib/pzstd
 
 make prefix=/usr install
 make prefix=/usr -C contrib/pzstd install
+mv -v /usr/local/bin/pzstd /usr/bin/
 
-rm -v /usr/lib/libzstd.a
-mv -v /usr/lib/libzstd.so.* /lib
-ln -sfv ../../lib/$(readlink /usr/lib/libzstd.so) /usr/lib/libzstd.so
-
+ # Fix the binaries to use the correct dynamic loader:
+ for b in pzstd zstd
+ do
+ patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
+ done
