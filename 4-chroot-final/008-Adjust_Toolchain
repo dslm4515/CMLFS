@@ -20,6 +20,11 @@ ln -sv clang-15 /llvmtools/bin/${TUPLE}-clang++
 # If GCC is needed, just revert the change.
 mv -v /llvmtools/lib/gcc /llvmtools/lib/gcc-BLOCKED
 
+# Adjust the library search path for the dynamic loader in llvmtools:
+echo "/usr/lib" > ld-musl-x86_64.path.new
+cat /llvmtools/etc/ld-musl-x86_64.path >> ld-musl-x86_64.path.new
+mv -v ld-musl-x86_64.path.new /llvmtools/etc/ld-musl-x86_64.path
+
 # Adjust binutils linker of llvmtools:
 mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
 mv -v  /llvmtools/x86_64-pc-linux-musl/bin/{ld.bfd,ld-old}
