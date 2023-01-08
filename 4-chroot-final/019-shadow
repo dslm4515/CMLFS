@@ -1,7 +1,7 @@
 # Final System: Shadow
 # This section is done in Chroot environment
 
-#  Disable the installation of the groups program and its man pages, 
+#  Disable the installation of the groups program and its man pages,
 #  as Coreutils provides a better version
 sed -i 's/groups$(EXEEXT) //' src/Makefile.in
 find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
@@ -22,11 +22,24 @@ LIBS="-lutmps -lskarnet" \
             --enable-utmpx \
             --bindir=/usr/bin \
             --sbindir=/usr/sbin \
-            --libdir=/usr/lib  
+            --libdir=/usr/lib
 
 # Build, Install, and fix misplaced files
 make && make install
 
+# Fix the binaries to use the correct dynamic loader:
+for b in chage chfn chsh expiry faillog getsubids gpasswd \
+         lastlog login newgidmap newgrp newuidmap passwd \
+         sg su
+do
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
+done
+for b in chgpasswd chpasswd groupadd groupdel groupmems groupmod \
+         grpck grpconv grpunconv logoutd newusers nologin pwck \
+         pwconv pwunconv useradd userdel usermod vigr vipw
+do
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/sbin/$b
+done
 
 # Enable shadowed passwords and shadowed group passwords:
 pwconv
