@@ -4,7 +4,7 @@
 
 export timezones="africa antarctica asia australasia europe northamerica \
                   southamerica etcetera backward factory"
-mkdir tzdb && cd tzdb && 
+mkdir tzdb && cd tzdb &&
 tar xf ../pkgs/tzdata2022g.tar.gz &&
 tar xf ../pkgs/tzcode2022g.tar.gz &&
 tar xf ../pkgs/posixtz-0.5.tar.xz &&
@@ -12,9 +12,9 @@ tar xf ../pkgs/posixtz-0.5.tar.xz &&
 patch -Np1 -i ../patches/posixtz-adelie/0001-posixtz-fix-up-lseek.patch
 
 # Top-level Makefile assumes cc exists. Remove the hard-coded "cc"
-sed -i '511d'  Makefile 
+sed -i '511d'  Makefile
 
-cc=$CC make CFLAGS="$CFLAGS -DHAVE_STDINT_H=1" TZDIR="/usr/share/zoneinfo"  
+cc=$CC make CFLAGS="$CFLAGS -DHAVE_STDINT_H=1" TZDIR="/usr/share/zoneinfo"
 make -C posixtz-0.5 posixtz
 
 ./zic -y ./yearistype -d /usr/share/zoneinfo ${timezones}
@@ -22,13 +22,17 @@ make -C posixtz-0.5 posixtz
 ./zic -y ./yearistype -d /usr/share/zoneinfo -p America/New_York
 install -m444 -t /usr/share/zoneinfo iso3166.tab zone1970.tab zone.tab
 install -m755 tzselect  /usr/bin
-install -m755 zic zdump /usr/sbin
+install -m755 zic zdump tzselect /usr/sbin
 install -m644 zic.8 zdump.8 /usr/share/man/man8
 #rm -fv /usr/share/zoneinfo/localtime
 install -Dm755 posixtz-0.5/posixtz /usr/bin/posixtz
+
+# Fix the binaries to use the correct dynamic loader:
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/posixtz
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/sbin/zdump
+patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 usr/sbin/zic
 
 unset timezones
 
 # use tzselect to determine <xxx>
 ln -sv /usr/share/zoneinfo/<xxx> /etc/localtime
-
