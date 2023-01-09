@@ -40,6 +40,9 @@ ln -sv libncursesw.so.6.3 /llvmtools/lib/libcurses.so
 # link for it:
 ln -sv  libncursesw.so.6.3 /llvmtools/lib/libtinfow.so
 
+# Building stage1 LLD will look for a missing library:
+ln -sv  libncursesw.so.6.3 /llvmtools/lib/libterminfo.so
+
 # Fix the binaries to use the dynamic loader/linker/interpreter:
 for b in clear infocmp tabs tic toe tput tset
 do
