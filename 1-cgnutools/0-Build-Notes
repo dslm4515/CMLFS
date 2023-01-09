@@ -36,3 +36,18 @@ make install
 # unpacked source directory unless instructed:
 cd ..
 rm -rf foo-1.2.3
+
+# Extra notes:
+# Most compilers provide a way to disable the 
+# default behavior for finding the standard 
+# library and to override it with custom paths. 
+# With Clang, this can be done with:
+
+clang++ -nostdinc++ -nostdlib++           \
+        -isystem <install>/include/c++/v1 \
+        -L <install>/lib                  \
+        -Wl,-rpath,<install>/lib          \
+        -lc++                             \
+        test.cpp
+
+
