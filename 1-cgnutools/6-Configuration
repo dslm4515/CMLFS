@@ -4,15 +4,17 @@
 # Configure clang to build binaries with /llvmtools/lib/ld-musl-x86_64.so.1 instead
 # of /lib/ld-musl-x86_64.so.1. This is similar in Musl-LFS/LFS when gcc specs
 # file is modified to set the dynamic linker in /tools instead of host's /lib.
+#ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang
+#ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang++
+#cat > /cgnutools/bin/${TARGET_TUPLE}.cfg << "EOF"
+#-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
+#EOF
+
+# Configure stage0 clang to use compiler-rt instead of GCC's runtime. This
+# will allow to build stage1 clang with GCC independence.
 ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang
 ln -sv clang-15   /cgnutools/bin/${TARGET_TUPLE}-clang++
-cat > /cgnutools/bin/${TARGET_TUPLE}.cfg << "EOF"
--Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
-EOF
-
-# .. configure stage0 clang to use compiler-rt instead of GCC's runtime. This
-# will allow to build stage1 clang with GCC independence.
-echo "-rtlib=compiler-rt "  >> /cgnutools/bin/${TARGET_TUPLE}.cfg
+echo "-rtlib=compiler-rt "  > /cgnutools/bin/${TARGET_TUPLE}.cfg
 
 # ... also configure stage0 clang to use newly built libc++ headers & libraries
 echo "-stdlib=libc++ " >> /cgnutools/bin/${TARGET_TUPLE}.cfg
