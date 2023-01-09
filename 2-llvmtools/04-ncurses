@@ -1,10 +1,10 @@
 # llvmtools: Ncurses
 # Build and install as cmlfs
 
-# Ensure that gawk is found first during configuration: 
+# Ensure that gawk is found first during configuration:
 sed -i s/mawk// configure
 
-# Run the following commands to build the “tic” program 
+# Run the following commands to build the “tic” program
 # on the build host:
 mkdir build
 pushd build
@@ -30,7 +30,7 @@ STRIP=llvm-strip \
             --enable-overwrite --with-cxx-shared --without-normal
 
 # Build and install to toolchain
-make && 
+make &&
 make TIC_PATH=$(pwd)/build/progs/tic install
 
 # Bash build expects to find libcurses.so:
@@ -39,3 +39,9 @@ ln -sv libncursesw.so.6.3 /llvmtools/lib/libcurses.so
 # ccmake (CMake) expects libtinfow.so, create a
 # link for it:
 ln -sv  libncursesw.so.6.3 /llvmtools/lib/libtinfow.so
+
+# Fix the binaries to use the dynamic loader/linker/interpreter:
+for b in clear infocmp tabs tic toe tput tset
+do
+setDL /llvmtools/bin/$b
+done
