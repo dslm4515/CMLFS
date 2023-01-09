@@ -25,7 +25,7 @@ ln -sv lld /cgnutools/bin/ld
 
 # When stage0 clang compiles, output expects libunwind in /llvmtools/lib
 mkdir -v /llvmtools/lib
-ln -sv /cgnutools/lib/x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
+ln -sv /cgnutools/lib/${TARGET_TUPLE}/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
 
 # Configure cross-GCC of cgnutools to match the same output as clang
 # Dump current specs
