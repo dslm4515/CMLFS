@@ -19,19 +19,19 @@ sed -i '71d' mussel.sh && \
 sed -i '71 i MSYSROOT="/cgnutools"' mussel.sh
 
 # Modify ./mussel to add a vendor in target tuple
-patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch 
+patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
 
-# Build toolchain. Ommit -p in not building in parallel and using all 
+# Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
 sudo ./mussel.sh x86_64 -l -o -p
 
 # Make sure cgnutools is owned by cmlfs
-sudo chown -vR cmlfs /mnt/cmlfs/cgnutools
+sudo chown -vR cmlfs $CMLFS/cgnutools
 
-# The new cross compiler has built-in specs which refer to the musl 
-# dynamic loader  /lib/ld-musl-x86_64.so.1 . We have to adjust this to 
-# build up the cgnutools with /cgnutools/lib/ld-musl-x86_64.so.1 . 
-# This will be reached by creating a modified  specs  file in the 
+# The new cross compiler has built-in specs which refer to the musl
+# dynamic loader  /lib/ld-musl-x86_64.so.1 . We have to adjust this to
+# build up the cgnutools with /cgnutools/lib/ld-musl-x86_64.so.1 .
+# This will be reached by creating a modified  specs  file in the
 # proper location:
 /cgnutools/bin/x86_64-cmlfs-linux-musl-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/cgnutools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/specs
 
