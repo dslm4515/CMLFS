@@ -21,27 +21,26 @@ patch -Np1 -i ../patches/llvm1505-cmlfs/libcxx-use-strtoll_strtoul.patch
 patch -Np1 -i ../patches/llvm1505-cmlfs/remove-locale-inlines.patch
 
 # Known broken test on musl
-cd llvm
-rm -v test/CodeGen/AArch64/wineh4.mir
+rm -v llvm/test/CodeGen/AArch64/wineh4.mir
 # https://github.com/llvm/llvm-project/issues/47657
-rm -v test/ExecutionEngine/Interpreter/intrinsics.ll
+rm -v llvm/test/ExecutionEngine/Interpreter/intrinsics.ll
 
 # If builing on x86, remove tests:
-rm -v test/Object/macho-invalid.test test/tools/llvm-size/radix.test unittests/Support/JSONTest.cpp
-sed -i "/JSONTest.cpp/d" unittests/Support/CMakeLists.txt
+rm -v llvm/test/Object/macho-invalid.test llvm/test/tools/llvm-size/radix.test llvm/unittests/Support/JSONTest.cpp
+sed -i "/JSONTest.cpp/d" llvm/unittests/Support/CMakeLists.txt
 
 # If building on arm*, remove tests:
-rm -v test/tools/llvm-readobj/ELF/dependent-libraries.test test/Object/macho-invalid.test \
-      test/tools/llvm-size/radix.test test/tools/gold/X86/split-dwarf.ll \
-      test/ExecutionEngine/frem.ll test/tools/llvm-dwarfdump/X86/prettyprint_types.s \
-      test/tools/llvm-dwarfdump/X86/simplified-template-names.s \
-      unittests/ExecutionEngine/Orc/OrcCAPITest.cpp \
-      test/CodeGen/RISCV/rv32zbp.ll \
-      test/CodeGen/RISCV/rv64zbp.ll
-sed -i "/OrcCAPITest.cpp/d" unittests/ExecutionEngine/Orc/CMakeLists.txt
-
-# Return to top-level
-cd ..
+rm -v llvm/test/tools/llvm-readobj/ELF/dependent-libraries.test \
+      llvm/test/Object/macho-invalid.test \
+      llvm/test/tools/llvm-size/radix.test \
+      llvm/test/tools/gold/X86/split-dwarf.ll \
+      llvm/test/ExecutionEngine/frem.ll \
+      llvm/test/tools/llvm-dwarfdump/X86/prettyprint_types.s \
+      llvm/test/tools/llvm-dwarfdump/X86/simplified-template-names.s \
+      llvm/unittests/ExecutionEngine/Orc/OrcCAPITest.cpp \
+      llvm/test/CodeGen/RISCV/rv32zbp.ll \
+      llvm/test/CodeGen/RISCV/rv64zbp.ll
+sed -i "/OrcCAPITest.cpp/d" llvm/unittests/ExecutionEngine/Orc/CMakeLists.txt
 
 # Force clang to use dynamic linux loader in /cgnutools
 patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader.patch
@@ -151,7 +150,8 @@ ln -sv /cgnutools/include/execinfo.h /cgnutools/x86_64-cmlfs-linux-musl/include/
 #ninja -C build cxxabi      #828 ........... pass
 #ninja -C build cxx         #89 ............ PASS
 #ninja -C build compiler-rt #576 ........... PASS
-#ninja -C build lld         #1652 .......... PASS
+#ninja -C build llvm-tblgen #242 ........... PASS
+#ninja -C build lld         #1410 .......... PASS
 #ninja -C build libclang    #777 ........... PASS
 #ninja -C build clang       #91 ............ PASS
 
@@ -163,7 +163,7 @@ done
 # Compile LLVM binutils(binary utilities)
 for b in addr2line ar as config cxxdump diff link lipo \
          lto lto2 nm objcopy objdump ranlib rc readelf \
-         size split strings strip tblgen ;
+         size split strings strip ;
 do
   ninja -C build llvm-$b
 done
@@ -202,19 +202,19 @@ done
 # Install LLVM binutils:
 for b in addr2line ar as config cxxdump diff link lipo \
          lto lto2 nm objcopy objdump ranlib rc readelf \
-         size split strings strip tblgen ;
+         size split strings strip tblgen
 do
   ninja -C build install-llvm-$b
 done
 
 # Stage0 lld cannot decompress zlib debug info. Strip the c-runtime objects
-strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
-strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
-strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/clang_rt.crtbegin.o
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/clang_rt.crtend.o
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/libclang_rt.builtins.a
 
 # Create link for missing c-runtime objects:
-ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtbeginS.o  /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
-ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtendS.o    /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
+ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtbeginS.o  /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/
+ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtendS.o    /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/
 
 # Clean up environment
 unset CC CXX CFLAGS CXXFLAGS CTOOLS CTARG CPATHS CBSTRAP COPTS BOFF LINKERFLAGS
