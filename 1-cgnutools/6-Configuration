@@ -97,7 +97,7 @@ export PATH=/cgnutools/bin:/llvmtools/bin:/bin:/usr/bin
 # Test Clang of cgnutools toolchain:
 echo "int main(){}" > dummy.c
 ${TARGET_TUPLE}-clang dummy.c -v -Wl,--verbose &> dummy.log
-patchelf --set-interpreter /llvmtools/lib/ld-musl-$(uname -m).so.1 a.out
+setDL a.out
 readelf -l a.out | grep ': /llvmtools'
 # Shoud output:
 # [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]

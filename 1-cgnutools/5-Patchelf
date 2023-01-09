@@ -16,3 +16,16 @@ make
 
 # Install to llvmtools
 make install
+
+# Create a script to easily set the dynamic loader/linker/interpreter
+# for a binary:
+cat > /cgnutools/bin/setDL << "EOF"
+#!/bin/bash
+# Set the dynamic loader/linker/interpreter of a binary
+# USAGE: setDL a.out
+
+export PROOT=/llvmtools
+patchelf --set-interpreter ${PROOT}/lib/ld-musl-$(uname -m).so.1 $1
+EOF
+
+chmod -v +x /cgnutools/bin/setDL
