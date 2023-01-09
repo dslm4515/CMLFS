@@ -9,17 +9,17 @@ export CXX=${TARGET_TUPLE}-clang++
 export  CC=${TARGET_TUPLE}-clang
 
 # Configure
-CC=$CC CXX=$CXX ./configure --prefix=/ 
+CC=$CC CXX=$CXX ./configure --prefix=/
 
 # Build and install to llvmtools
 make && make DESTDIR=/llvmtools install
 
 # fix a symlink
-rm -v /llvmtools/lib/ld-musl-x86_64.so.1
-ln -sv libc.so /llvmtools/lib/ld-musl-x86_64.so.1
+rm -v /llvmtools/lib/ld-musl-$(uname -m).so.1
+ln -sv libc.so /llvmtools/lib/ld-musl-$(uname -m).so.1
 
-# Create a symlink to make a tool that can print the 
-# shared objects (shared libraries) required by each 
+# Create a symlink to make a tool that can print the
+# shared objects (shared libraries) required by each
 # program or shared object (i.e. library)
 mkdir /llvmtools/{bin,etc}
 ln -sv ../lib/libc.so /llvmtools/bin/ldd
@@ -27,5 +27,5 @@ ln -sv ../lib/libc.so /llvmtools/bin/ldd
 # Configure dynamic linker
 cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
 /llvmtools/lib
+/llvmtools/lib/${TARGET_TUPLE}
 EOF
-
