@@ -1,0 +1,18 @@
+# cgnutools: Patchelf
+#
+# Build as CMLFS
+#
+# Setting the dynamic linker configuration option in Clang
+# will cause static executables to segfault. As an alternative
+# for setting the dynamic linker/linux-loader/interpreter, build
+# patchelf as it maynot be available on the host.
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/cgnutools
+
+# Compile
+make
+
+# Install to llvmtools
+make install
