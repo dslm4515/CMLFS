@@ -27,6 +27,10 @@ ln -sv lld /cgnutools/bin/ld
 mkdir -v /llvmtools/lib
 ln -sv /cgnutools/lib/${TARGET_TUPLE}/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
 
+# cross-gcc produced by mussel is no longer needed. Change the directory uname
+# to prevent stage0 clang from using cross-gcc's runtime
+mv -v /cgnutools/lib/gcc /cgnutools/lib/gcc-disabled
+
 # Cross-gcc in cgnutools was only needed to build stage0 clang. ################
 # No need to reconfigure, as llvmtools can be build by clang entirely.
 #
