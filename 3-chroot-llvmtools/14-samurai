@@ -2,7 +2,7 @@
 # Source: https://github.com/michaelforney/samurai
 # This section is done in Chroot environment
 
-# Build 
+# Build
 CC=clang make PREFIX=/llvmtools
 
 # Install
@@ -11,4 +11,5 @@ make PREFIX=/llvmtools install
 # Add a link in case ninja is invoked
 ln -sv samu /llvmtools/bin/ninja
 
-
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/samu

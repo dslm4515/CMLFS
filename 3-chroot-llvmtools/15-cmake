@@ -35,3 +35,9 @@ export CMARGS+="-DCURSES_NCURSES_LIBRARY=/llvmtools/lib/libncursesw.so "
 
 # Build and install to toolchain
 make && make install
+
+# Set the dynamic loader for each executable
+for b in cmake ccmake cpack ctest
+do
+  setDL /llvmtools/bin/$b
+done

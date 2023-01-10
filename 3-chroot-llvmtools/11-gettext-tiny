@@ -4,5 +4,9 @@
 # Build
 make LIBINTL=MUSL prefix=/llvmtools
 
-# Install the msgfmt, msgmerge and xgettext programs to toolchain
-cp -v autopoint msgfmt msgmerge xgettext /llvmtools/bin
+# Fix then install the msgfmt, msgmerge and xgettext programs to toolchain
+for b in autopoint msgfmt msgmerge xgettext
+do
+   setDL $b
+   cp -v $b /llvmtools/bin/
+done

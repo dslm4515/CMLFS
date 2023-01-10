@@ -13,4 +13,7 @@ export CPPFLAGS="-I/llvmtools/include"
 # Build and install to toolchain
 make && make install
 
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/nano
+
 unset LDFLAGS CPPFLAGS

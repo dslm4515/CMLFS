@@ -14,7 +14,7 @@ cp -v ../files/config.sub-musl tclconfig/config.sub
 cp -v configure{,.orig}
 sed 's:/usr/local/bin:/bin:' configure.orig > configure
 
-# Configure source 
+# Configure source
 ./configure --prefix=/llvmtools \
             --with-tcl=/llvmtools/lib \
             --with-tclinclude=/llvmtools/include
@@ -22,3 +22,5 @@ sed 's:/usr/local/bin:/bin:' configure.orig > configure
 # Build and install to toolchain
 make && make SCRIPTS="" install
 
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/expect

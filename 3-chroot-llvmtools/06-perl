@@ -1,7 +1,7 @@
-# llvmtools: Perl 
+# llvmtools: Perl
 # Build and install under chroot
 
-# Configure source 
+# Configure source
 sh Configure -des \
    -Dprefix=/llvmtools \
    -Dvendorprefix=/llvmtools \
@@ -18,3 +18,6 @@ make
 # Intall it to llvmtools
 make install
 
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/perl
+setDL /llvmtools/bin/perl5.36.0 

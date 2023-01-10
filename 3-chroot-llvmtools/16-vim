@@ -17,3 +17,5 @@ make && make install
 # Some users use vim as vi
 ln -sv vim /llvmtools/bin/vi
 
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/vim

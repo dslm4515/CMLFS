@@ -10,7 +10,7 @@ rm -r Modules/_ctypes/darwin
 # The main script for building modules is written in Python, and
 # uses hard-coded paths to the host /usr/include and /usr/lib
 # directories. Prevent this:
-sed -i '/def add_multiarch_paths/a \        return' setup.py
+#sed -i '/def add_multiarch_paths/a \        return' setup.py
 
 # Disable multiarch detection in configure:
 patch -Np1 -i ../patches/python-cmlfs/disable-multiarch-detection.patch
@@ -24,3 +24,6 @@ patch -Np1 -i ../patches/python-cmlfs/disable-multiarch-detection.patch
 make && make install
 chmod -v 755 /llvmtools/lib/libpython3.11.so &&
 chmod -v 755 /llvmtools/lib/libpython3.so
+
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/python3.11
