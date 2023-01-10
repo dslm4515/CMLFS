@@ -5,17 +5,16 @@
 #
 # NOTE Reused unpacked LLVM source from building cgnutools
 
-# Force clang to use dynamic linux loader in /llvmtools
-patch -Np1 -i ../patches/llvm1505-cmlfs/modify-test-dynamic-loader_llvmtools.patch
-patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader_llvmtools.patch
+# Restore the default dynamic linker path to /lib.
+# Binaries will be patched with patchelf
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-test-dynamic-loader_back2default.patch
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader_back2default.patch
 
 # Set CC and CXX compiler with stage0 clang
 export CXX=${TARGET_TUPLE}-clang++
 export  CC=${TARGET_TUPLE}-clang
 
 # Set flags to greatly reduce debugging symbols
-#CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC '
-#CFLAGS=' -g -g1 -Wl,--as-needed -lexecinfo -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
 CFLAGS=' -g -g1 -fPIC -Wl,-rpath,"\$$ORIGIN/../lib/x86_64-pc-linux-musl"'
 CXXFLAGS=$CFLAGS
 export CFLAGS CXXFLAGS
@@ -30,6 +29,7 @@ export CONFIG_OPTIONS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
 export CONFIG_OPTIONS+="-DLLVM_ENABLE_EH=ON "
 export CONFIG_OPTIONS+="-DLLVM_ENABLE_RTTI=ON "
 export CONFIG_OPTIONS+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_TERMINFO=ON "
 
 # Set the compiler and linker flags...
 export LINKERFLAGS="-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1"
@@ -43,15 +43,17 @@ export CONFIG_TUPLES+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
 export CONFIG_TUPLES+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
 
 # Set the flags for Compiler-rt...
-export  CONFIG_CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF"
+export  CONFIG_CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
 export CONFIG_CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
 export CONFIG_CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
 export CONFIG_CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
 export CONFIG_CRT+="-DCOMPILER_RT_BUILD_ORC=OFF "
 export CONFIG_CRT+="-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF "
 export CONFIG_CRT+="-DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF "
-export CONFIG_CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
 export CONFIG_CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=ON "
+export CONFIG_CRT+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
 
 # Set the flags for clang:
 export  CONFIG_CLANG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
@@ -79,6 +81,7 @@ export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_VENDOR_AVAILABILITY_ANNOTATIONS=OFF "
 export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=ON "
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
 
 # Set the options for libc++abi
 export CONFIG_LIBCXXABI+="-DLIBCXXABI_ENABLE_FORGIVING_DYNAMIC_CAST=ON "
@@ -87,6 +90,7 @@ export CONFIG_LIBCXXABI+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
 
 # Set the options for libunwind
 export CONFIG_LIBUNWIND+="-DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON "
+export CONFIG+LIBUNWIND+="-DLIBUNWIND_INSTALL_HEADERS=ON "
 
 # Set paths...
 export  CONFIG_PATHS="-DCMAKE_INSTALL_PREFIX=/llvmtools "
@@ -119,7 +123,6 @@ export BUILD_OFF+="-DLLVM_ENABLE_BACKTRACES=OFF "
 export BUILD_OFF+="-DLLVM_ENABLE_LIBEDIT=OFF "
 export BUILD_OFF+="-DLLVM_ENABLE_LIBXML2=OFF "
 export BUILD_OFF+="-DLLVM_ENABLE_LIBPFM=OFF "
-export BUILD_OFF+="-DLLVM_ENABLE_TERMINFO=OFF "
 export BUILD_OFF+="-DLLVM_ENABLE_ZLIB=OFF "
 export BUILD_OFF+="-DLLVM_ENABLE_Z3_SOLVER=OFF "
 export BUILD_OFF+="-DLLVM_ENABLE_CRASH_OVERRIDES=OFF "
@@ -162,12 +165,6 @@ cmake -B build -G Ninja -Wno-dev -S llvm  \
       -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld;libunwind" \
       -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0"
 
-# Since -fPIC was added to CFLAGS/CXXFLAGS,
-# Configure llvmtools dynamic linker to search for shared objects in the build directory
-#echo "${PWD}/build/lib "                  >> /llvmtools/etc/ld-musl-x86_64.path
-#echo "${PWD}/build/lib/${TARGET_TUPLE} "  >> /llvmtools/etc/ld-musl-x86_64.path
-# lld still fails even with the above ^
-
 # Compile
 ninja -C build
 
@@ -185,35 +182,62 @@ ninja -C build
 #ninja -C build          #1024 ..................... PASS
 
 # Install to /cgnutools
+ninja -C build builtins
+ninja -C build install-unwind
+ninja -C build install-cxxabi
+ninja -C build install-cxx
+ninja -C build install-compiler-rt
+ninja -C build install-lld
+ninja -C build install-libclang
+ninja -C build install-clang
 
-#ninja -C build install-unwind
-#ninja -C build install-cxxabi
-#ninja -C build install-cxx
-#ninja -C build install-compiler-rt
-#ninja -C build install-lld
-#ninja -C build install-libclang
-#ninja -C build install-clang
-#ninja -C build install-LLVM
+# Install the support libraries:
+ninja -C build install-llvm-libraries
+ninja -C build install-clangBasic
+ninja -C build install-clangSerialization
+ninja -C build install-clangCodeGen
+ninja -C build install-clangFrontend
+ninja -C build install-clangFrontendTool
+ninja -C build install-clangDriver
+ninja -C build install-clangExtractAPI
+ninja -C build install-clangLex
+ninja -C build install-clangAST
+ninja -C build install-clangSema
+ninja -C build install-clangEdit
+ninja -C build install-clangParse
+ninja -C build install-clangRewrite
+ninja -C build install-clangRewriteFrontend
+ninja -C build install-clangSupport
+ninja -C build install-clangAnalysis
+ninja -C build install-clangIndex
+ninja -C build install-clangASTMatchers
+ninja -C build install-clangToolingCore
+ninja -C build install-clangFormat
+ninja -C build install-clangToolingInclusions
+ninja -C build install-builtins-standalone-atomic
+ninja -C build install-LLVMDlltoolDriver
 
-#for b in ar as config lib link nm objcopy objdump ranlib readelf readobj size strip strings tblgen;
-#do
-#  ninja -C build install-llvm-$b
-#done
+# Install the dependencies for LLD
+cmake --install build/tools/lld/ELF
+cmake --install build/tools/lld/Common
+cmake --install build/tools/lld/MachO
+cmake --install build/tools/lld/MinGW
+cmake --install build/tools/lld/wasm
+cmake --install build/tools/lld/COFF
 
-#for l in Target X86CodeGen X86AsmParser X86Desc X86Info CodeGen ObjCARCOpts ipo Instrumentation \
-#         Vectorize Option  ScalarOpts AggressiveInstCombine InstCombine TransformUtils Analysis \
-#         MCParser MC Core Support Demangle
-#do
-#  ninja -C build install-LLVM$l
-#done
+# Install LLVM's binary tools:
+for b in addr2line ar as config lib link nm objcopy objdump ranlib \
+         readelf readobj symbolizer size strip strings tblgen
+do
+  ninja -C build install-llvm-$b
+done
 
-#for c in FrontendTool CodeGen Driver Serialization Basic ;
-#do
-#  ninja -C build install-clang$c
-#done
-
-# Too many libraries need RPATH set. Just use the build target, install.
-ninja -C build install
+# Install additional headers:
+for h in x86-resource libclang utility-resource ve-resource compiler-rt \
+         clang-resource clang unwind cxxabi cxx compiler-rt core-resource
+do
+  ninja -C build install-$h-headers
+done
 
 # Clean up current environment...
 unset CFLAGS CXXFLAGS CONFIG_TOOLS CONFIG_TUPLES
@@ -223,7 +247,7 @@ unset CONFIG_PATHS BUILD_OFF LLVMSRC LINKERFLAGS CC CXX
 
 # Fix link for libunwind:
 rm -rf /llvmtools/lib/libunwind.so.1
-ln -sv x86_64-pc-linux-musl/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
+ln -sv ${TARGET_TUPLE}/libunwind.so.1.0 /llvmtools/lib/libunwind.so.1
 
 # Some packages will try to use cc. Make a link for it.
 ln -sv clang-15 /llvmtools/bin/cc
@@ -262,7 +286,7 @@ ln -sv ld.lld /llvmtools/bin/ld
 # Test stage 1 clang
 echo "int main(){}" > dummy.c
 /llvmtools/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
-
+setDL a.out
 readelf -l a.out | grep ': /llvmtools'
 # Shoud output:
 # [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
@@ -283,10 +307,10 @@ grep ld.lld:  dummy.log
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
 # ld.lld: /tmp/dummy-001093.o
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins.a
-# ld.lld: /llvmtools/lib/libunwind.so
+# ld.lld: /mnt/cmlfs/llvmtools/bin/../lib/x86_64-pc-linux-musl/libunwind.so
 # ld.lld: /llvmtools/lib/libc.so
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins.a
-# ld.lld: /llvmtools/lib/libunwind.so
+# ld.lld: /mnt/cmlfs/llvmtools/bin/../lib/x86_64-pc-linux-musl/libunwind.so
 # ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 # ld.lld: /llvmtools/lib/crtn.o
 
@@ -312,13 +336,13 @@ grep error:  atomics-test.log
 # Should return nothing if there are no errors.
 
 # Make sure stage 1 libc++ & libc++abi do not depend on GCC
-readelf -d /llvmtools/lib/x86_64-pc-linux-musl/libc++.so.1.0 | grep Shared | cut -d ":" -f 2
+readelf -d /llvmtools/lib/${TARGET_TUPLE}/libc++.so.1.0 | grep Shared | cut -d ":" -f 2
 # Should output
 # [libc.so]
 # [libc++abi.so.1]
 # [libunwind.so.1]
 
-readelf -d /llvmtools/lib/x86_64-pc-linux-musl/libc++abi.so.1.0 | grep Shared | cut -d ":" -f 2
+readelf -d /llvmtools/lib/${TARGET_TUPLE}/libc++abi.so.1.0 | grep Shared | cut -d ":" -f 2
 # Should output
 # [libc.so]
 # [libunwind.so.1]
@@ -347,6 +371,10 @@ EOF
 grep error: cxx11-test.log
 
 # Should return nothing if there are no errors.
+
+# Test should output C++14
+setDL a.out
+./a.out
 
 # Clean up
 rm -rf build
