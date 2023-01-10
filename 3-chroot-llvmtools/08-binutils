@@ -17,8 +17,6 @@ mkdir -v build && cd build
 # Build
 make
 
-# Fails, need texinfo installed before
-
 # Install
 make install
 
@@ -29,15 +27,24 @@ make -C ld clean
 make -C ld LIB_PATH=/usr/lib:/lib
 cp -v ld/ld-new /llvmtools/bin/ld.bfd-new
 
+setDL /llvmtools/bin/ld.bfd
+setDL /llvmtools/bin/ld.bfd-new
+
+# Set LLD as default linker
+rm -rf /llvmtools/bin/ld
+ln -sv ld.lld /llvmtools/bin/ld
+
 # Binary tools from LLVM will be the default.
 for b in addr2line ar as nm objcopy objdump ranlib readelf \
          size strings strip
 do
   mv -v  /llvmtools/bin/{$b,$b.gnu}
   ln -sv llvm-$b /llvmtools/bin/$b
+  setDL /llvmtools/bin/$b.gnu
 done
 
 mv -v    /llvmtools/bin/{c++filt,c++filt.gnu}
+setDL /llvmtools/bin/c++filt.gnu
 ln -sv  llvm-cxxfilt /llvmtools/bin/c++filt
 
 # There are no LLVM counterparts for gprof & elfedit
