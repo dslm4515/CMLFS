@@ -1,4 +1,4 @@
-# Llvmtools: Gzip 
+# Llvmtools: Gzip
 # Build and install as cmlfs
 
 # Configure source with clang
@@ -15,3 +15,6 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
+
+# Set the dynamic loader for each executable
+setDL /llvmtools/bin/gzip

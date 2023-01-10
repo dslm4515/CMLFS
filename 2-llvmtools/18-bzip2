@@ -1,8 +1,8 @@
-# llvmtools: Bzip2 
+# llvmtools: Bzip2
 # Build and install as cmlfs
 
-# Fix the Makefiles for  ensures installation of symbolic 
-# links are relative and the man pages are installed into 
+# Fix the Makefiles for  ensures installation of symbolic
+# links are relative and the man pages are installed into
 # the correct location:
 cp Makefile{,.orig}
 sed -e "/^all:/s/ test//" Makefile.orig > Makefile
@@ -18,3 +18,9 @@ make CC="${TARGET_TUPLE}-clang" AR="llvm-ar" RANLIB="llvm-ranlib"
 
 # Install to tool chain
 make PREFIX=/llvmtools install
+
+# Set the dynamic loader for each executable
+for b in bzip2 bzip2recover bzcat bunzip2
+do
+  setDL /llvmtools/bin/$b
+done

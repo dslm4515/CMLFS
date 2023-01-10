@@ -1,13 +1,13 @@
-# llvmtools: Coreutils 
+# llvmtools: Coreutils
 # Build and install as cmlfs
 
 # Re-create configure script
 autoreconf -vif
 
-# Cross Compiling the configure script 
-# does not does not determine the correct 
-# values for the following, Set the values 
-# manually: 
+# Cross Compiling the configure script
+# does not does not determine the correct
+# values for the following, Set the values
+# manually:
 cat > config.cache << EOF
 fu_cv_sys_stat_statfs2_bsize=no
 ac_cv_func_syncfs=no
@@ -34,3 +34,6 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
+
+# Set the dynamic loader for each executable
+find /llvmtools/bin/ -maxdepth 1 -type f -exec setDL {} \;

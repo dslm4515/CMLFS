@@ -15,3 +15,9 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
+
+# Set the dynamic loader for each executable
+for b in gawk gawk-5.2.1
+do
+  setDL /llvmtools/bin/$b
+done

@@ -1,10 +1,10 @@
-# llvmtools: Bash 
+# llvmtools: Bash
 # Build and install as cmlfs
 
-# Cross Compiling the configure script 
-# does not does not determine the correct 
-# values for the following, Set the values 
-# manually: 
+# Cross Compiling the configure script
+# does not does not determine the correct
+# values for the following, Set the values
+# manually:
 cat > config.cache << "EOF"
 ac_cv_func_mmap_fixed_mapped=yes
 ac_cv_func_strcoll_works=yes
@@ -36,3 +36,6 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
+
+# Set the dynamic loader:
+setDL /llvmtools/bin/bash

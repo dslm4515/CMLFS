@@ -16,3 +16,9 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
+
+# Set the dynamic loader for each executable
+for b in cmp diff diff3 sdiff
+do
+  setDL /llvmtools/bin/$b
+done
