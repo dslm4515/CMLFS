@@ -1,0 +1,25 @@
+# llvmtools: patchelf
+# Build and install as cmlfs
+
+# Configure source
+CC=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE} \
+            --prefix=/llvmtools
+
+# Install to the toolchain
+make && make  install
+
+# Set the dynamic loader for the executable
+/cgnutools/bin/patchelf --set-interpreter \
+         /llvmtools/lib/ld-musl-$(uname -m).so.1 \
+         /llvmtools/bin/patchelf
+
+# Copy over script/wrapper from cgnutools:
+cp -v /cgnutools/bin/setDL /llvmtools/bin/
