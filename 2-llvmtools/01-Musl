@@ -25,7 +25,7 @@ mkdir /llvmtools/{bin,etc}
 ln -sv ../lib/libc.so /llvmtools/bin/ldd
 
 # Configure dynamic linker
-cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
+cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
 /llvmtools/lib
 /llvmtools/lib/${TARGET_TUPLE}
 EOF
