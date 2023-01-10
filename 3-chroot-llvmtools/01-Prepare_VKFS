@@ -17,6 +17,3 @@ mount -vt tmpfs tmpfs $CMLFS/run
 if [ -h $CMLFS/dev/shm ]; then
   mkdir -pv $CMLFS/$(readlink $CMLFS/dev/shm)
 fi
-
-# Add additional library path:
-echo "/llvmtools/lib/x86_64-pc-linux-musl/" >>  /llvmtools/etc/ld-musl-x86_64.path
