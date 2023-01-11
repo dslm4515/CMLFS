@@ -1,0 +1,244 @@
+# llvmtools Chain: GCC+Libstdcxx
+# Build under chroot
+
+# Additional sources to add as GCC requires them
+xz -cd ../pkgs/mpfr-4.1.1.tar.xz | tar -xf -
+mv -v mpfr-4.1.1 mpfr
+xz -cd ../pkgs/gmp-6.2.1.tar.xz | tar -xf -
+mv -v gmp-6.2.1 gmp
+gunzip -cd ../pkgs/mpc-1.2.1.tar.gz | tar -xf -
+mv -v mpc-1.2.1 mpc
+
+# Apply patches [from Glaucus]
+patch -Np0 -i ../patches/glaucus/0001-pure64-for-x86-64.patch
+
+# change the location of GCC's default dynamic linker to use the one installed in /llvmtools
+#
+# For i686/x86_64:
+for file in gcc/config/{linux,i386/linux{,64}}.h
+do
+  cp -uv $file{,.orig}
+  sed -e 's@/lib\(64\)\?\(32\)\?/ld@/llvmtools&@g' \
+      -e 's@/usr@/llvmtools@g' $file.orig > $file
+  echo '
+#undef STANDARD_STARTFILE_PREFIX_1
+#undef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_1 "/llvmtools/lib/"
+#define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
+  touch $file.orig
+done
+
+# Configure in dedicated build directory
+mkdir -v build && cd build
+
+# Create a link for custom-configured stage1 clang
+ln -sv clang-15 /llvmtools/bin/x86_64-pc-linux-musl-clang
+ln -sv clang-15 /llvmtools/bin/x86_64-pc-linux-musl-clang++
+
+# Configure the stage1 clang:
+cat > /llvmtools/bin/x86_64-pc-linux-musl.cfg <<EOF
+-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1
+--sysroot=/llvmtools
+-nostdinc++
+-nostdlib++
+-lc++ -lc++abi
+-Wl,-rpath,/llvmtools/lib:/llvmtools/lib/x86_64-pc-linux-musl
+-L/llvmtools/lib/x86_64-pc-linux-musl
+-L/llvmtools/lib
+-I/llvmtools/include/x86_64-pc-linux-musl/c++/v1
+-I/llvmtools/include
+-isystem/llvmtools/include/c++/v1
+EOF
+
+# Since clang is using a configuration file, create the missing links
+ln -sv x86_64-pc-linux-musl /llvmtools/lib/clang/15.0.5/lib/linux
+ln -sv libclang_rt.builtins.a /llvmtools/lib/clang/15.0.5/lib/linux/libclang_rt.builtins-x86_64.a
+ln -sv clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/lib/linux/crtbeginS.o
+ln -sv clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/lib/linux/crtendS.o
+
+# Build will look for /llvmtools/bin/cpp
+ln -sv clang-15 /llvmtools/bin/cpp
+
+# Use GNU's Binutils
+/llvmtools/bin/set-gnu-bin-mode
+
+# Set system linker to binutils's
+rm -rf /llvmtools/bin/ld
+ln -sv ld.bfd /llvmtools/bin/ld
+
+# Use the custom-configured stage1 clang
+export  CC=x86_64-pc-linux-musl-clang
+export CXX=x86_64-pc-linux-musl-clang++
+
+# Set the build options:
+export  COPT="-prefix=/llvmtools "
+export COPT+="-with-local-prefix=/llvmtools "
+export COPT+="--with-native-system-header-dir=/llvmtools/include "
+
+# Enable these features
+export  FON="--enable-languages=c,c++ "
+export FON+="--enable-shared "
+export FON+="--enable-threads "
+export FON+="--enable-tls "
+export FON+="--enable-__cxa_atexit "
+
+# Disable features not supported by musl:
+export  FOFF="--disable-libsanitizer "
+export FOFF+="--disable-symvers "
+
+# Disable features not needed during chroot:
+export FOFF+="--disable-libssp "
+export FOFF+="--disable-libvtv "
+export FOFF+="--disable-libitm "
+export FOFF+="--disable-libgomp "
+export FOFF+="--disable-multilib "
+export FOFF+="--disable-bootstrap "
+export FOFF+="--disable-libquadmath "
+export FOFF+="--disable-libstdcxx-pch "
+export FOFF+="--disable-libatomic "
+export FOFF+="--disable-libada "
+export FOFF+="--disable-nls "
+export FOFF+="--disable-fixed-point "
+
+# Configure source
+acx_cv_cc_gcc_supports_ada=no \
+CFLAGS='-g0 -O0 -fPIC' \
+CXXFLAGS=$CFLAGS \
+../configure $COPT $FON $FOFF \
+  --target=x86_64-pc-linux-musl \
+  --host=x86_64-pc-linux-musl \
+  --build=x86_64-pc-linux-musl
+
+# Compile
+make
+
+# Install to llvmtools
+make install
+
+# Re-create internal header for GCC installed in llvmtools/lib/gcc since
+# the internal header that has just been installed is a partial,
+# self-contained file and does not include the extended features of the system header
+cp -v /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include-fixed/limits.h \
+      /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include-fixed/limits.h.old
+cat ../gcc/limitx.h ../gcc/glimits.h ../gcc/limity.h > \
+    /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include-fixed/limits.h
+
+# Find the target tuple
+export TUPLE=$(/llvmtools/bin/clang --version | grep Target | cut -d " " -f 2 )
+
+# Test GCC of llvmtools:
+echo "int main(){}" > dummy.c
+gcc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep succeeded
+# Should output:
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/crt1.o succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/crti.o succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/crtn.o succeeded
+
+# Verify that gcc is searching for the correct header files:
+grep -B1 -A1 '^ /llvmtools/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+#  /llvmtools/include
+#  /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include
+
+# verify that the linker gcc is using has the correct search paths
+grep 'SEARCH.*/llvmtools/lib' dummy.log |sed 's|; |\n|g'
+
+# Should output:
+# SEARCH_DIR("=/llvmtools/x86_64-pc-linux-musl/lib64")
+# SEARCH_DIR("/llvmtools/lib")
+# SEARCH_DIR("=/llvmtools/x86_64-pc-linux-musl/lib");
+
+# Make sure gcc is using the correct libc:
+grep libc dummy.log | grep succeeded
+# Should output:
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libc.so succeeded
+
+# Make sure gcc can find libgcc:
+grep succeeded dummy.log | grep libgcc
+# Should output:
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so.1 succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../lib/libgcc_s.so.1 succeeded
+# attempt to open /llvmtools/lib/gcc/x86_64-pc-linux-musl/12.2.0/libgcc.a succeeded
+
+# Check if gcc has atomics or supports atomics:
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+g++ atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# If all goes well, clean up:
+rm a.out atomics-test.cpp atomics-test.log dummy.c dummy.log
+unset COPT FON FOFF
+
+# Some packages are hard coded to use GCC. Force the
+# use of clang:
+for b in gcc cpp g++ c++
+do
+  mv -v /llvmtools/bin/{$b,$b.gnu}
+  ln -sv clang-15 /llvmtools/bin/$b
+done
+
+# Create a script to set GCC as system compiler, when needed
+cat > /llvmtools/bin/set-gcc-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting GCC as system compiler..." && \
+for b in c++ cpp g++ gcc
+do
+  rm -v          /llvmtools/bin/$b
+  ln -sv $b.gnu  /llvmtools/bin/$b
+done
+rm -v /llvmtools/lib/cpp
+rm -v /llvmtools/bin/cc
+ln -sv ../llvmtools/bin/cpp.gnu /llvmtools/lib/cpp
+ln -sv gcc.gnu   /llvmtools/bin/cc
+
+mv -v  /llvmtools/lib/gcc-disabled /llvmtools/lib/gcc
+
+EOF
+chmod -v +x /llvmtools/bin/set-gcc-mode
+
+# Also create a script to force hard coded packages to use
+# clang:
+cat > /llvmtools/bin/set-llvm-mode << "EOF"
+#! /bin/bash
+echo "[ 1 / 1 ] Setting LLVM as system compiler..." && \
+for b in c++ cpp g++ gcc cc
+do
+  rm -v  /llvmtools/bin/$b
+  ln -sv clang-15  /llvmtools/bin/$b
+done
+rm -v /llvmtools/lib/cpp
+ln -sv ../llvmtools/bin/clang-15 /llvmtools/lib/cpp
+
+mv -v  /llvmtools/lib/gcc /llvmtools/lib/gcc-disabled
+
+EOF
+
+chmod -v +x /llvmtools/bin/set-llvm-mode
+
+# Make clang/clang++ the default compiler and disable GCC until needed:
+/llvmtools/bin/set-llvm-mode
