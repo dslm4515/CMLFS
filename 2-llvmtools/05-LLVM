@@ -182,48 +182,26 @@ ninja -C build
 #ninja -C build          #1024 ..................... PASS
 
 # Install to /cgnutools
-ninja -C build builtins
-ninja -C build install-unwind
-ninja -C build install-cxxabi
-ninja -C build install-cxx
-ninja -C build install-compiler-rt
-ninja -C build install-lld
-ninja -C build install-libclang
-ninja -C build install-clang
+for c in crt builtins unwind cxxabi cxx compiler-rt lld libclang clang \
+         builtins-standalone-atomic LLVMDlltoolDriver
+do
+   ninja -C build install-$c
+done
 
 # Install the support libraries:
 ninja -C build install-llvm-libraries
-ninja -C build install-clangBasic
-ninja -C build install-clangSerialization
-ninja -C build install-clangCodeGen
-ninja -C build install-clangFrontend
-ninja -C build install-clangFrontendTool
-ninja -C build install-clangDriver
-ninja -C build install-clangExtractAPI
-ninja -C build install-clangLex
-ninja -C build install-clangAST
-ninja -C build install-clangSema
-ninja -C build install-clangEdit
-ninja -C build install-clangParse
-ninja -C build install-clangRewrite
-ninja -C build install-clangRewriteFrontend
-ninja -C build install-clangSupport
-ninja -C build install-clangAnalysis
-ninja -C build install-clangIndex
-ninja -C build install-clangASTMatchers
-ninja -C build install-clangToolingCore
-ninja -C build install-clangFormat
-ninja -C build install-clangToolingInclusions
-ninja -C build install-builtins-standalone-atomic
-ninja -C build install-LLVMDlltoolDriver
+for s in Basic Serialization CodeGen Frontend FrontendTool Driver ExtractAPI \
+         Lex AST Sema Edit Parse Rewrite RewriteFrontend Support Analysis \
+         Index ASTMatchers ToolingCore Format ToolingInclusions
+do
+  ninja -C build install-clang$s
+done
 
 # Install the dependencies for LLD
-cmake --install build/tools/lld/ELF
-cmake --install build/tools/lld/Common
-cmake --install build/tools/lld/MachO
-cmake --install build/tools/lld/MinGW
-cmake --install build/tools/lld/wasm
-cmake --install build/tools/lld/COFF
+for d in ELF Common MachO MinGW wasm COFF
+do
+  cmake --install build/tools/lld/$d
+done
 
 # Install LLVM's binary tools:
 for b in addr2line ar as config lib link nm objcopy objdump ranlib \
