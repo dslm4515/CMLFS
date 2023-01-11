@@ -1,5 +1,9 @@
 # llvmtools: patchelf
 # Build and install as cmlfs
+#
+# This tool will be needed to manually set the
+# dynamic linux loader in shared binaries, until
+# stage2 clang is built.
 
 # Configure source
 CC=x86_64-pc-linux-musl-clang \
