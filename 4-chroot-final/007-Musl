@@ -2,7 +2,7 @@
 # This section is done in Chroot environment
 
 # For i686(32 bit), there is a rounding error that
-# causes fonts to not display for SeaMonkey and 
+# causes fonts to not display for SeaMonkey and
 # Palemoon browsers:
 case $(uname -m) in
    i686) patch -Np1 -i ../patches/musl-mlfs/i686-fix-rounding.patch ;;
@@ -13,10 +13,10 @@ patch -Np1 -i ../patches/musl-mlfs/fix-utmp-wtmp-paths.patch
 
 # Apply fixes suggested by Alpine Linux
 patch -Np1 -i ../patches/musl-alpine/handle-aux-at_base.patch
-patch -Np1 -i ../patches/musl-alpine/relr-1.patch 
-patch -Np1 -i ../patches/musl-alpine/relr-2.patch 
-patch -Np1 -i ../patches/musl-alpine/relr-3.patch 
-patch -Np1 -i ../patches/musl-alpine/relr-4.patch 
+patch -Np1 -i ../patches/musl-alpine/relr-1.patch
+patch -Np1 -i ../patches/musl-alpine/relr-2.patch
+patch -Np1 -i ../patches/musl-alpine/relr-3.patch
+patch -Np1 -i ../patches/musl-alpine/relr-4.patch
 
 case $(uname -m) in
      i686) export CARCH="i386"    ;;
@@ -33,7 +33,7 @@ LDFLAGS="$LDFLAGS -Wl,-soname,libc.musl-${CARCH}.so.1" \
             --localstatedir=/var \
             --enable-debug
 
-# Build and install 
+# Build and install
 make && make  install
 
 # Provide minimal libssp_nonshared.a so we don't need libssp from gcc
@@ -46,10 +46,10 @@ cp -v libssp_nonshared.a /usr/lib/
 ln -sv ../lib/libc.so /usr/bin/ldd
 
 # Create config for dynamic library loading:
-cat > /etc/ld-musl-$CARCH.path << "EOF"
+cat > /etc/ld-musl-$CARCH.path <<EOF
 /lib
-/usr/local/lib
 /usr/lib
+/usr/lib/${TUPLE}
 EOF
 
 # Create compatibility link for i686, as some software, like SMPlayer
@@ -57,7 +57,7 @@ EOF
 case $(uname -m) in
      i686) ln -sv ../usr/lib/libc.so  /lib/ld-musl-i686.so.1 ;;
 esac
-unset CARCH 
+unset CARCH
 
 # Create  ldconfig
 install -v -D -m755 ../files/musl-alpine/ldconfig /usr/bin/
