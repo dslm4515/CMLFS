@@ -1,13 +1,14 @@
 # Stripping
-# This step is optional, but if the CMLFS partition 
+# This step is optional, but if the CMLFS partition
 # is rather small, it is beneficial to learn that
 # unnecessary items can be removed. The executables
 # and libraries built so far contain about 70 MB
 # of unneeded debugging symbols.
 
-# Remove debug symbols with:
-find /llvmtools/lib/ -maxdepth 1 -type f -exec strip --strip-debug {} \;
-find /llvmtools/bin/ -maxdepth 1 -type f -exec /cgnutools/bin/llvm-strip --strip-unneeded {} \;
+# Remove debug symbols with.....DO NOT, binutils for stag1 clang
+# corrupts binaries, causng them to segfault
+#find /llvmtools/lib/ -maxdepth 1 -type f -exec strip --strip-debug {} \;
+#find /llvmtools/bin/ -maxdepth 1 -type f -exec /cgnutools/bin/llvm-strip --strip-debug {} \;
 
 # Remove the documentation:
 rm -rf /llvmtools/{,share}/{info,man,doc}
