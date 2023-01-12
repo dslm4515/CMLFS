@@ -1,29 +1,17 @@
 # Final System - Adjust Tool Chain
 # This section is done in Chroot environment
 
-# Create configuration for stage1 clang:
+# Create a new configuration for stage1 clang:
+mv -v /llvmtools/bin/${TUPLE}.{cfg,cfg.old}
 touch /llvmtools/bin/${TUPLE}.cfg
 
 # Re-configure stage1 clang to use new sysroot (/usr) with newly built musl Libc
 echo "--sysroot=/usr " > /llvmtools/bin/${TUPLE}.cfg
 
-# Create a link of clang to use configuration:
-ln -sv clang-15 /llvmtools/bin/${TUPLE}-clang
-ln -sv clang-15 /llvmtools/bin/${TUPLE}-clang++
-
-# For creating static binaries & libraries, create links for
-# missing object files
-#ln -sv clang_rt.crtbegin.o /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtbeginT.o
-#ln -sv clang_rt.crtend.o   /llvmtools/lib/clang/15.0.5/x86_64-pc-linux-musl/crtend.o
-
-# Prevent stage1 clang from using GCC.
-# If GCC is needed, just revert the change.
-mv -v /llvmtools/lib/gcc /llvmtools/lib/gcc-BLOCKED
-
 # Adjust the library search path for the dynamic loader in llvmtools:
-echo "/usr/lib" > ld-musl-x86_64.path.new
-cat /llvmtools/etc/ld-musl-x86_64.path >> ld-musl-x86_64.path.new
-mv -v ld-musl-x86_64.path.new /llvmtools/etc/ld-musl-x86_64.path
+echo "/usr/lib" > ld-musl-$(uname -m).path.new
+cat /llvmtools/etc/ld-musl-$(uname -m).path >> ld-musl-$(uname -m).path.new
+mv -v ld-musl-$(uname -m).path.new /llvmtools/etc/ld-musl-$(uname -m).path
 
 # Adjust binutils linker of llvmtools:
 mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
@@ -39,8 +27,7 @@ export CXX=${TUPLE}-clang++
 # Test stage 1 clang
 echo "int main(){}" > dummy.c
 ${CC} dummy.c -v -Wl,--verbose &> dummy.log
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 a.out
-readelf -l a.out | grep ': /lib'
+readelf.gnu -l a.out | grep ': /lib'
 
 # Should output:
 # [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
@@ -96,6 +83,9 @@ ${CXX} cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
 
 # Check for errors during compile or link:
 grep error: cxx11-test.log
+
+# Test code should output "C++14"
+./a.out
 
 # Once everything is working correctly, clean up
 # the test files:
