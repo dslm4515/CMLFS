@@ -1,0 +1,299 @@
+# Final System: Stage2 LLVM  ( with clang,compiler-rt,libcxx,libcxxabi,libunwind,lld )
+# Build in chroot
+#
+# NOTE: Reused unpacked LLVM source from building cgnutools
+# NOTE: Stage1 clang cannot build llvm-tblgen. Use stage0 clang
+
+# Set flags to greatly reduce debugging symbols
+CFLAGS=' -g -g1 '
+CXXFLAGS=$CFLAGS
+export CFLAGS CXXFLAGS
+
+# Set the build options ..
+export  CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release "
+export CONFIG_OPTIONS+="-DBUILD_SHARED_LIBS=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_LIBCXX=ON "
+export CONFIG_OPTIONS+="-DLLVM_TARGET_ARCH=X86 "
+
+# BPF is needed for building v4l-utils, but can be omitted if it will not
+# be built later.
+# AMDGPU will be needed for building AMD drivers in Mesa. Also can be omitted
+# if Mesa will not be built later
+export CONFIG_OPTIONS+="-DLLVM_TARGETS_TO_BUILD=host;BPF;AMDGPU "
+
+# Make sure build has musl support, Exception handling, Run-Type info, and
+# support for ncurses, zlib/zlib-ng and zstd:
+export CONFIG_OPTIONS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_EH=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_RTTI=ON "
+export CONFIG_OPTIONS+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_TERMINFO=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_ZLIB=ON "
+export CONFIG_OPTIONS+="-DLLVM_ENABLE_ZSTD=ON "
+
+# Set the compiler and linker flags...
+export  CONFIG_TOOLS="-DCMAKE_C_COMPILER=${CC} "
+export CONFIG_TOOLS+="-DCMAKE_CXX_COMPILER=${CXX} "
+
+# Set the tuples...
+export  CONFIG_TUPLES="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CONFIG_TUPLES+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
+export CONFIG_TUPLES+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+
+# Set the flags for Compiler-rt...
+export  CONFIG_CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_ORC=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF "
+export CONFIG_CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+export CONFIG_CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CONFIG_CRT+="-DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=ON "
+export CONFIG_CRT+="-DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF "
+
+# Set the flags for clang:
+export  CONFIG_CLANG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CONFIG_CLANG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CONFIG_CLANG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CONFIG_CLANG+="-DCLANG_ENABLE_STATIC_ANALYZER=OFF "
+export CONFIG_CLANG+="-DCLANG_ENABLE_ARCMT=OFF "
+export CONFIG_CLANG+="-DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF "
+export CONFIG_CLANG+="-DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF "
+export CONFIG_CLANG+="-DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF "
+export CONFIG_CLANG+="-DCLANG_TOOL_AMDGPU_ARCH_BUILD=ON "
+export CONFIG_CLANG+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF "
+export CONFIG_CLANG+="-DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
+export CONFIG_CLANG+="-DCLANG_TOOL_AMDGPU_ARCH_BUILD=ON "
+
+# Set the flags to build static & shared libraries for
+# libunwind, libcxxabi, and libcxx:
+export  CONFIG_LIBUNWIND="-DLIBUNWIND_ENABLE_STATIC=ON "
+export  CONFIG_LIBCXXABI="-DLIBCXXABI_ENABLE_STATIC=ON "
+export  CONFIG_LIBCXX="-DLIBCXX_ENABLE_STATIC=ON "
+
+# Set the options for libc++
+export CONFIG_LIBCXX+="-DLIBCXX_USE_COMPILER_RT=ON "
+export CONFIG_LIBCXX+="-DLIBCXX_EXTRA_SITE_DEFINES=ON "
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_VENDOR_AVAILABILITY_ANNOTATIONS=OFF "
+export CONFIG_LIBCXX+="-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF "
+
+# Set the options for libc++abi
+export CONFIG_LIBCXXABI+="-DLIBCXXABI_ENABLE_FORGIVING_DYNAMIC_CAST=ON "
+export CONFIG_LIBCXXABI+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+export CONFIG_LIBCXXABI+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+
+# Set the options for libunwind
+export CONFIG_LIBUNWIND+="-DLIBUNWIND_INSTALL_HEADERS=ON "
+export CONFIG_LIBUNWIND+="-DLIBUNWIND_USE_COMPILER_RT=ON  "
+
+# Set paths...
+export  CONFIG_PATHS="-DCMAKE_INSTALL_PREFIX=/usr "
+export CONFIG_PATHS+="-DCMAKE_INSTALL_OLDINCLUDEDIR=/usr/include "
+export CONFIG_PATHS+="-DDEFAULT_SYSROOT=/usr "
+export CONFIG_PATHS+="-DBacktrace_LIBRARY=/usr/lib/libexecinfo.so.1 "
+export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_BINARY_DIR=/usr/bin "
+export CONFIG_PATHS+="-DCOMPILER_RT_INSTALL_DATA_DIR=/usr/share "
+export CONFIG_PATHS+="-DLIBCXXABI_INSTALL_INCLUDE_DIR=/usr/include/c++/v1 "           #default: include/c++/v1
+export CONFIG_PATHS+="-DLIBCXXABI_INSTALL_LIBRARY_DIR=/usr/lib "                      #default: lib/x86_64-pc-linux-musl
+export CONFIG_PATHS+="-DLIBCXX_INSTALL_INCLUDE_DIR=/usr/include/c++/v1 "              #default: include/c++/v1
+export CONFIG_PATHS+="-DLIBCXX_INSTALL_INCLUDE_TARGET_DIR=/usr/include/c++/v1 "       #default: include/c++/v1
+export CONFIG_PATHS+="-DLIBCXX_INSTALL_LIBRARY_DIR=/usr/lib "                         #default: lib/x86_64-pc-linux-musl
+export CONFIG_PATHS+="-DLIBCXX_INSTALL_RUNTIME_DIR=/usr/bin "                         #default: bin
+export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_LIBRARY_DIR=/usr/lib "
+export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_INCLUDE_DIR=/usr/include "
+export CONFIG_PATHS+="-DLIBUNWIND_INSTALL_RUNTIME_DIR=/usr/lib"
+
+# Set bootstrap options..
+export  CBSTRAP="-DBOOTSTRAP_CMAKE_BUILD_TYPE=Release "
+export CBSTRAP+="-DCLANG_ENABLE_BOOTSTRAP=ON "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CBSTRAP+="-DBOOTSTRAP_CLANG_DEFAULT_RTLIB=compiler-rt "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXX_USE_COMPILER_RT=ON "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_COMPILER_RT=ON "
+export CBSTRAP+="-DBOOTSTRAP_LIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CBSTRAP+="-DBOOTSTRAP_LLVM_USE_LINKER=lld "
+export CBSTRAP+="-DBOOTSTRAP_LIBUNWIND_USE_COMPILER_RT=ON "
+
+# Turn off unwanted features, docs and tests
+export  BUILD_OFF="-DLLVM_BUILD_TESTS=OFF "
+export BUILD_OFF+="-DLLVM_INCLUDE_GO_TESTS=OFF "
+export BUILD_OFF+="-DLLVM_INCLUDE_TESTS=OFF "
+export BUILD_OFF+="-DLLVM_INCLUDE_DOCS=OFF "
+export BUILD_OFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
+export BUILD_OFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_OCAMLDOC=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_BACKTRACES=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_LIBEDIT=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_LIBXML2=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_LIBPFM=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_Z3_SOLVER=OFF "
+export BUILD_OFF+="-DLLVM_ENABLE_CRASH_OVERRIDES=OFF "
+export BUILD_OFF+="-DLLVM_APPEND_VC_REV=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_XCODE_TOOLCHAIN_BUILD=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_LLVM_XRAY_BUILD=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_LLVM_MICROSOFT_DEMANGLE_FUZZER_BUILD=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_LLVM_ITANIUM_DEMANGLE_FUZZER_BUILD=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_LLVM_GO_BUILD=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_BUGPOINT_PASSES_BUILD=OFF "
+export BUILD_OFF+="-DLLVM_TOOL_BUGPOINT_BUILD=OFF "
+export BUILD_OFF+="-DLIBCXX_INCLUDE_BENCHMARKS=OFF "
+export BUILD_OFF+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF -DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+
+# Turn off more clang features not needed:
+export  BOFF="-DCLANG_ENABLE_ARCMT=OFF      -DCLANG_ENABLE_STATIC_ANALYZER=OFF "
+export BOFF+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_CHECK_BUILD=OFF   -DCLANG_TOOL_CLANG_DIFF_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_EXTDEF_MAPPING_BUILD=OFF -DCLANG_TOOL_CLANG_FORMAT_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_FORMAT_VS_BUILD=OFF -DCLANG_TOOL_CLANG_FUZZER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF -DCLANG_TOOL_CLANG_NVLINK_WRAPPER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD=OFF -DCLANG_TOOL_CLANG_OFFLOAD_PACKAGER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_WRAPPER_BUILD=OFF -DCLANG_TOOL_CLANG_REFACTOR_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_RENAME_BUILD=OFF -DCLANG_TOOL_CLANG_REPL_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_SCAN_DEPS_BUILD=OFF -DCLANG_TOOL_CLANG_SHLIB_BUILD=OFF"
+export BOFF+="-DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF -DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_DIAGTOOL_BUILD=OFF -DCLANG_TOOL_SCAN_BUILD_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_SCAN_BUILD_PY_BUILD=OFF -DCLANG_TOOL_SCAN_VIEW_BUILD=OFF "
+
+# Configure stage0 clang...
+echo "-Wl,-dynamic-linker /lib/ld-musl-x86_64.so.1" > /cgnutools/bin/x86_64-pc-linux-musl.cfg
+
+# Fix the path to use stage0 clang instead of stage1
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/cgnutools/bin:/llvmtools/bin
+
+# Make sure to use stage0 clang as compiler:
+export  CC=x86_64-pc-linux-musl-clang
+export CXX=x86_64-pc-linux-musl-clang++
+
+# cgnutools doesn't have zstd header:
+ln -sv /usr/include/zstd.h /cgnutools/include/
+
+# Configure source.
+rm -rf build
+cmake -B build -G Ninja -Wno-dev -S llvm  \
+      ${CONFIG_TOOLS} ${CONFIG_TUPLES} $CBSTRAP \
+      ${CONFIG_CRT} ${CONFIG_CLANG} ${CONFIG_OPTIONS} \
+      ${CONFIG_LIBUNWIND} ${CONFIG_LIBCXXABI} \
+      ${CONFIG_LIBCXX} ${CONFIG_PATHS} ${BUILD_OFF} ${BOFF}  \
+      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld;libunwind" \
+      -DCLANG_VENDOR="CMLFS 3.0.0" -DLLD_VENDOR="CMLFS 3.0.0"
+
+# Compile
+ninja -C build
+
+# When build fails, troubleshoot by building individual targets:
+#ninja -C build builtins #167 targets .............. PASS
+#ninja -C build unwind   #19 ....................... PASS
+#ninja -C build cxxabi   #828 ...................... PASS
+#ninja -C build cxx      #89 ....................... PASS
+#ninja -C build compiler-rt #119 ................... PASS
+#ninja -C build llvm-tblgen #246 ................... PASS
+#ninja -C build lld      #1465 ..................... PASS
+#ninja -C build libclang #795 ...................... PASS
+#ninja -C build clang    #96 ....................... PASS
+#ninja -C build llvm-lib #8 ........................ PASS
+#ninja -C build          #1024 ..................... PASS
+
+# Install main components:
+# Omit "-stripped", if stripping is not desired.
+
+for c in crt builtins builtins-standalone-atomic unwind cxxabi cxx \
+         compiler-rt lld libclang clang LLVM LLVMDlltoolDriver
+do
+  ninja -C build install-$c-stripped
+done
+
+# Install the support libraries
+ninja -C build install-llvm-libraries
+for s in Basic Serialization CodeGen Frontend FrontendTool Driver ExtractAPI \
+         Lex AST Sema Edit Parse Rewrite RewriteFrontend Support Analysis \
+         Index ASTMatchers ToolingCore Format ToolingInclusions
+do
+  ninja -C build install-clang$s-stripped
+done
+
+# Install the dependencies for LLD
+for d in ELF Common MachO MinGW wasm COFF
+do
+  cmake --install build/tools/lld/$d --strip
+done
+
+# Install LLVM's binary tools:
+for b in addr2line ar as config lib link nm objcopy objdump ranlib \
+         readelf readobj symbolizer size strip strings tblgen
+do
+  ninja -C build install-llvm-$b-stripped
+done
+
+# Install additional headers:
+for h in x86-resource libclang utility-resource ve-resource compiler-rt \
+         clang-resource clang unwind cxxabi cxx compiler-rt core-resource
+do
+  ninja -C build install-$h-headers
+done
+
+# Clean up current environment...
+unset CFLAGS CXXFLAGS CONFIG_TOOLS CONFIG_TUPLES
+unset CONFIG_CRT CONFIG_CLANG CONFIG_OPTIONS BOFF
+unset CONFIG_LIBUNWIND CONFIG_LIBCXXABI CONFIG_LIBCXX
+unset CONFIG_PATHS BUILD_OFF LLVMSRC LINKERFLAGS CC CXX
+
+# Make LDD the system default linker
+ln -sv ld.lld /usr/bin/ld
+
+# Remove cgnutools from path
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin
+
+# Set Stage2 clang as default compiler
+export CC=clang CXX=clang++
+
+# Test the system (stage2 clang) Compiler
+echo "int main(){}" > dummy.c
+clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+# Should output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld:
+# Should output:
+# ld: /usr/bin/../lib/Scrt1.o
+# ld: /usr/bin/../lib/crti.o
+# ld: /usr/bin/../lib/crtn.o
+
+# Verify that clang is searching for the correct header files:
+grep -B1 -A1 '^ /usr/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+#  /usr/include
+#  /usr/lib/clang/15.0.5/include
+
+# Clean up
+rm -rf build
+
+# Source tree can now be deleted to save space
+
+# Create a script to enforce clang as default compiler:
+cat > /usr/bin/set-llvm-mode << "EOF"
+printf "[ i ] Setting LLVM as system compiler......."
+for b in c++ cpp g++ gcc cc
+do
+  rm -f /usr/bin/$b
+  ln -s clang-15  /usr/bin/$b
+done
+rm /usr/lib/cpp
+ln -s ../bin/clang-15 /usr/lib/cpp
+printf " Done. \n"
+printf "[ i ] Disabling any GCC installation(s) ..."
+if [ -d /usr/lib/gcc ]; then
+  mv /usr/lib/gcc /usr/lib/gcc-DISABLED
+  printf " Done.\n"
+else
+  printf " No GCC found.\n"
+fi
+
+EOF
+chmod -v +x /usr/bin/set-llvm-mode
