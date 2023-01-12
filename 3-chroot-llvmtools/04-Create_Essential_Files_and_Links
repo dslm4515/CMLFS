@@ -16,6 +16,12 @@ ln -sv /llvmtools/lib/x86_64-pc-linux-musl/libunwind.a       /usr/lib
 #ln -sv /llvmtools/lib/libgcc_s.so{,.1}  /usr/lib
 #ln -sv /llvmtools/lib/libstdc++.{a,so{,.6}} /usr/
 ln -sv bash /bin/sh
+ln -sv /llvmtools/lib/libncursesw.so.6.3 /usr/lib/libncursesw.so.6
+ln -sv /llvmtools/lib/libexecinfo.so.1   /usr/lib/libexecinfo.so.1
+
+# Since stage1 clang produces binaries that expect the dynamic loader
+# in /lib, create a link for libc.so. It will be replaced later
+ln -sv /llvmtools/lib/libc.so /lib/ld-musl-$(uname -m).so.1
 
 # Historically, Linux maintains a list of the
 # mounted file systems in the file /etc/mtab.
