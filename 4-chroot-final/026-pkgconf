@@ -14,7 +14,3 @@ make install
 
 # Compatibility for pkgconfig
 ln -s pkgconf /usr/bin/pkg-config
-
-# Fix the binaries to use the correct dynamic loader:
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/bomtool
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/pkgconf

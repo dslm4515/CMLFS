@@ -27,11 +27,6 @@ install -m644 zic.8 zdump.8 /usr/share/man/man8
 #rm -fv /usr/share/zoneinfo/localtime
 install -Dm755 posixtz-0.5/posixtz /usr/bin/posixtz
 
-# Fix the binaries to use the correct dynamic loader:
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/posixtz
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/sbin/zdump
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 usr/sbin/zic
-
 unset timezones
 
 # use tzselect to determine <xxx>

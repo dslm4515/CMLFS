@@ -40,9 +40,3 @@ sed "s|@VERSION@|1.0.8|" ../files/bzip-alpine/bzip2.pc.in \
     > /usr/lib/pkgconfig/bzip2.pc
 
 unset CFLAGS
-
-# Fix the binaries to use the correct dynamic loader:
-for b in bunzip2 bzcat bzip2 bzip2recover
-do
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
-done

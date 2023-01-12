@@ -7,9 +7,3 @@ CC=clang CXX=clang++ \
             --docdir=/usr/share/doc/xz-5.4.0
 
 make && make install
-
-# Fix the binaries to use the correct dynamic loader:
-for b in lzcat lzmadec lzmainfo xz xzdec
-do
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
-done

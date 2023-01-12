@@ -6,6 +6,3 @@ PREFIX=/usr CC=$CC CFLAGS="-std=c99" ./configure.sh -G -O3
 
 # Build and install
 make && make install
-
-# Fix the binaries to use the correct dynamic loader:
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/bc

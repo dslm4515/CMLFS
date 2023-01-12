@@ -7,9 +7,3 @@ CC=$CC  CXX=$CXX make -C contrib/pzstd
 make prefix=/usr install
 make prefix=/usr -C contrib/pzstd install
 mv -v /usr/local/bin/pzstd /usr/bin/
-
- # Fix the binaries to use the correct dynamic loader:
- for b in pzstd zstd
- do
- patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
- done

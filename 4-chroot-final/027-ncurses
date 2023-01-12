@@ -18,12 +18,6 @@ sed -i '/LIBTOOL_INSTALL/d' c++/Makefile.in
 # Build and install
 make && make install
 
-# Fix the binaries to use the correct dynamic loader:
-for b in clear infocmp tabs tic toe tput tset
-do
-patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 /usr/bin/$b
-done
-
 # Allow linker to be able to find non-wide-character Ncurses libraries
 for lib in ncurses form panel menu ; do
     rm -vf                    /usr/lib/lib${lib}.so
