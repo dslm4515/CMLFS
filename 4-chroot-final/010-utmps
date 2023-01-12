@@ -3,7 +3,7 @@
 
 # Set version for pkgconfig file
 cp -v ../files/utmps-alpine/*.pc /tmp/
-sed -i -e "s/@@VERSION@@/0.1.2.0/g" -- /tmp/*.pc 
+sed -i -e "s/@@VERSION@@/0.1.2.0/g" -- /tmp/*.pc
 
 # Configure source
 ./configure --enable-shared      \
@@ -24,6 +24,3 @@ ln -sv utmps/utmpx.h /usr/include/utmpx.h
 
 # Install pkgconfig
 install -v -D -m644 /tmp/utmps.pc /usr/lib/pkgconfig
-
-# Switch back to using LLVM
-set-llvm-mode && set-llvm-bin-mode
