@@ -1,19 +1,10 @@
 # Final System: Libcap
 # This section is done in Chroot environment
 
-# Temporarily make a gcc link
-ln -sv clang-11 /usr/bin/gcc 
-
+# Prevent static libraries from being installed:
 sed -i '/install -m.*STA/d' libcap/Makefile
-make lib=lib 
 
-make lib=lib \
+make prefix=/usr lib=lib
+
+make prefix=/usr lib=lib \
      PKGCONFIGDIR=/usr/lib/pkgconfig install
-
-for libname in cap psx; do
-    chmod -v 755 /lib/lib${libname}.so.2.50
-    rm -v /lib/lib${libname}.so
-    ln -sfv ../../lib/lib${libname}.so.2 /usr/lib/lib${libname}.so
-done
-
-rm -rf /usr/bin/gcc
