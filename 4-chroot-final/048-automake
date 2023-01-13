@@ -1,7 +1,6 @@
-# Final System: Automake 
-# Source: http://ftp.gnu.org/gnu/automake/automake-1.16.3.tar.xz
+# Final System: Automake
 # This section is done in Chroot environment
 
 CC=clang CXX=calng++ \
-./configure --prefix=/usr --docdir=/usr/share/doc/automake-1.16.3
+./configure --prefix=/usr --docdir=/usr/share/doc/automake-1.16.5
 make && make install
