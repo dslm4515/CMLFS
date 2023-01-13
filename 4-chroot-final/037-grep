@@ -1,7 +1,9 @@
-# Final System: Grep 3.6
-# Source: http://ftp.gnu.org/gnu/grep/grep-3.6.tar.xz
+# Final System: Grep
 # This section is done in Chroot environment
 
 CC=clang && CXX=clang++ \
-./configure --prefix=/usr --bindir=/bin \
-            --sysconfdir=/etc  && make && make install
+./configure --prefix=/usr \
+            --bindir=/usr/bin \
+            --sysconfdir=/etc
+
+make && make install
