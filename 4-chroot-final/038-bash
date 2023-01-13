@@ -1,12 +1,11 @@
-# Final System: Bash 5.1
-# Source: http://ftp.gnu.org/gnu/bash/bash-5.1.tar.gz
+# Final System: Bash
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++ \
 ./configure --prefix=/usr                       \
-            --docdir=/usr/share/doc/bash-5.1 \
+            --docdir=/usr/share/doc/bash-5.2.15 \
             --without-bash-malloc               \
             --with-installed-readline \
-            --with-curses 
+            --with-curses
+
 make && make install
-mv -vf /usr/bin/bash /bin
