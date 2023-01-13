@@ -1,19 +1,19 @@
 # Final System: Kmod
-# Source: https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-27.tar.xz
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++               \
 ./configure --prefix=/usr          \
-            --bindir=/bin          \
+            --bindir=/usr/bin          \
             --sysconfdir=/etc      \
-            --with-rootlibdir=/lib \
+            --with-rootlibdir=/usr/lib \
             --with-xz              \
-            --with-zlib
+            --with-zlib \
+            --with-zstd
 
 make && make install
 
 for target in depmod insmod lsmod modinfo modprobe rmmod; do
-  ln -sfv ../bin/kmod /sbin/$target
+  ln -sfv ../bin/kmod /usr/sbin/$target
 done
 
-ln -sfv kmod /bin/lsmod
+ln -sfv kmod /usr/bin/lsmod
