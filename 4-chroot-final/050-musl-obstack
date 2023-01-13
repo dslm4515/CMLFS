@@ -1,5 +1,4 @@
-# Final System: Musl-Obstack 1.1
-# Source: https://github.com/pullmoll/musl-obstack/archive/v1.1.tar.gz
+# Final System: Musl-Obstack
 # This section is done in Chroot environment
 
 sed -i "/pkgconfig_DATA/i pkgconfigdir=/usr/lib/pkgconfig" Makefile.am
