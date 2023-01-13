@@ -1,8 +1,7 @@
 # Final System: Sed 
-# Source: http://ftp.gnu.org/gnu/sed/sed-4.8.tar.xz
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++  \
-./configure --prefix=/usr --bindir=/bin
+./configure --prefix=/usr --bindir=/usr/bin
 
 make && make install
