@@ -1,13 +1,12 @@
-# Final System: Libelf 
-# Source: https://sourceware.org/ftp/elfutils/0.183/elfutils-0.183.tar.bz2
+# Final System: Libelf
 # This section is done in Chroot environment
 
-# Add missing files
-cp -vr ../files/elfutils-void/error.h lib/
-cp -vr ../files/elfutils-void/error.h src/
+# Add missing files ... musl-compat headers provides this header
+#cp -vr ../files/elfutils-void/error.h lib/
+#cp -vr ../files/elfutils-void/error.h src/
 
-# Apply patch to build libelf with clang
-patch -Np1 -i ../patches/elfutils-12101111/elfutils-musl-clang.patch
+# Apply patch to build libelf with clang ... compiles fine w/o it.
+#patch -Np1 -i ../patches/elfutils-12101111/elfutils-musl-clang.patch
 
 CFLAGS="-Wno-error -Wno-null-dereference -DFNM_EXTMATCH=0" \
 CXXFLAGS="-Wno-error -Wl,-z,stack-size=2097152" \
@@ -24,4 +23,3 @@ make -C libelf install
 
 # Install pkgconfig file for library
 install -vm644 config/libelf.pc /usr/lib/pkgconfig
-
