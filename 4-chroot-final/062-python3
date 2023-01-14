@@ -27,3 +27,8 @@ make && make install
 # Change permissions to allow stripping later
 chmod -v 755 /usr/lib/libpython3.11.so
 chmod -v 755 /usr/lib/libpython3.so
+
+# Pip3 expects to find /usr/bin/python. Python2 is no longer
+# used nor built.
+# Create the missing link
+ln -sv python3 /usr/bin/python
