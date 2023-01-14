@@ -163,7 +163,7 @@ done
 # Compile LLVM binutils(binary utilities)
 for b in addr2line ar as config cxxdump diff link lipo \
          lto lto2 nm objcopy objdump ranlib rc readelf \
-         size split strings strip ;
+         size split strings strip profdata;
 do
   ninja -C build llvm-$b
 done
