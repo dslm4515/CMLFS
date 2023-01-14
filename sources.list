@@ -52,7 +52,7 @@ https://sourceware.org/ftp/elfutils/0.188/elfutils-0.188.tar.bz2
 https://github.com/libffi/libffi/releases/download/v3.4.4/libffi-3.4.4.tar.gz
 https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.7.0.tar.gz
 https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz
-https://github.com/ninja-build/ninja/archive/v1.10.2/ninja-1.10.2.tar.gz
+https://github.com/ninja-build/ninja/archive/v1.11.1/ninja-1.11.1.tar.gz
 https://github.com/mesonbuild/meson/releases/download/0.58.0/meson-0.58.0.tar.gz
 https://sourceforge.net/projects/procps-ng/files/Production/procps-ng-3.3.17.tar.xz
 https://ftp.gnu.org/gnu/coreutils/coreutils-9.1.tar.xz

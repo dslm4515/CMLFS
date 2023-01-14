@@ -1,8 +1,7 @@
 # Final System: Ninja
-# Source: https://github.com/ninja-build/ninja/archive/v1.10.0/ninja-1.10.2.tar.gz
 # This section is done in Chroot environment
 
-# If desired, add the capability to use the 
+# If desired, add the capability to use the
 # environment variable NINJAJOBS
 sed -i '/int Guess/a \
   int   j = 0;\
