@@ -223,7 +223,7 @@ done
 
 # Install LLVM's binary tools:
 for b in addr2line ar as config lib link nm objcopy objdump ranlib \
-         readelf readobj symbolizer size strip strings tblgen
+         readelf readobj symbolizer size strip strings tblgen profdata
 do
   ninja -C build install-llvm-$b-stripped
 done
