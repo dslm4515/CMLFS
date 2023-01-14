@@ -13,7 +13,7 @@ export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/cgnutools/bin:/llvmtools/bin
 
 # Configure source to install in /opt/openssl
 CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang \
+CXX=x86_64-pc-linux-musl-clang++ \
 CFLAGS="-I/usr/include" \
 CXXFLAGS=$CFLAGS \
 ./config --prefix=/opt/openssl \
