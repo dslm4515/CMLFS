@@ -15,7 +15,6 @@ CC=clang CXX=clang++            \
             --enable-shared     \
             --with-system-expat \
             --with-system-ffi   \
-            --with-ensurepip=yes \
             --enable-ipv6 \
             --enable-loadable-sqlite-extensions \
             --with-computed-gotos \
