@@ -1,0 +1,49 @@
+# llvmtools: Runtimes (llvm-project-15.x.x-src)
+# Build and install as cmlfs
+#
+# NOTE: Reuse llvm-project source tree
+
+# Configure source in a build directory
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/llvmtools/lib:/llvmtools/lib/\$${TARGET_TUPLE}" ' \
+CXXFLAGS=$CFLAGS \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/llvmtools \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include \
+      -DBacktrace_INCLUDE_DIR=/llvmtools/include \
+      -DLLVM_ENABLE_PROJECTS="libcxxabi;libcxx;libunwind" \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_ENABLE_EH=ON \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBPFM=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_ZSTD=OFF \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_HOST_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_TABLEGEN=/llvmtools/bin/llvm-tblgen \
+      -DLLVM_TARGETS_TO_BUILD="Native;${CARCH}" \
+      -DLLVM_TARGET_ARCH=${CARCH} \
+      -DZLIB_INCLUDE_DIR=/llvmtools/include \
+      -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
+      -DLLVM_ENABLE_TERMINFO=ON \
+      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so" \
+      -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF -DLLVM_ENABLE_BACKTRACES=OFF \
+      -DLLVM_ENABLE_LIBCXX=ON -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_TOOL_LIBCXXABI_BUILD=ON -DLLVM_TOOL_LIBCXX_BUILD=ON \
+      -DLIBCXX_HAS_MUSL_LIBC=ON \
+      -DLIBCXX_INCLUDE_BENCHMARKS=OFF -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
+      -DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON -DLIBUNWIND_INSTALL_HEADERS=ON
+
+# Compile libunwind
+ninja -C build unwind # 19 targets ...................................... PASS
+
+# Compile libc++abi
+ninja -C build cxxabi # 828 targets ..................................... PASS
+
+# Compile libc++
+ninja -C build cxx # 91 ................................................. PASS
+
+# FAIL: libc++abi depends on libgcc_s
