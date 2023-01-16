@@ -1,0 +1,23 @@
+# llvmtools: Libc++abi (llvm-project-15.x.x-src)
+# Build and install as cmlfs
+#
+# NOTE: Reuse llvm-project source tree
+
+cd libcxxabi
+
+# Configure source in a build directory
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/llvmtools/lib" ' \
+CXXFLAGS=$CFLAGS \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build -Wno-dev \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/llvmtools \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON
+
+# Compile libc++abi
+ninja -C build cxxabi
+
+# FAIL:
+/mnt/cmlfs/sources/llvm-project-15.0.5.src/libcxxabi/src/cxa_exception.cpp:15:10: fatal error: exception: No such file or directory
