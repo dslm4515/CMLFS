@@ -9,7 +9,7 @@ export CARCH="X86"
 
 # CMake modules are no longer bundled with the source.
 # Unpack them:
-tar xf ../pkgs/llvm-cmake-15.0.5.src.tar.xz 
+tar xf ../pkgs/llvm-cmake-15.0.5.src.tar.xz
 mv cmake-15.0.5.src/Modules/* cmake/modules/
 rm -rf  cmake-15.0.5.src
 
@@ -72,7 +72,7 @@ cmake -G Ninja -B build \
       -DZLIB_INCLUDE_DIR=/llvmtools/include \
       -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
       -DLLVM_ENABLE_TERMINFO=ON \
-      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so" 
+      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so"
 
 # Compile
 ninja -C build llvm-tblgen # 242 targets ............................. PASS
@@ -92,4 +92,5 @@ ninja -C build check-llvm # 543 ...................................... PASS
 # If no failed tests, install to llvmtools
 cmake --install build --strip
 
-
+# Removed the build directory
+rm -rf build
