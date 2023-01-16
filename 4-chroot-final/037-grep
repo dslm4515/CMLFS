@@ -1,9 +1,0 @@
-# Final System: Grep
-# This section is done in Chroot environment
-
-CC=clang && CXX=clang++ \
-./configure --prefix=/usr \
-            --bindir=/usr/bin \
-            --sysconfdir=/etc
-
-make && make install

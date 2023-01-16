@@ -1,6 +1,0 @@
-# Final System: Automake
-# This section is done in Chroot environment
-
-CC=clang CXX=calng++ \
-./configure --prefix=/usr --docdir=/usr/share/doc/automake-1.16.5
-make && make install

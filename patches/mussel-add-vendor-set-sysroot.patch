@@ -4,7 +4,7 @@
  
  MPREFIX="/cgnutools"
  MSYSROOT="/cgnutools"
-+TVEND="cmlfs"
++TVEND="pc"
  
  # ----- mussel Log File ---- #
  MLOG="$CURDIR/log.txt"

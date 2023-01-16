@@ -1,0 +1,51 @@
+# Download mussel to build a toolchain
+cd $CMLFS/sources
+git clone https://github.com/firasuke/mussel
+
+# For this build, use commit 5f84e46942c4d0e2c9476365a6ba761878612961
+# as future clones of repos may have an newer gcc version
+cd mussel
+git checkout 5f84e46942c4d0e2c9476365a6ba761878612961
+
+# Make sure host has all requirements:
+./check.sh
+
+# Modify ./mussel.sh to change these:
+# MPREFIX="/cgnutools"
+# MSYSROOT="/cgnutools"
+sed -i '70d' mussel.sh && \
+sed -i '70 i MPREFIX="/cgnutools"' mussel.sh && \
+sed -i '71d' mussel.sh && \
+sed -i '71 i MSYSROOT="/cgnutools"' mussel.sh
+
+# Modify ./mussel to add a vendor in target tuple
+# Set vendor as 'pc'. If omitted, clang defaults to 'unknown'
+patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
+
+# Build toolchain. Ommit -p in not building in parallel and using all
+# the host's CPU cores:
+sudo ./mussel.sh x86_64 -l -o -p
+
+# Make sure cgnutools is owned by cmlfs
+sudo chown -vR cmlfs $CMLFS/cgnutools
+
+# The new cross compiler has built-in specs which refer to the musl
+# dynamic loader  /lib/ld-musl-x86_64.so.1 . We have to adjust this to
+# build up the cgnutools with /cgnutools/lib/ld-musl-x86_64.so.1 .
+# This will be reached by creating a modified  specs  file in the
+# proper location:
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/12.2.0/specs
+
+# Test the _tools toolchain:
+cd $CMLFS/sources
+printf "#include <stdio.h>\nint main(){}\n" > dummy.c
+${TARGET_TUPLE}-gcc dummy.c
+readelf -l a.out | grep ld
+
+# Should output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]
+# If matching, clean up:
+rm -rf a.out dummy.c
+
+# For future reference, copy log from mussel
+cp -v $CMLFS/sources/mussel/log.txt /cgnutools/mussel_build.log

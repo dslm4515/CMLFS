@@ -1,9 +1,0 @@
-# Final System: Xz
-# This section is done in Chroot environment
-
-CC=clang CXX=clang++ \
-./configure --prefix=/usr    \
-            --disable-static \
-            --docdir=/usr/share/doc/xz-5.4.0
-
-make && make install

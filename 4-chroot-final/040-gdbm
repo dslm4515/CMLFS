@@ -1,8 +1,0 @@
-# Final System: GDBM
-# This section is done in Chroot environment
-
-CXX=clang++ CC=clang \
-./configure --prefix=/usr \
-            --disable-static \
-            --enable-libgdbm-compat
-make && make install

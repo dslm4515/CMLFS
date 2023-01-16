@@ -1,9 +1,0 @@
-# Final System: Zstd
-# This section is done in Chroot environment
-
-CC=$CC  CXX=$CXX make
-CC=$CC  CXX=$CXX make -C contrib/pzstd
-
-make prefix=/usr install
-make prefix=/usr -C contrib/pzstd install
-mv -v /usr/local/bin/pzstd /usr/bin/

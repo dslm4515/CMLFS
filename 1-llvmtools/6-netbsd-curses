@@ -1,0 +1,13 @@
+# llvmtools: netbsd-curses
+# Build and install as cmlfs
+
+
+# Build
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib \
+make PREFIX="/llvmtools" all
+
+# Install to llvmtools
+make PREFIX="/llvmtools" install

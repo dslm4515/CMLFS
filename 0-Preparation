@@ -96,7 +96,7 @@ export LLVMSRC="/mnt/cmlfs/sources/llvm"
 EOF
 
 export CMLFS_TARGET="x86_64-cmlfs-linux-musl" \
-TARGET_TUPLE="x86_64-pc-linux-musl" \
+       TARGET_TUPLE="x86_64-pc-linux-musl" \
 	CMLFS_ARCH="x86" \
 	CMLFS_CPU="x86-64" \
 	CMLFS_HOST="$(echo $MACHTYPE | \

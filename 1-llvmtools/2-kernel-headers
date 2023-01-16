@@ -1,0 +1,15 @@
+# llvmtools: Kernel Headers
+# Build as cmlfs user
+
+# Clean the source
+make mrproper
+
+# Build the headers
+ARCH=${CMLFS_ARCH} make headers
+
+# Install the headers for stage 0 clang
+find usr/include \( -name .install -o -name ..install.cmd \) -exec rm -vf {} \;
+mkdir -pv /llvmtools/include
+cp -rv usr/include/* /llvmtools/include/
+rm -v /llvmtools/include/Makefile
+

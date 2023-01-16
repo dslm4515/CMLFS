@@ -1,0 +1,95 @@
+# llvmtools: LLVM base (llvm-15.x.x-src)
+# Build and install as cmlfs
+#
+# The base tools from LLVM to build individual
+# components like libc++ and compiler-rt.
+
+# Select the CPU architecture
+export CARCH="X86"
+
+# CMake modules are no longer bundled with the source.
+# Unpack them:
+tar xf ../pkgs/llvm-cmake-15.0.5.src.tar.xz 
+mv cmake-15.0.5.src/Modules/* cmake/modules/
+rm -rf  cmake-15.0.5.src
+
+# Disable dynamic lib tests for musl's dlclose() is noop
+patch -Np1 -i ../patches/llvm15-alpine/0001-Disable-dynamic-lib-tests-for-musl-s-dlclose-is-noop.patch
+
+# Known broken test on musl
+rm -v test/CodeGen/AArch64/wineh4.mir
+# https://github.com/llvm/llvm-project/issues/47657
+rm -v test/ExecutionEngine/Interpreter/intrinsics.ll
+
+# If builing on x86, remove tests:
+rm -v test/Object/macho-invalid.test test/tools/llvm-size/radix.test unittests/Support/JSONTest.cpp
+sed -i "/JSONTest.cpp/d" unittests/Support/CMakeLists.txt
+
+# If building on arm*, remove tests:
+rm -v test/tools/llvm-readobj/ELF/dependent-libraries.test \
+      test/Object/macho-invalid.test \
+      test/tools/llvm-size/radix.test \
+      test/tools/gold/X86/split-dwarf.ll \
+      test/ExecutionEngine/frem.ll \
+      test/tools/llvm-dwarfdump/X86/prettyprint_types.s \
+      test/tools/llvm-dwarfdump/X86/simplified-template-names.s \
+      unittests/ExecutionEngine/Orc/OrcCAPITest.cpp \
+      test/CodeGen/RISCV/rv32zbp.ll \
+      test/CodeGen/RISCV/rv64zbp.ll
+sed -i "/OrcCAPITest.cpp/d" unittests/ExecutionEngine/Orc/CMakeLists.txt
+
+# LLVM base tools will depend on [cross-]gcc:
+cp -v  /cgnutools/${TARGET_TUPLE}/lib/libgcc_s.so.1 /llvmtools/lib/
+ln -sv libgcc_s.so.1 /llvmtools/lib/libgcc_s.so
+cp -v  /cgnutools/${TARGET_TUPLE}/lib/libstdc++.so.6.0.30 /llvmtools/lib/
+ln -sv libstdc++.so.6.0.30 /llvmtools/lib/libstdc++.so
+ln -sv libstdc++.so.6.0.30 /llvmtools/lib/libstdc++.so.6
+
+# Configure source
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/llvmtools/lib" ' \
+CXXFLAGS=$CFLAGS \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_INSTALL_UTILS=ON   \
+      -DCMAKE_INSTALL_PREFIX=/llvmtools \
+      -DLLVM_TARGETS_TO_BUILD="Native;${CARCH}" \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_INCLUDE_DOCS=OFF \
+      -DBacktrace_INCLUDE_DIR=/llvmtools/include \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include \
+      -DLLVM_ENABLE_BACKTRACES=OFF \
+      -DLLVM_ENABLE_EH=ON \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBPFM=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_ZSTD=OFF \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_HOST_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_TARGET_ARCH=${CARCH} \
+      -DZLIB_INCLUDE_DIR=/llvmtools/include \
+      -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
+      -DLLVM_ENABLE_TERMINFO=ON \
+      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so" 
+
+# Compile
+ninja -C build llvm-tblgen # 242 targets ............................. PASS
+ninja -C build llvm-config # 2 ....................................... PASS
+ninja -C build # 1971 ................................................ PASS
+
+# Check build
+ninja -C build check-llvm # 543 ...................................... PASS
+
+# Test Results:
+#  Skipped          :    60
+#  Unsupported      : 22191
+#  Passed           : 26837
+#  Expectedly Failed:    52
+
+
+# If no failed tests, install to llvmtools
+cmake --install build --strip
+
+
