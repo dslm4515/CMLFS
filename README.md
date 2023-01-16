@@ -36,7 +36,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 ## Goals
 
 <ul>
-<li>  x] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
+<li> [ ] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
 <li> [ ] Build final root filesystem with LLVM</li>
 <li> [ ] Set default linker as lld(LLVM)</li>
 <li> [ ] Set default C++ standard library as libcxx(LLVM)</li>
