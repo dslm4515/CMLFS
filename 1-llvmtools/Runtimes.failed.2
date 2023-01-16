@@ -1,0 +1,85 @@
+# llvmtools: LLVM - Runtimes (llvm-project-15.x.x.src)
+# Build and install as cmlfs
+#
+# This bootstrap builds libunwind, libc++abi, and libc++
+# with a just-built clang. These runtimes will allow stage0
+# clang to not depend on libgcc_s and libstdc++
+
+# Musl doesn't support strtoll_l(), so replace it with a simple strtoll() call.
+# Apply patches to allow localization of libc++: Force 'abi' changes (glibc->musl)
+# to source and disable xlocale.h (holds abi changes).
+patch -Np1 -i ../patches/llvm1505-cmlfs/libcxx-use-strtoll_strtoul.patch
+
+# Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
+patch -Np1 -i ../patches/llvm1505-cmlfs/remove-locale-inlines.patch
+
+# Known broken test on musl
+rm -v llvm/test/CodeGen/AArch64/wineh4.mir
+# https://github.com/llvm/llvm-project/issues/47657
+rm -v llvm/test/ExecutionEngine/Interpreter/intrinsics.ll
+
+# If builing on x86, remove tests:
+rm -v llvm/test/Object/macho-invalid.test llvm/test/tools/llvm-size/radix.test llvm/unittests/Support/JSONTest.cpp
+sed -i "/JSONTest.cpp/d" llvm/unittests/Support/CMakeLists.txt
+
+# Disable dynamic lib tests for musl's dlclose() is noop
+cd llvm
+patch -Np1 -i ../../patches/llvm15-alpine/0001-Disable-dynamic-lib-tests-for-musl-s-dlclose-is-noop.patch
+cd ..
+
+# If building on arm*, remove tests:
+rm -v llvm/test/tools/llvm-readobj/ELF/dependent-libraries.test \
+      llvm/test/Object/macho-invalid.test \
+      llvm/test/tools/llvm-size/radix.test \
+      llvm/test/tools/gold/X86/split-dwarf.ll \
+      llvm/test/ExecutionEngine/frem.ll \
+      llvm/test/tools/llvm-dwarfdump/X86/prettyprint_types.s \
+      llvm/test/tools/llvm-dwarfdump/X86/simplified-template-names.s \
+      llvm/unittests/ExecutionEngine/Orc/OrcCAPITest.cpp \
+      llvm/test/CodeGen/RISCV/rv32zbp.ll \
+      llvm/test/CodeGen/RISCV/rv64zbp.ll
+sed -i "/OrcCAPITest.cpp/d" llvm/unittests/ExecutionEngine/Orc/CMakeLists.txt
+
+# Configure source
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/llvmtools/lib" ' \
+CXXFLAGS=$CFLAGS \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/llvmtools \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include \
+      -DBacktrace_INCLUDE_DIR=/llvmtools/include \
+      -DLLVM_ENABLE_PROJECTS="libunwind;libcxxabi;libcxx;compiler-rt" \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_ENABLE_EH=ON \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBPFM=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_ZSTD=OFF \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_HOST_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_TABLEGEN=/llvmtools/bin/llvm-tblgen \
+      -DLLVM_TARGETS_TO_BUILD="Native;${CARCH}" \
+      -DLLVM_TARGET_ARCH=${CARCH} \
+      -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
+      -DZLIB_INCLUDE_DIR=/llvmtools/include \
+      -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
+      -DLLVM_ENABLE_TERMINFO=ON \
+      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so"
+
+# Compile
+ninja -C build runtimes #2588 ..............................FAIL
+
+# FAIL output:
+# CMake Error at /mnt/cmlfs/sources/llvm-project-15.0.5.src/libunwind/src/CMakeLists.txt:109 (message):
+#  Compiler doesn't support generation of unwind tables if exception support
+#  is disabled.  Building libunwind DSO with runtime dependency on C++ ABI
+#  library is not supported.
+
+# Test
+ninja -C build check-runtimes
+
+# Install to llvmtools
+ninja -C build install-runtimes
