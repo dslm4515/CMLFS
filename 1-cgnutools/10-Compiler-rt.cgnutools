@@ -1,0 +1,36 @@
+# llvmtools: Compiler-rt (llvm-project-15.x.x-src)
+# Build and install as cmlfs
+#
+# NOTE: Reuse llvm-project source tree
+#
+# NOTE: Building compiler-rt for cross-gcc. First pass will depend on libgcc_s
+
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/cgnutools/lib/x86_64-pc-linux-musl:/cgnutools/x86_64_pc-linux-musl\lib" ' \
+CXXFLAGS="$CXXFLAGS $CFLAGS" \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build -S compiler-rt -Wno-dev \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/cgnutools \
+      -DLLVM_CONFIG_PATH=/llvmtools/bin/llvm-config \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include \
+      -DCOMPILER_RT_BUILD_GWP_ASAN=OFF \
+      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+      -DCOMPILER_RT_BUILD_ORC=OFF \
+      -DCOMPILER_RT_CXX_LIBRARY=libcxx \
+      -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} \
+      -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
+      -DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=ON \
+      -DCOMPILER_RT_TERMINFO_LIB=/llvmtools/lib/libterminfo.so \
+      -DTerminfo_LIBRARIES=/llvmtools/lib/libterminfo.so \
+      -DZLIB_INCLUDE_DIR=/llvmtools/include \
+      -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
+      -DCOMPILER_RT_BUILD_XRAY=OFF \
+      -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF 
+
+
+# Compile
+ninja -C build compiler-rt # 743 targets ................................ PASS
+
+# Install to cgnutools
+ninja -C build install # ....../cgnutools/lib/linux/clang_rt.crtbegin-x86_64.o
