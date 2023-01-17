@@ -38,7 +38,7 @@ cmake -G Ninja -B build -Wno-dev -S llvm \
       -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF -DLLVM_ENABLE_BACKTRACES=OFF \
       -DLLVM_ENABLE_LIBCXX=ON -DLLVM_INCLUDE_DOCS=OFF \
       -DLLVM_TOOL_LIBCXXABI_BUILD=ON -DLLVM_TOOL_LIBCXX_BUILD=ON \
-      -DLIBCXX_HAS_MUSL_LIBC=ON 
+      -DLIBCXX_HAS_MUSL_LIBC=ON
 
 # Compile libc++abi
 ninja -C build cxxabi # 828 targets ..................................... PASS
@@ -97,3 +97,5 @@ grep succeeded atomics-test.log | grep libc++ | cut -d "/" -f 19-
 # libc++abi.so succeeded
 # libc++abi.so succeeded
 
+# If all went well, remove build directory
+rm -rf build atomics-test.cpp atomics-test.log
