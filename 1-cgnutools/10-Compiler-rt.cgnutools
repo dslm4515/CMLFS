@@ -1,4 +1,4 @@
-# llvmtools: Compiler-rt (llvm-project-15.x.x-src)
+# cgnutools: Compiler-rt (llvm-project-15.x.x-src)
 # Build and install as cmlfs
 #
 # NOTE: Reuse llvm-project source tree
