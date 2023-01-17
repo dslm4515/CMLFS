@@ -50,4 +50,17 @@ clang++ -nostdinc++ -nostdlib++           \
         -lc++                             \
         test.cpp
 
-
+# Cross GCC (mussel)
+# Bin directory: /cgnutools/bin/${TARGET_TUPLE}-*
+# Header search paths:
+#  o /cgnutools/bin/../lib/gcc/x86_64-pc-linux-musl/12.2.0/../../../../x86_64-pc-linux-musl/include
+#  o /cgnutools/lib/gcc/x86_64-pc-linux-musl/12.2.0/include
+#  o /cgnutools/usr/include
+#  Library search paths:
+#  o /cgnutools/x86_64-pc-linux-musl/lib64
+#  o /usr/local/lib64
+#  o /lib64
+#  o /usr/lib64
+#  o /cgnutools/x86_64-pc-linux-musl/lib
+#  o /usr/local/lib
+#  Sysroot = /cgnutools

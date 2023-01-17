@@ -94,9 +94,8 @@ Cross compile enough packages to create a chroot enviroment to build the final s
 
 <ol>
 <li>Build mussel toolchain for a cross-gcc</li>
+<li>Build libunwind, libc++abi, libc++, and compiler-rt for cross-gcc. This should allow cross-gcc to build with -rtlib=compiler-rt </li>
 <li>Use cross-gcc to build stage0 clang</li>
 <li>Use stage0 clang to build the rest of llvmtools</li>
 <li>Enter chroot with llvmtools</li>
 </ol>
-
-

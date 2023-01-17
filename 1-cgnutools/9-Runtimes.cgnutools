@@ -1,0 +1,99 @@
+# llvmtools: Runtimes (llvm-project-15.x.x-src)
+# Build and install as cmlfs
+#
+# NOTE: Reuse llvm-project source tree
+#
+# NOTE: Building libc++abi & libc++ for cross-gcc
+
+# Configure source in a build directory
+#CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/llvmtools/lib" ' \
+#CFLAGS='-L/llvmtools/lib ' \
+#CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/cgnutools/lib/\$${TARGET_TUPLE}:/cgnutools/\$${TARGET_TUPLE}\lib" ' \
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/cgnutools/lib/x86_64-pc-linux-musl:/cgnutools/x86_64_pc-linux-musl\lib" ' \
+CXXFLAGS=$CFLAGS \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/cgnutools \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include \
+      -DBacktrace_INCLUDE_DIR=/llvmtools/include \
+      -DLLVM_ENABLE_PROJECTS="libcxxabi;libcxx" \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_ENABLE_EH=ON \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_ENABLE_LIBPFM=OFF \
+      -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_ZSTD=OFF \
+      -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_HOST_TRIPLE=${TARGET_TUPLE} \
+      -DLLVM_TABLEGEN=/llvmtools/bin/llvm-tblgen \
+      -DLLVM_TARGETS_TO_BUILD="Native;${CARCH}" \
+      -DLLVM_TARGET_ARCH=${CARCH} \
+      -DZLIB_INCLUDE_DIR=/llvmtools/include \
+      -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
+      -DLLVM_ENABLE_TERMINFO=ON \
+      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so" \
+      -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF -DLLVM_ENABLE_BACKTRACES=OFF \
+      -DLLVM_ENABLE_LIBCXX=ON -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_TOOL_LIBCXXABI_BUILD=ON -DLLVM_TOOL_LIBCXX_BUILD=ON \
+      -DLIBCXX_HAS_MUSL_LIBC=ON 
+
+# Compile libc++abi
+ninja -C build cxxabi # 828 targets ..................................... PASS
+
+# Compile libc++
+ninja -C build cxx # 91 ................................................. PASS
+
+# Check build
+#ninja -C build check-cxxabi
+# Test results ... cannt build tests, cross-gcc has no libatomic
+
+#ninja -C build check-cxx
+# Test results ... cannt build tests, cross-gcc has no libatomic
+
+# Install for cross-gcc
+ninja -C build install-cxxabi-stripped # .... /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.so.1.0
+ninja -C build install-cxx-stripped # ....... /cgnutools/lib/x86_64-pc-linux-musl/libc++.so.1.0
+
+# Create links so cross-gcc can find libc++ libraries & headers
+for l in libc++.a libc++.so libc++.so.1.0 libc++abi.so.1.0 libc++experimental.a
+do
+  ln -sv ../../lib/${TARGET_TUPLE}/$l /cgnutools/${TARGET_TUPLE}/lib/$l
+done
+ln -sv libc++.so.1.0     /cgnutools/${TARGET_TUPLE}/lib/libc++.so.1
+ln -sv libc++abi.so.1.0  /cgnutools/${TARGET_TUPLE}/lib/libc++abi.so
+ln -sv libc++abi.so.1.0  /cgnutools/${TARGET_TUPLE}/lib/libc++abi.so.1
+
+ln -sv ../../../include/c++/v1 /cgnutools/x86_64-pc-linux-musl/include/c++/
+ln -sv ../../x86_64-pc-linux-musl/c++/v1/__config_site /cgnutools/x86_64-pc-linux-musl/include/c++/v1/
+ln -sv ../../x86_64-pc-linux-musl/c++/v1/module.modulemap /cgnutools/x86_64-pc-linux-musl/include/c++/v1/
+
+# Test that cross-gcc can use libc++
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+    ++y;
+      return ++x;
+      }
+EOF
+
+# To have cross-gcc use libc++, set the CXXFLAGS
+export  CXXFLAGS="-nostdinc++ -I/cgnutools/include/c++/v1 -nodefaultlibs "
+export CXXFLAGS+="-lc++ -lc++abi -lm -lc -lgcc_s -lgcc "
+
+${TARGET_TUPLE}-g++ $CXXFLAGS -v atomics-test.cpp -Wl,--verbose &> atomics-test.log
+
+# Check that cross-gcc can use libc++:
+grep succeeded atomics-test.log | grep libc++ | cut -d "/" -f 19-
+# Should output:
+# libc++.so succeeded
+# libc++.so.1 succeeded
+# libc++abi.so succeeded
+# libc++abi.so succeeded
+
