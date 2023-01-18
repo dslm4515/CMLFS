@@ -1,0 +1,35 @@
+# cgnutools: clang (llvm-project-15.x.x-src)
+# Build and install as cmlfs
+#
+# NOTE: Reuse llvm-project source tree
+#
+# NOTE: Building a cross-clang with cross-gcc
+
+CFLAGS='-L/llvmtools/lib -Wl,-rpath,"/cgnutools/lib/x86_64-pc-linux-musl:/cgnutools/x86_64_pc-linux-musl\lib" ' \
+CXXFLAGS="$CXXFLAGS $CFLAGS" \
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+cmake -G Ninja -B build -S clang -Wno-dev \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/cgnutools \
+      -DLLVM_CONFIG_PATH=/llvmtools/bin/llvm-config \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include \
+      -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
+      -DCLANG_DEFAULT_RTLIB=compiler-rt \
+      -DCLANG_ENABLE_BOOTSTRAP=ON \
+      -DDEFAULT_SYSROOT=/cgnutools \
+      -DTerminfo_LIBRARIES="/llvmtools/lib/libterminfo.so" \
+      -DZLIB_INCLUDE_DIR=/llvmtools/include \
+      -DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so \
+      -DCLANG_DEFAULT_UNWINDLIB=libunwind \
+      -DCLANG_VENDOR="cgnutools 3.0.0"
+
+ninja -C build # 1244 targets ..................................FAIL
+
+# FAIL output #################################################################
+In file included from /llvmtools/include/llvm/Support/SwapByteOrder.h:17,
+                 from /llvmtools/include/llvm/ADT/Hashing.h:49:
+/cgnutools/include/c++/v1/cstddef: At global scope:
+/cgnutools/include/c++/v1/cstddef:50:9: error: 'nullptr_t' has not been declared in '::'
+   50 | using ::nullptr_t;
+      |         ^~~~~~~~~
