@@ -56,6 +56,8 @@ ninja -C build cxx # 91 ................................................. PASS
 # Install for cross-gcc
 ninja -C build install-cxxabi-stripped # .... /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.so.1.0
 ninja -C build install-cxx-stripped # ....... /cgnutools/lib/x86_64-pc-linux-musl/libc++.so.1.0
+ninja -C build install-cxxabi-headers # ..... /cgnutools/include/c++/v1/cxxabi.h
+ninja -C build install-cxx-headers # ........ /cgnutools/include/x86_64-pc-linux-musl/c++/v1/__config_site
 
 # Create links so cross-gcc can find libc++ libraries & headers
 for l in libc++.a libc++.so libc++.so.1.0 libc++abi.so.1.0 libc++experimental.a
