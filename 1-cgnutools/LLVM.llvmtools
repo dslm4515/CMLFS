@@ -1,0 +1,180 @@
+# llvmtools: Stage0 Clang ( with compiler-rt,libcxx,libcxxabi,libunwind,lld)
+# Build as cmlfs
+#
+# NOTE: Reuse llvm-project source tree
+
+# Set the compiler and linker ...
+export  CTOOLS="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
+export CTOOLS+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
+export CTOOLS+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
+export CTOOLS+="-DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-pc-linux-musl-ld.bfd "
+
+# Set the tuples & build target ...
+export  CTARG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=host "
+export CTARG+="-DLLVM_TARGET_ARCH=host "
+export CTARG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
+
+# Set the paths ...
+export  CPATHS="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CPATHS+="-DDEFAULT_SYSROOT=/llvmtools "
+export CPATHS+="-DBacktrace_INCLUDE_DIR=/llvmtools/include "
+
+# Set the standard C++ library that clang will use to LLVM's libc++:
+export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set the runtime library that clang will use to compiler-rt:
+export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+
+# Enable musl support in libc++
+export COPTS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
+
+# Libc++ has been patched to force localization support:
+export COPTS+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+
+# Set libc++abi to use libunwind to avoid dependence on GCC:
+export COPTS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+
+# Make sure to install libunwind headers
+export COPTS+="-DLIBUNWIND_INSTALL_HEADERS=ON "
+
+# Enable Exception Handling:
+export COPTS+="-DLLVM_ENABLE_EH=ON "
+
+# Exception handling requires Runtime Type Info
+export COPTS+="-DLLVM_ENABLE_RTTI=ON "
+
+# Stage 1 clang's compiler-rt will require new delete definitions in libc++
+export COPTS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+
+# Turn off features that cause compiler-rt to NOT reference backtrace symbols from libexecinfo
+export  BOFF="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export BOFF+="-DCOMPILER_RT_BUILD_ORC=OFF "
+
+# Turn off features ...
+export BOFF+="-DLLVM_ENABLE_LIBXML2=OFF  -DLLVM_INCLUDE_TESTS=OFF  "
+export BOFF+="-DCOMPILER_RT_BUILD_XRAY=OFF  "
+export BOFF+="-DLLVM_ENABLE_ZSTD=OFF     -DLIBUNWIND_INCLUDE_TESTS=OFF "
+export BOFF+="-DLLVM_ENABLE_LIBEDIT=OFF  -DLIBUNWIND_INCLUDE_DOCS=OFF "
+export BOFF+="-DLLVM_INCLUDE_DOCS=OFF    -DLLVM_INCLUDE_EXAMPLES=OFF "
+
+# Turn off more clang features not needed:
+export BOFF+="-DCLANG_ENABLE_ARCMT=OFF      -DCLANG_ENABLE_STATIC_ANALYZER=OFF "
+export BOFF+="-DCLANG_TOOL_APINOTES_TEST_BUILD=OFF -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_CHECK_BUILD=OFF   -DCLANG_TOOL_CLANG_DIFF_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_EXTDEF_MAPPING_BUILD=OFF -DCLANG_TOOL_CLANG_FORMAT_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_FORMAT_VS_BUILD=OFF -DCLANG_TOOL_CLANG_FUZZER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF -DCLANG_TOOL_CLANG_NVLINK_WRAPPER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD=OFF -DCLANG_TOOL_CLANG_OFFLOAD_PACKAGER_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_OFFLOAD_WRAPPER_BUILD=OFF -DCLANG_TOOL_CLANG_REFACTOR_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_RENAME_BUILD=OFF -DCLANG_TOOL_CLANG_REPL_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_CLANG_SCAN_DEPS_BUILD=OFF -DCLANG_TOOL_CLANG_SHLIB_BUILD=OFF"
+export BOFF+="-DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF -DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_DIAGTOOL_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_SCAN_BUILD_BUILD=OFF -DCLANG_TOOL_SCAN_BUILD_PY_BUILD=OFF "
+export BOFF+="-DCLANG_TOOL_SCAN_VIEW_BUILD=OFF -DCLANG_TOOL_AMDGPU_ARCH_BUILD=OFF "
+
+# Turn off CUDA features:
+export BOFF+="-DCUDA_64_BIT_DEVICE_CODE=OFF   -DCUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE=OFF "
+export BOFF+="-DCUDA_HOST_COMPILATION_CPP=OFF -DCUDA_PROPAGATE_HOST_FLAGS=OFF "
+
+CXXFLAGS=$CXXFLAGS \
+cmake -B build -G Ninja -Wno-dev -S llvm  \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+  ${CTOOLS} ${CTARG} ${CPATHS} ${CBSTRAP} ${COPTS}  ${BOFF} \
+  -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0" \
+  -DCMAKE_INSTALL_OLDINCLUDEDIR=/llvmtools/include \
+  -DCOMPILER_RT_CXX_LIBRARY=libcxx -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
+  -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON -DLIBCXXABI_USE_COMPILER_RT=ON \
+  -DLIBUNWIND_USE_COMPILER_RT=ON -DLLVM_TABLEGEN=/llvmtools/bin/llvm-tblgen
+
+# Configure fails:
+# -- Supported architectures for crt: x86_64
+# CMake Error at /mnt/cmlfs/sources/llvm-project-15.0.5.src/compiler-rt/cmake/Modules/AddCompilerRT.cmake:286 (message):
+#   Cannot find builtins library for the target architecture
+# Call Stack (most recent call first):
+#  /mnt/cmlfs/sources/llvm-project-15.0.5.src/compiler-rt/lib/stats/CMakeLists.txt:23 (add_compiler_rt_runtime)
+
+# Build [lld] expects execinfo.h in /cgnutools/x86_64-cmlfs-linux-musl/include
+#ln -sv /cgnutools/include/execinfo.h /cgnutools/x86_64-cmlfs-linux-musl/include/
+
+# Compile only what we need for a stage 0 clang
+
+# When build fails, troubleshoot by building individual targets:
+#ninja -C build builtins    #165 targets ... pass
+#ninja -C build unwind      #19 ............ pass
+#ninja -C build cxxabi      #828 ........... pass
+#ninja -C build cxx         #89 ............ PASS
+#ninja -C build compiler-rt #576 ........... PASS
+#ninja -C build llvm-tblgen #242 ........... PASS
+#ninja -C build lld         #1410 .......... PASS
+#ninja -C build libclang    #777 ........... PASS
+#ninja -C build clang       #91 ............ PASS
+
+for t in builtins unwind cxxabi cxx compiler-rt lld libclang clang ;
+do
+  ninja -C build $t
+done
+
+# Compile LLVM binutils(binary utilities)
+for b in addr2line ar as config cxxdump diff link lipo \
+         lto lto2 nm objcopy objdump ranlib rc readelf \
+         size split strings strip profdata;
+do
+  ninja -C build llvm-$b
+done
+
+# Install only what we built to /cgnutools
+
+# When install fails, troubleshoot by installing individual targets:
+#ninja -C build install-builtins #................. /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+#ninja -C build install-crt #...................... /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/{clang_rt.crtbegin.o,clang_rt.crtend.o}
+#ninja -C build install-unwind #................... /cgnutools/lib/libunwind.so.1.0 & /cgnutools/include/libunwind.h
+#ninja -C build install-cxxabi #................... /cgnutools/lib/x86_64-pc-linux-musl/libc++abi.{so*,a}
+#ninja -C build install-cxxabi-headers #........... /cgnutools/include/c++/v1/{__cxxabi_config.h,cxxabi.h}
+#ninja -C build install-cxx #...................... /cgnutools/lib/x86_64-pc-linux-musl/libc++.{so*,a}
+                            #...................... /cgnutools/include/x86_64-pc-linux-musl/c++/v1/__config_site
+#ninja -C build install-cxx-headers # ............. /cgnutools/include/c++/v1/{__config,*}
+#ninja -C build install-compiler-rt # ............. /cgnutools/lib/clang/15.0.5/lib/x86_64-pc-linux-musl/
+                                    # ............. {libclang_rt.asan-preinit.a,clang_rt.crtend.o,libclang_rt.ubsan_standalone_cxx.a,...}
+#ninja -C build install-lld # ..................... /cgnutools/bin/{lld-link,ld.lld,ld64.lld,wasm-ld}
+#ninja -C build install-libclang # ................ /cgnutools/lib/libclang.so.15.0.5
+#ninja -C build install-libclang-headers #......... /cgnutools/include/clang-c
+#ninja -C build install-clang # ................... /cgnutools/bin/{clang,clang-15,clang++,clang-cl,clang-cpp}
+#ninja -C build install-x86-resource-headers #..... /cgnutools/lib/clang/15.0.5/include/*
+#ninja -C build install-utility-resource-headers #../cgnutools/lib/clang/15.0.5/include/mm_malloc.h
+#ninja -C build install-ve-resource-headers #......./cgnutools/lib/clang/15.0.5/include/velintrin*
+#ninja -C build install-compiler-rt-headers #......./cgnutools/lib/clang/15.0.5/include/sanitizer/*
+#ninja -C build install-clang-resource-headers #..../cgnutools/lib/clang/15.0.5/include/{builtins.h,*}
+#ninja -C build install-clang-headers #............./cgnutools/include/clang/*
+
+for t in butiltins crt unwind cxxabi cxx compiler-rt lld libclang libclang-headers clang \
+         x86-resource-headers utility-resource-headers ve-resource-headers \
+         compiler-rt-headers clang-resource-headers clang-headers ;
+do
+  ninja -C build install-$t
+done
+
+# Install LLVM binutils:
+for b in addr2line ar as config cxxdump diff link lipo \
+         lto lto2 nm objcopy objdump ranlib rc readelf \
+         size split strings strip tblgen
+do
+  ninja -C build install-llvm-$b
+done
+
+# Stage0 lld cannot decompress zlib debug info. Strip the c-runtime objects
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/clang_rt.crtbegin.o
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/clang_rt.crtend.o
+strip --strip-debug /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/libclang_rt.builtins.a
+
+# Create link for missing c-runtime objects:
+ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtbeginS.o  /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/
+ln -sv ../../../../../lib/gcc/x86_64-cmlfs-linux-musl/12.2.0/crtendS.o    /cgnutools/lib/clang/15.0.5/lib/${TARGET_TUPLE}/
+
+# Clean up environment
+unset CC CXX CFLAGS CXXFLAGS CTOOLS CTARG CPATHS CBSTRAP COPTS BOFF LINKERFLAGS
