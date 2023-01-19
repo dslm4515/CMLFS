@@ -20,7 +20,7 @@ whoami
 # Make sure PATH is set correctly:
 export PATH=/cgnutools/bin:/llvmtools/bin:/usr/bin:/bin
 
-# Each package should be unpacked in /mnt/cmlfs/source and change 
+# Each package should be unpacked in /mnt/cmlfs/source and change
 # to the unpacked source directory. For example:
 cd /mnt/cmlfs/sources
 tar xf pkgs/foo-1.2.3.tar.gz
@@ -29,7 +29,7 @@ cd foo-1.2.3
 # Then patch and compile per instruction
 patch -Np1 -i ../patches/foo-mlfs/fix-it.patch
 ./configure --prefix=/cgnutools
-make 
+make
 make install
 
 # After the package is installed, change directories and remove
@@ -38,9 +38,9 @@ cd ..
 rm -rf foo-1.2.3
 
 # Extra notes:
-# Most compilers provide a way to disable the 
-# default behavior for finding the standard 
-# library and to override it with custom paths. 
+# Most compilers provide a way to disable the
+# default behavior for finding the standard
+# library and to override it with custom paths.
 # With Clang, this can be done with:
 
 clang++ -nostdinc++ -nostdlib++           \
@@ -64,3 +64,5 @@ clang++ -nostdinc++ -nostdlib++           \
 #  o /cgnutools/x86_64-pc-linux-musl/lib
 #  o /usr/local/lib
 #  Sysroot = /cgnutools
+
+# Cross-gcc will stay in cgnutools, but cross-compile a clang toolchain in llvmtools.
