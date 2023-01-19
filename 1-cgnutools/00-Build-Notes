@@ -65,4 +65,26 @@ clang++ -nostdinc++ -nostdlib++           \
 #  o /usr/local/lib
 #  Sysroot = /cgnutools
 
-# Cross-gcc will stay in cgnutools, but cross-compile a clang toolchain in llvmtools.
+# Cross-gcc will stay in cgnutools, but cross-compile a clang toolchain in llvmtools. It will
+# also build the required packages [in llvmtools] to build stage0 clang
+# o kernel headers
+# o zlib-ng
+# o libexecinfo (unless there are options in clang to avoid the need)
+# o CMake (if host doesn't have it?)
+# o Python3 (if host doesn't have it?)
+# o netbsd-curses (optional, could build stage0 clang without terminfo support)
+
+# Stage0 clang will compile the following for llvmtools:
+# o openssl [optional?]
+# o git ?
+# o bubblewrap ?
+# o chimerautils ?
+# o elftoolchain
+# o pkgconf ?
+# o byacc
+# o flex
+# o perl
+# o cmake
+# o meson
+# o bmake/gmake
+# o ninja
