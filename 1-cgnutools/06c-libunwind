@@ -17,7 +17,7 @@ patch -Np1 -i ../patches/llvm1506-chimera/0010-compiler-rt-HACK-hwasan-build-on-
 patch -Np1 -i ../patches/llvm1506-chimera/0012-compiler-rt-HACK-force-fno-lto-for-builtins.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0013-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0014-libc-libc-abi-libunwind-disable-multiarch-locations.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0015-libc-libc-abi-libunwind-HACK-always-disable-LTO-forc.patch
+#patch -Np1 -i ../patches/llvm1506-chimera/0015-libc-libc-abi-libunwind-HACK-always-disable-LTO-forc.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0016-libc-musl-locale-workarounds.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0018-lldb-cross-compiling-workarounds-for-python.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0019-lldb-musl-fixes.patch
