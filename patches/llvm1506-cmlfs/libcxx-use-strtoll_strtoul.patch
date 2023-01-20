@@ -1,0 +1,22 @@
+--- llvm-project-15.0.6.src.orig/libcxx/include/locale	2022-11-29 04:05:58.000000000 -0600
++++ llvm-project-15.0.6.src/libcxx/include/locale	2023-01-20 10:29:39.660148449 -0600
+@@ -760,7 +760,8 @@
+         typename remove_reference<decltype(errno)>::type __save_errno = errno;
+         errno = 0;
+         char *__p2;
+-        long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++//GLIBC        long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++	long long __ll = strtoll(__a, &__p2, __base);
+         typename remove_reference<decltype(errno)>::type __current_errno = errno;
+         if (__current_errno == 0)
+             errno = __save_errno;
+@@ -800,7 +801,8 @@
+         typename remove_reference<decltype(errno)>::type __save_errno = errno;
+         errno = 0;
+         char *__p2;
+-        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++//GLIBC        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++	unsigned long long __ll = strtoull(__a, &__p2, __base);
+         typename remove_reference<decltype(errno)>::type __current_errno = errno;
+         if (__current_errno == 0)
+             errno = __save_errno;

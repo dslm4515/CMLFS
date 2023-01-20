@@ -18,7 +18,7 @@ patch -Np1 -i ../patches/llvm1506-chimera/0012-compiler-rt-HACK-force-fno-lto-fo
 patch -Np1 -i ../patches/llvm1506-chimera/0013-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0014-libc-libc-abi-libunwind-disable-multiarch-locations.patch
 #patch -Np1 -i ../patches/llvm1506-chimera/0015-libc-libc-abi-libunwind-HACK-always-disable-LTO-forc.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0016-libc-musl-locale-workarounds.patch
+#patch -Np1 -i ../patches/llvm1506-chimera/0016-libc-musl-locale-workarounds.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0018-lldb-cross-compiling-workarounds-for-python.patch
 patch -Np1 -i ../patches/llvm1506-chimera/0019-lldb-musl-fixes.patch
 patch -Np1 -i ../patches/llvm1506-chimera/clang-001-fortify-include.patch
@@ -32,6 +32,13 @@ patch -Np1 -i ../patches/llvm1506-chimera/lsan-dtp-offset.patch
 patch -Np1 -i ../patches/llvm1506-chimera/no-execinfo.patch
 patch -Np1 -i ../patches/llvm1506-chimera/unsupport-print-multiarch.patch
 patch -Np1 -i ../patches/llvm1506-chimera/unwind-chain-inclusion.patch
+
+# Musl doesn't support strtoll_l(), so replace it with a simple strtoll() call.
+# Apply patches to allow localization of libc++: 
+patch -Np1 -i ../patches/llvm1506-cmlfs/libcxx-use-strtoll_strtoul.patch
+
+# Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
+patch -Np1 -i ../remove-locale-inlines.patch
 
 export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS

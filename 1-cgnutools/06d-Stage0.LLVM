@@ -61,7 +61,7 @@ export CLG+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
 
 # Set options for libc++
 export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
-export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=OFF "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
 export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
 export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
 export CLCPP+="-DLIBCXX_USE_COMPILER_RT=OFF "
@@ -131,6 +131,7 @@ cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
 -nostdinc++
 -I/cgnutools/include/c++/v1
 -I/llvmtools/include
+--ld-path=/cgnutools/bin/ld.lld
 EOF
 
 ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang
@@ -185,3 +186,29 @@ atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
 # Check for errors during compile or link:
 grep error:  atomics-test.log
 # Should return nothing if there are no errors.
+
+# Test if stage0 clang support C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+${TARGET_TUPLE}-clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+
+# Should return nothing if there are no errors.
+
+# If all is good, remove build directory. Sourc tree will be re-used later
