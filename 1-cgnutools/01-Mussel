@@ -29,6 +29,16 @@ sudo ./mussel.sh x86_64 -l -o -p
 # Make sure cgnutools is owned by cmlfs
 sudo chown -vR cmlfs $CMLFS/cgnutools
 
+# Move misplaced headers and files:
+mv -v /cgnutools/usr/lib/*     /cgnutools/lib/
+mv -v /cgnutools/usr/include/* /cgnutools/include/
+rm -rfv /cgnutools/usr/{include,lib}
+ln -sv ../lib     /cgnutools/usr/lib
+ln -sv ../include /cgnutools/usr/include
+
+# Remove unneeded manpages
+rm -rf  /cgnutools/share/man
+
 # The new cross compiler has built-in specs which refer to the musl
 # dynamic loader  /lib/ld-musl-x86_64.so.1... which will not exist on
 # glibc hosts. We have to adjust this to build up the llvmtools with
