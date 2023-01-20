@@ -1,0 +1,187 @@
+# cgnutools: Stage0 Clang ( with compiler-rt,libcxx,libcxxabi,libunwind,lld)
+#
+# Build as cmlfs
+#
+# o Reuse llvm-project source tree from before
+# o stage 0 Clang will depend on libgcc_s. It will build stage1 w/o libgcc_s
+# o Stage0 wll install in cgnutools, but Sysroot will be llvmtools. This will
+#   avoid duplicate building of packages.
+
+# Force clang to use dynamic linux loader in /cgnutools
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader.llvmtools.patch
+patch -Np1 -i ../patches/llvm1505-cmlfs/modify-test-dynamic-loader.llvmtools.patch
+
+# Built llvm-tblgen will need libstdc++.so.6 & libgcc_s.so.1.
+# Set the rpath
+export  CFLAGS='-fPIC -I/cgnutools/include -Wl,-rpath,"/cgnutools/x86_64-pc-linux-musl/lib" '
+export CFLAGS+='-Wl,-rpath-link "/cgnutools/x86_64-pc-linux-musl/lib"'
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags...
+export LINKERFLAGS="-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1"
+export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
+export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
+export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/${TARGET_TUPLE}-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/${TARGET_TUPLE}-ranlib "
+export CT+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
+export CT+="-DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
+export CTG+="-DLLVM_TARGET_ARCH=host "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CP+="-DDEFAULT_SYSROOT=/llvmtools "
+
+# Set options for compiler-rt
+# + avoid all the optional runtimes:
+export  CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+# + Avoid need for libexecinfo:
+export CRT+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
+
+# Set options for clang
+# + Set the standard C++ library that clang will use to LLVM's libc++
+# + Set compiler-rt as default runtime
+export  CLG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CLG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CLG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CLG+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=OFF "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=OFF "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=OFF "
+
+# Set options for libunwind
+export  CUW="-DLIBUNWIND_INSTALL_HEADERS=ON "
+#export CUW+="-DLIBUNWIND_USE_COMPILER_RT=ON "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CLLVM+="-DLLVM_ENABLE_ZLIB=ON "
+export CLLVM+="-DLLVM_INSTALL_UTILS=ON "
+export CLLVM+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CLLVM+="-DLLVM_LINK_LLVM_DYLIB=ON "
+export CLLVM+="-DENABLE_LINKER_BUILD_ID=ON "
+export CLLVM+="-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON "
+#export CLLVM+="-DLLVM_ENABLE_LIBCXX=ON "
+#export CLLVM+="-DLLVM_ENABLE_LLD=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
+
+cmake -B build -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
+      -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+      -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0" \
+      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
+
+# compile
+ninja -C build unwind # 19 targets ................................. PASS
+ninja -C build builtins # 164 ...................................... PASS
+ninja -C build cxxabi # 829 ........................................ PASS
+ninja -C build cxx # 79 ............................................ PASS
+ninja -C build llvm-tblgen # 242 ................................... PASS
+ninja -C build compiler-rt # 14 .................................... PASS
+ninja -C build lld # 1652 .......................................... PASS
+ninja -C build libclang # 798 ...................................... PASS
+ninja -C build clang # 336 ......................................... PASS
+ninja -C build llvm-lib # 4 ........................................ PASS
+ninja -C build # 576 ............................................... PASS
+
+# install to cgnutools
+cmake --install build --strip
+
+# Make LLD the default linker
+ln -sv lld /cgnutools/bin/ld
+
+# Disable cross-gcc ... will use stage0 clang instead
+mv -v /cgnutools/lib/gcc{,-disabled}
+
+# Configure stage0 clang
+cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
+-L/cgnutools/lib
+-nostdinc++
+-I/cgnutools/include/c++/v1
+-I/llvmtools/include
+EOF
+
+ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang
+ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang++
+
+# Test stage0 Clang
+echo "int main(){}" > dummy.c
+/cgnutools/bin/${TARGET_TUPLE}-clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
+# Should output:
+# ld.lld: /llvmtools/lib/Scrt1.o
+# ld.lld: /llvmtools/lib/crti.o
+# ld.lld: /llvmtools/lib/crtn.o
+
+# Make sure no libraries are loaded from the host
+grep ld.lld:  dummy.log
+# Should output:
+# ld.lld: /llvmtools/lib/Scrt1.o
+# ld.lld: /llvmtools/lib/crti.o
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /tmp/dummy-ffb57c.o
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /llvmtools/lib/libunwind.so
+# ld.lld: /llvmtools/lib/libatomic.so
+# ld.lld: /llvmtools/lib/libc.so
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /llvmtools/lib/libunwind.so
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /llvmtools/lib/crtn.o
+
+# Check if clang++ [in llvmtools] has atomics.
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+/cgnutools/bin/${TARGET_TUPLE}-clang++ \
+atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
