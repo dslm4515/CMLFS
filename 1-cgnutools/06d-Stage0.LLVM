@@ -131,11 +131,14 @@ cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
 -nostdinc++
 -I/cgnutools/include/c++/v1
 -I/llvmtools/include
---ld-path=/cgnutools/bin/ld.lld
 EOF
 
 ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang
 ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang++
+
+# Binaried built by stage0 clang will look for libc++ .
+# Add a search path for the dynamic linker/loader in llvmtools:
+echo "/cgnutools/lib" >> /llvmtools/etc/ld-musl-$(uname -m).path
 
 # Test stage0 Clang
 echo "int main(){}" > dummy.c
@@ -167,7 +170,15 @@ grep ld.lld:  dummy.log
 # ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 # ld.lld: /llvmtools/lib/crtn.o
 
-# Check if clang++ [in llvmtools] has atomics.
+# Verify that stage0 clang is searching for the correct header files:
+grep -B2 -A1 '^ /llvmtools/include' dummy.log
+# It should output in this order:
+# /cgnutools/include/c++/v1
+# /llvmtools/include
+# /mnt/cmlfs/cgnutools/lib/clang/15.0.6/include
+# NOTE: The libc++ headers should be searched first before any other header directories.
+
+# Check if stage0 clang++ [in llvmtools] has atomics.
 cat > atomics-test.cpp << "EOF"
 #include <atomic>
 std::atomic<int> x;
@@ -208,7 +219,10 @@ ${TARGET_TUPLE}-clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
 
 # Check for errors during compile or link:
 grep error: cxx11-test.log
-
 # Should return nothing if there are no errors.
 
+# Execute the binary. Should output "C++14"
+./a.out
+
 # If all is good, remove build directory. Sourc tree will be re-used later
+rm -rf build dummy.* atomics-test.* cxx11-test.*
