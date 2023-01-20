@@ -1,0 +1,124 @@
+# llvmtools: Stage0 Clang ( with compiler-rt,libcxx,libcxxabi,libunwind,lld)
+#
+# Build as cmlfs
+#
+# o Used patches from Chimera Linux
+#
+
+# Apply patches from Chimera Linux
+# For now, just patching for x86_64
+patch -Np1 -i ../patches/llvm1506-chimera/0001-llvm-always-set-a-larger-stack-size-explicitly.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0003-llvm-musl-workarounds.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0005-clang-disable-multiarch-layout-on-musl.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0006-clang-drop-incorrect-warning-about-vector-equality-r.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0008-compiler-rt-default-to-libc-for-sanitizers.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0009-compiler-rt-build-crt-in-runtimes-build.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0010-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0012-compiler-rt-HACK-force-fno-lto-for-builtins.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0013-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0014-libc-libc-abi-libunwind-disable-multiarch-locations.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0015-libc-libc-abi-libunwind-HACK-always-disable-LTO-forc.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0016-libc-musl-locale-workarounds.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0018-lldb-cross-compiling-workarounds-for-python.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0019-lldb-musl-fixes.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-001-fortify-include.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-002-fortify-enable.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-003-as-needed.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-004-relro-hash.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-default-libatomic.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-default-strong-ssp.patch
+patch -Np1 -i ../patches/llvm1506-chimera/llvm-endbr-cfi.patch
+patch -Np1 -i ../patches/llvm1506-chimera/lsan-dtp-offset.patch
+patch -Np1 -i ../patches/llvm1506-chimera/no-execinfo.patch
+patch -Np1 -i ../patches/llvm1506-chimera/unsupport-print-multiarch.patch
+patch -Np1 -i ../patches/llvm1506-chimera/unwind-chain-inclusion.patch
+
+export CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags...
+export LINKERFLAGS="-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1"
+export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
+export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
+export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/${TARGET_TUPLE}-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/${TARGET_TUPLE}-ranlib "
+export CT+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
+export CT+="-DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
+export CTG+="-DLLVM_TARGET_ARCH=host "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CP+="-DDEFAULT_SYSROOT=/llvmtools "
+
+# Set options for compiler-rt
+# + avoid all the optional runtimes:
+export  CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+# + Avoid need for libexecinfo:
+export CRT+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+
+# Set options for clang
+# + Set the standard C++ library that clang will use to LLVM's libc++
+# + Set compiler-rt as default runtime
+export  CLG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CLG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CLG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CLG+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=ON "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+
+# Set options for libunwind
+export  CUW="-DLIBUNWIND_INSTALL_HEADERS=ON "
+export CUW+="-DLIBUNWIND_USE_COMPILER_RT=ON "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CLLVM+="-DLLVM_ENABLE_ZLIB=ON "
+export CLLVM+="-DLLVM_INSTALL_UTILS=ON "
+export CLLVM+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CLLVM+="-DLLVM_LINK_LLVM_DYLIB=ON "
+export CLLVM+="-DENABLE_LINKER_BUILD_ID=ON "
+export CLLVM+="-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON "
+export CLLVM+="-DLLVM_ENABLE_LIBCXX=ON "
+export CLLVM+="-DLLVM_ENABLE_LLD=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
+
+cmake -B build -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
+      -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+      -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0" \
+      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
+
+# CMake invocation fails... expects clang, LLD, and compiler-rt
