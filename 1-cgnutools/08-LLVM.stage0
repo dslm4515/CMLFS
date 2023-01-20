@@ -226,4 +226,4 @@ grep error: cxx11-test.log
 
 # If all is good, remove build directory. Sourc tree will be re-used later
 rm -rf build dummy.* atomics-test.* cxx11-test.*
-unset CT CTG CP CRT CLG CLCPP CLCPPA CUW $CLLVM COFF CFLAGS CXXFLAGS
+unset CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF CFLAGS CXXFLAGS
