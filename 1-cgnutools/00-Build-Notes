@@ -68,11 +68,14 @@ clang++ -nostdinc++ -nostdlib++           \
 # Cross-gcc will stay in cgnutools, but cross-compile a clang toolchain in llvmtools. It will
 # also build the required packages [in llvmtools] to build stage0 clang
 # o kernel headers
+# o musl libc
 # o zlib-ng
-# o libexecinfo (unless there are options in clang to avoid the need)
+# X netbsd-curses (optional)
+# X libexecinfo -- patch from chimera removed dependancy
+# o libatomic-chimera
+# o fortify-headers
 # o CMake (if host doesn't have it?)
 # o Python3 (if host doesn't have it?)
-# o netbsd-curses (optional, could build stage0 clang without terminfo support)
 
 # Stage0 clang will compile the following for llvmtools:
 # o openssl [optional?]
@@ -80,6 +83,8 @@ clang++ -nostdinc++ -nostdlib++           \
 # o bubblewrap ?
 # o chimerautils ?
 # o elftoolchain
+# o libedit
+# o libffi ?
 # o pkgconf ?
 # o byacc
 # o flex
