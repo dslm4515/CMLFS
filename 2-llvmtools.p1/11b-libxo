@@ -1,7 +1,7 @@
 # llvmtools: libxo
 # Build as cmlfs
 #
-# NOTE: Required by chimerautils
+# NOTE: Required by chimerautils-tiny
 
 # Apply patches from Chimera Linux
 patch -Np1 -i ../patches/libxo-chimera/portability.patch
