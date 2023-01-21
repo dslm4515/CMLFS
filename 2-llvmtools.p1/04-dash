@@ -1,0 +1,27 @@
+# llvmtools: DASH
+# Build as cmlfs
+#
+# NOTE: Replaces bash as POSIX compliant shell
+
+# Generate the configure script
+autoreconf -vfi
+
+# Configure source
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --prefix=/llvmtools \
+            --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE}
+
+# Compile
+make
+
+# Install to llvmtools
+make install
+
+# Create a link as dash will be used for sh
+ln -sv dash /llvmtools/bin/sh
