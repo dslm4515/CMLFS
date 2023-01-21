@@ -60,6 +60,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
  <li>CMake</li>
  <li>Ninja/Samurai</li>
  <li>wget/cURL</li>
+ <li>meson (if building chimerautils for chroot)</li>
 </ul>
 
 ## Required Base Development tools (may refer to LFS)
