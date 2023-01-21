@@ -1,0 +1,16 @@
+# llvmtools: musl rpmatch
+# Build as cmlfs
+#
+# NOTE: Required by chimerautils-tiny
+
+# Compile
+CC=clang   \
+AR=llvm-ar \
+PREFIX=/llvmtools \
+bmake
+
+# Install to llvmtools
+CC=clang   \
+AR=llvm-ar \
+PREFIX=/llvmtools \
+bmake install
