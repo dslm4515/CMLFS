@@ -18,8 +18,8 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li>Unwinding Library: libunwind (LLVM)</li>
 <li>Init system: skarnet's S6 & S6-rc</li>
 <li>Device manager: Udev </li>
-<li>TLS Implementaion: LibreSSL</li>
-<li>System Shell: Bash </li>
+<li>TLS Implementaion: LibreSSL+OpenSSL </li>
+<li>System Shell: Bash + Dash </li>
 <li>System Gettext: gettext-tiny</li>
 <li>Userland: bsdutils </li>
 </ul>
@@ -36,13 +36,13 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 ## Goals
 
 <ul>
-<li> [ ] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
+<li> [x] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
 <li> [ ] Build final root filesystem with LLVM</li>
 <li> [ ] Set default linker as lld(LLVM)</li>
 <li> [ ] Set default C++ standard library as libcxx(LLVM)</li>
 <li> [ ] Set default C++ ABI library as libcxxabi(LLVM)</li>
 <li> [ ] Set default stack unwinding library as libunwind(LLVM)</li>
-<li> [ ] Eliminate dependacy on GCC's libgcc_s</li>
+<li> [x] Eliminate dependacy on GCC's libgcc_s</li>
 <li> [ ] Build GCC as a secondary systen compiler. </li>
 <li> [ ] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 <li> [x] Build cgnutools with mussel </li>
@@ -94,8 +94,10 @@ Cross compile enough packages to create a chroot enviroment to build the final s
 
 <ol>
 <li>Build mussel toolchain for a cross-gcc</li>
-<li>Build libunwind, libc++abi, libc++, and compiler-rt for cross-gcc. This should allow cross-gcc to build with -rtlib=compiler-rt </li>
-<li>Use cross-gcc to build stage0 clang</li>
-<li>Use stage0 clang to build the rest of llvmtools</li>
-<li>Enter chroot with llvmtools</li>
+<li>Cross-compile [with cross-gcc] musl-libc, kernel-headers, zlib-ng, libatomic=chimera, fortify-headers for llvmtools. Will also be used for building stage0 clang.</li>
+<li>Build libunwind for cross-gcc. Building stage0 clang expects libunwind alread present.</li>
+<li>Use cross-gcc to build stage0 clang, but install to cgnutools and set sysroot at llvmtools.</li>
+<li>Use stage0 clang to build stage1 clang. Stage1 clang will be gcc-free.</li>
+<li>Build enough of llvmtools with stage0 clang for chroot</li>
+<li>Enter chroot with llvmtools and build the final system.</li>
 </ol>
