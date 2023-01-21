@@ -17,7 +17,7 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 BROKEN_TESTS="deptgt-delete_on_error" \
-../bmake/boot-strap --prefix=$/llvmtools op=build
+../bmake/boot-strap --prefix=/llvmtools op=build
 
 # Install to llvmtools
 CC=clang CXX=clang++ \
@@ -27,4 +27,4 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 BROKEN_TESTS="deptgt-delete_on_error" \
-../bmake/boot-strap --prefix=$/llvmtools op=install
+../bmake/boot-strap --prefix=/llvmtools op=install
