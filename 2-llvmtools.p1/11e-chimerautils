@@ -1,0 +1,29 @@
+# llvmtools: chimerautils
+# Build as cmlfs
+#
+# NOTE: Replaces coreutils, diffutils, findutils, grep, sed, ed, m4, patch, bc
+# NOTE: Need musl-compat-headers, libxo, musl-fts, musl-rpmatch installed in
+#       llvmtools.
+#
+# NOTE: Can be replaced by heirloom-ng to build less dependancies
+
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+LDFLAGS="-lterminfo " \
+meson --prefix=/llvmtools \
+      --pkg-config-path /llvmtools/lib/pkgconfig \
+      -Dstatic_fts=true \
+      -Dstatic_rpmatch=true \
+      -Dcolor_ls=false \
+      -Dlibcrypto=disabled \
+      -Dlibedit=disabled BUILD
+
+# compile
+ninja -C BUILD
+
+# Install to llvmtools
+ninja -C BUILD install
