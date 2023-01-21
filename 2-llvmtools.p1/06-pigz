@@ -1,0 +1,14 @@
+# llvmtools: pigz
+# Build as cmlfs
+#
+# NOTE: Replaces gzip
+
+# Makefile is hard-coded to use gcc. Fix it:
+sed -i '1d' Makefile
+
+# Compile
+CC=clang make
+
+# Install to llvmtools
+install -Dvm755 pigz /llvmtools/bin/
+ln -sv pigz /llvmtools/bin/unpigz
