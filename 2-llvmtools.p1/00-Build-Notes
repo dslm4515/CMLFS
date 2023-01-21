@@ -1,0 +1,28 @@
+# General Build Notes for llvmtools
+
+# As before, everything should be built by cmlfs user
+
+# Cross-gcc has built the following for llvmtools:
+# o kernel headers
+# o musl libc [headers+libraries]
+# o zlib-ng
+# o libatomic-chimera
+# o fortify headers
+
+# cgnutools contains the following:
+# o cross-gcc [built by mussel, disabled in favor for clang]
+# o stage 2 clang
+#    - libunwind
+#    - libc++abi
+#    - libc++
+#    - compiler-rt
+#    - lld
+#    - clang
+
+# Since stage0 clang is now built, it will build stage1 clang with out any
+# dependency on gcc (libgcc_s & libstdc++) with sysroot at llvmtools.
+# The rest of llvmtools will be built in order to chroot with just llvmtools.
+
+# All binaries should build with `/llvmtools/lib/ld-musl-$(uname -m).so.1` as
+# the dynamic [linux] loader/linker. Nothing should link to any libraries in
+# cgnutools.
