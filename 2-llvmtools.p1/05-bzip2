@@ -1,0 +1,20 @@
+# llvmtools: bzip2
+# Build as cmlfs
+
+# Fix the Makefiles for  ensures installation of symbolic
+# links are relative and the man pages are installed into
+# the correct location:
+cp Makefile{,.orig}
+sed -e "/^all:/s/ test//" Makefile.orig > Makefile
+sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+
+# Prepare source with clang
+make -f Makefile-libbz2_so CC="clang" AR="llvm-ar" RANLIB="llvm-ranlib"
+make clean
+
+# Build with clang
+make CC="clang" AR="llvm-ar" RANLIB="llvm-ranlib"
+
+# Install to tool chain
+make PREFIX=/llvmtools install
