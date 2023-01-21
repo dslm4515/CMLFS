@@ -3,68 +3,23 @@
 #
 # NOTE: Replaces coreutils, diffutils, findutils, grep, sed
 
-# Configure the source:
-cat > /tmp/mk.config << "EOF"
-SHELL = /llvmtools/bin/sh
-POSIX_SHELL = /llvmtools/bin/sh
-ROOT ?=
-DEFBIN = /llvmtools/bin
-SV3BIN = /llvmtools/bin
-S42BIN = /llvmtools/bin
-SUSBIN = /llvmtools/bin
-UCBBIN = //llvmtools/ucbbin
-CCSBIN = /llvmtools/ccs/bin
-DEFLIB = /llvmtools/lib
-DEFSBIN = /llvmtools/bin
-MANDIR = /llvmtools/share/man/5man
-DFLDIR = /llvmtools/etc/default
-SPELLHIST = /dev/null
-SULOG = /llvmtools/var/log/sulog
-MAGIC = $(DEFLIB)/magic
-TTYGRP = -g utmp
-LIBPATH = -L/llvmtools/lib -L/llvmtools/ccs/lib
-LCURS = -lcurses
-LIBZ = -Wl,-Bstatic -lz
-USE_ZLIB = 1
-LIBBZ2 = -Wl,-Bstatic -lbz2
-USE_BZLIB = 1
-CC ?= clang
-HOSTCC = clang
-WARN=
-LD = clang
-CPPFLAGS = -D_GNU_SOURCE
-CFLAGS = -O -fomit-frame-pointer $(WARN)
-CFLAGS2 = -O2 -fomit-frame-pointer $(WARN)
-CFLAGSS = -Os -fomit-frame-pointer $(WARN)
-CFLAGSU = -O2 -fomit-frame-pointer -funroll-loops $(WARN)
-STRIP = llvm-strip -s -R .comment -R .note
-LARGEF = -D_FILE_OFFSET_BITS=64L
-LNS = ln -s
-YACC = yacc
-LEX = flex
-LCRYPT=-lcrypt
-RANLIB=(hash ranlib) >/dev/null 2>&1 || exit 0; ranlib
-UCBINST = $(ROOT)$(UCBBIN)/install
+# Add a missing flag for nawk/Makefile.mk
+# b.o: b.c
+#        $(CC) $(CFLAGSS) $(CPPFLAGS) $(XO5FL) $(LARGEF) $(IWCHAR) $(ICOMMON) $(IUXRE) -c b.c -std=c99
 
-ICOMMON = -I../libcommon
-LCOMMON = -L../libcommon -lcommon
-
-IUXRE = -I../libuxre -DUXRE
-LUXRE = -L../libuxre -luxre
-
-MANINST = $(SHELL) ../build/maninst
-EOF
-
+# Use a config file with correct values
 mv -v build/mk.config{,.orig}
-mv -v /tmp/mk.config build/
+mv -v ../file/heirloom-ng/mk.config build/
 
 # compile
-make ............................................. FAIL
-
-# FAIL Output: ########################################
-clang -z muldefs cpio.o unshrink.o explode.o expand.o inflate.o crc32.o blast.o flags.o nonpax.o version.o -Wl,-Bstatic -lz -Wl,-Bstatic -lbz2 -L../lib
-common -lcommon   -o cpio
-ld.lld: error: relocation R_X86_64_32S cannot be used against local symbol; recompile with -fPIC
->>> defined in /llvmtools/lib/libz.a(deflate.o)
->>> referenced by deflate.c
->>>               deflate.o:(deflateReset) in archive /llvmtools/lib/libz.a
+make ............................................. FAIL:
+make[1]: Entering directory '/mnt/cmlfs/sources/heirloom-ng-230120/nawk'
+yacc -d awk.g.y
+yacc: 46 shift/reduce conflicts, 178 reduce/reduce conflicts.
+mv -f y.tab.c awk.g.c
+(echo '1i'; echo '#include <inttypes.h>'; echo '.'; echo 'w';) | \
+        ed -s y.tab.h
+/llvmtools/bin/sh: 2: ed: not found
+make[1]: *** [Makefile:114: awk.g.c] Error 127
+make[1]: Leaving directory '/mnt/cmlfs/sources/heirloom-ng-230120/nawk'
+make: *** [makefile:23: all] Error 2
