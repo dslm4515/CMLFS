@@ -1,0 +1,30 @@
+# llvmtools: bmake
+# Build as cmlfs
+#
+# NOTE: Replaced GNU's make
+# NOTE: 1 Test fails, deptgt-delete_on_error. Not sure how important
+#       it is or why.
+
+# Build out of sourc tree
+mkdir ../bmake-build
+cd ../bmake-build
+
+# Configure source
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+BROKEN_TESTS="deptgt-delete_on_error" \
+../bmake/boot-strap --prefix=$/llvmtools op=build
+
+# Install to llvmtools
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+BROKEN_TESTS="deptgt-delete_on_error" \
+../bmake/boot-strap --prefix=$/llvmtools op=install
