@@ -93,3 +93,18 @@ clang++ -nostdinc++ -nostdlib++           \
 # o meson
 # o bmake/gmake
 # o ninja
+
+# To-Do:
+# o Do not install fortify-headers. Byacc will not compile:
+clang  -g -O2 -Qunused-arguments -Wno-error=implicit-function-declaration -I. -I.  -DHAVE_CONFIG_H -DYYPATCH=`cat ./VERSION`   -o yacc closure.o error.
+o graph.o lalr.o lr0.o main.o mkpar.o mstring.o output.o reader.o btyaccpar.o symtab.o verbose.o warshall.o
+ld.lld: error: undefined symbol: __builtin_va_arg_pack
+>>> referenced by stdio.h:0 (/llvmtools/usr/include/fortify/stdio.h:0)
+>>>               main.o:(open_tmpfile)
+>>> referenced by stdio.h:0 (/llvmtools/usr/include/fortify/stdio.h:0)
+>>>               output.o:(output)
+>>> referenced by reader.c:0 (/mnt/cmlfs/sources/byacc-20221229/reader.c:0)
+>>>               reader.o:(reader)
+>>> referenced 2 more times
+clang-15: error: linker command failed with exit code 1 (use -v to see invocation)
+make: *** [makefile:129: yacc] Error 1
