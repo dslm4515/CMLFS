@@ -26,3 +26,24 @@
 # All binaries should build with `/llvmtools/lib/ld-musl-$(uname -m).so.1` as
 # the dynamic [linux] loader/linker. Nothing should link to any libraries in
 # cgnutools.
+
+# Chroot environment needs:
+# o Compiler = clang
+# o Binary utilities = LLVM
+# o Shell = Dash or chimerautils
+# o core utilities (i.e. ls): heirloom-ng or chimerautils
+# o Utilities to unpack sources:
+#    - *.tar = tar
+#    - *.xz = xz-utils
+#    - *.gz = pigz or chimerautils
+#    - *.bz2 = bzip2
+# o make = GNU Make. Required for compiling the linux kernel
+# o patching = GNU patch or chimerautils
+# o Utils for finding diffs = chimerautils
+# o Search utils = chimerautils
+# o Utility to search contents of file = chimerautils
+# o macro processor = chimerautils
+# o Manipulate files = heirloom-ng(nawk) or chimerautils
+# o Stream editor = chimerautils
+# o test utilities (optional) = tcl, expect, dejagnu
+# o text editor (optional) = vim or nano or heirloom-ng
