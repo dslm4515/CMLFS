@@ -1,7 +1,8 @@
 # llvmtools: chimerautils
 # Build as cmlfs
 #
-# NOTE: Replaces coreutils, diffutils, findutils, grep, sed, ed, m4, patch, bc
+# NOTE: Replaces coreutils, diffutils, findutils, grep, sed, ed, m4, patch, bc,
+#       gzip
 # NOTE: Need musl-compat-headers, libxo, musl-fts, musl-rpmatch installed in
 #       llvmtools.
 #
@@ -18,7 +19,7 @@ meson --prefix=/llvmtools \
       --pkg-config-path /llvmtools/lib/pkgconfig \
       -Dstatic_fts=true \
       -Dstatic_rpmatch=true \
-      -Dcolor_ls=false \
+      -Dcolor_ls=true \
       -Dlibcrypto=disabled \
       -Dlibedit=disabled BUILD
 
