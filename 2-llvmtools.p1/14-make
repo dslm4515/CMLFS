@@ -1,0 +1,18 @@
+# llvmtools: make
+# Build as cmlfs
+
+# Configure source with clang
+CC=clang \
+CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE} \
+            --prefix=/llvmtools \
+            --without-guile
+
+# Build and install to llvmtools
+make && make install
