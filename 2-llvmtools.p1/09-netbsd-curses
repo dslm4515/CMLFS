@@ -11,3 +11,7 @@ make PREFIX="/llvmtools" all
 
 # Install to llvmtools
 make PREFIX="/llvmtools" install
+
+# Chimerautils may not configure with the curses library in
+# llvmtools. Create a compatibility link:
+ln -sv  libcurses.so  /llvmtools/lib/libtinfo.so
