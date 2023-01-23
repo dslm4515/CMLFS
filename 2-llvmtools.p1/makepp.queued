@@ -1,0 +1,16 @@
+# llvmtools: makepp
+# Build as cmlfs
+#
+# NOTE: Replaces GNU's make
+# https://sourceforge.net/projects/makepp/files/2.1/makepp-2.0.99.2.txz
+# 62aa55f8a20a4256f7413746724be58a  makepp-2.0.99.2.txz
+# Requires perl in llvmtools
+
+# Configure source
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --prefix=/llvmtools

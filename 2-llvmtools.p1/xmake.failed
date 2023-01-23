@@ -1,0 +1,18 @@
+# llvmtools: xmake
+# Build as cmlfs
+#
+# NOTE: Replaces GNU's make
+# https://github.com/xmake-io/xmake/archive/refs/tags/v2.7.5.tar.gz
+# ff6a4226ae4318197fd1a8939505b606  v2.7.5.tar.gz
+# REQUIRES lua
+
+# Confiure source
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --prefix=/llvmtools ................................ FAIL
+
+configure script incorrectly finds xmake.sh in source (non-existant directory)

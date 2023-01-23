@@ -1,0 +1,25 @@
+# llvmtools: readline
+# Build as CMLFS
+
+# To avoid a rare possibility of a linking bug in ldconfig
+sed -i '/MV.*old/d' Makefile.in
+sed -i '/{OLDSUFF}/c:' support/shlib-install
+
+# Configure source
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --prefix=/llvmtools    \
+            --disable-static \
+            --docdir=/llvmtools/share/doc/readline-8.1 \
+            --build=${TARGET_TUPLE} \
+            --host=${TARGET_TUPLE}
+
+# Build
+make SHLIB_LIBS="-L/llvmtools/lib -lcurses"
+
+# Install
+make SHLIB_LIBS="-L/llvmtools/lib -lcurses" install

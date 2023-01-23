@@ -1,0 +1,13 @@
+# llvmtools: pdpmake
+# Build as cmlfs
+#
+# NOTE: Replaces GNU's make
+# https://frippery.org/make/pdpmake-1.4.0.tgz
+# 4091365a3fc3c0037957debbbf66343b  pdpmake-1.4.0.tgz
+
+# compile
+CC=clang make PREFIX=/llvmtools
+
+# install to llvmtools
+make PREFIX=/llvmtools install
+ln -sv pdpmake /llvmtools/bin/make

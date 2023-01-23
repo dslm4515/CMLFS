@@ -1,0 +1,29 @@
+# llvmtools: remake
+# Build as cmlfs
+#
+# NOTE: Replaces GNU's make
+# https://github.com/rocky/remake/releases/download/remake-4.3%2Bdbg-1.6/remake-4.3+dbg-1.6.tar.gz
+# e62edfa37f40d94a87079fc566b0854d  remake-4.3+dbg-1.6.tar.gz
+# Requires readline
+
+# Configure source
+CFLAGS="-fPIC" \
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --prefix=/llvmtools --disable-nls
+
+# Compile
+make #...................................................FAIL:
+clang-15: warning: '-fuse-ld=' taking a path is deprecated; use '--ld-path=' instead [-Wfuse-ld-path]
+ld.lld: error: undefined symbol: short_command
+>>> referenced by help.c
+>>>               help.o:(dbg_cmd_help) in archive libdebugger/libdebugger.a
+>>> referenced by help.c
+>>>               help.o:(dbg_cmd_help) in archive libdebugger/libdebugger.a
+>>> referenced by help.c
+>>>               help.o:(dbg_cmd_help) in archive libdebugger/libdebugger.a
+>>> referenced 156 more times

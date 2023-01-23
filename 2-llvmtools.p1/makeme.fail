@@ -1,0 +1,18 @@
+# llvmtools: makeme
+# Build as cmlfs
+#
+# NOTE: Replaces GNU's make
+# https://github.com/embedthis/makeme/archive/refs/tags/v1.0.5.tar.gz
+# 1537d70c68573146d875600f43bfceca  v1.0.5.tar.gz
+
+ME_MPR_LOGGING=0 \
+ME_MPR_TRACING=0 \
+ME_COM_MBEDTLS=0 \
+CC=clang OS=linux \
+LD=clang LIBPATHS="-L/llvmtools/lib" \
+make boot .......................................... FAIL
+      [Link] build/linux-x64-default/bin/makeme-ejsc
+ld.lld: error: undefined reference due to --no-allow-shlib-undefined: mprSslInit
+>>> referenced by build/linux-x64-default/bin/libmpr.so
+clang-15: error: linker command failed with exit code 1 (use -v to see invocation)
+make[1]: *** [projects/makeme-linux-default.mk:796: build/linux-x64-default/bin/makeme-ejsc] Error 1
