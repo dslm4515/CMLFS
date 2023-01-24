@@ -1,0 +1,9 @@
+# llvmtools: DejaGNU
+# Build under chroot
+# Optional package used for testing final system packages
+
+# Configure source
+./configure --prefix=/llvmtools
+
+# Build and install to toolchain
+make && make install
