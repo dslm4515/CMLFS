@@ -1,0 +1,18 @@
+# llvmtools: vim
+# Build and install in chroot
+# Optional package: Text editor for convenience or trouble shooting
+
+# Modify source for vim's configuration
+echo '#define SYS_VIMRC_FILE "/llvmtools/etc/vimrc"' >> src/feature.h
+sed -i '/call/{s/split/xsplit/;s/303/492/}' src/testdir/test_recover.vim
+
+# Configure with clang
+./configure --prefix=/llvmtools  \
+            --disable-gui \
+            --without-x
+
+# Build and install to llvmtools
+make && make install
+
+# Some users use vim as vi
+ln -sv vim /llvmtools/bin/vi
