@@ -1,0 +1,12 @@
+# llvmtools: Samurai
+# Build under chroot
+# Replaced ninja
+
+# Build
+CC=clang make PREFIX=/llvmtools
+
+# Install
+make PREFIX=/llvmtools install
+
+# Add a link in case ninja is invoked
+ln -sv samu /llvmtools/bin/ninja
