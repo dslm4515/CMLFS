@@ -2,7 +2,6 @@
 # Build as cmlfs
 #
 # NOTE: Chimerautils does not provide chroot.
-# https://github.com/vincentbernat/jchroot/archive/refs/tags/v1.1.tar.gz
 
 # Build
 CC=clang make
