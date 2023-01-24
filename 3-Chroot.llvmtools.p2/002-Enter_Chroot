@@ -1,0 +1,19 @@
+# Chroot: Prepare the virtual kernel file systems
+# This section is done by root
+
+# If llvmtools has heirloom-ng:
+chroot "$CMLFS" /llvmtools/bin/env -i \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
+    /llvmtools/bin/dash
+
+# If llvmtools has chimerautils+jchroot, then create
+# a tmp directory as required by jchroot
+mkidr -v -m 1777 $CMLFS/tmp
+
+# Then enter chroot.
+/llvmtools/bin/jchroot $CMLFS \
+   -c /sources -e TERM="$TERM" \
+   -e PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
+   /llvmtools/bin/dash
