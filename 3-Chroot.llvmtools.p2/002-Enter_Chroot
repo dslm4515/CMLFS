@@ -17,3 +17,6 @@ mkidr -v -m 1777 $CMLFS/tmp
    -c /sources -e TERM="$TERM" \
    -e PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
    /llvmtools/bin/dash
+
+# Clear all environment variables inherited from host.
+/llvmtools/bin/env -i dash
