@@ -1,0 +1,20 @@
+# Final System: Kernel headers
+# Build under chroot
+#
+# NOTE: Use latest kernel version when possible
+
+# Clean source tree
+LLVM=1 LLVM_IAS=1 make CC=clang mrproper
+
+# Extract the headers
+LLVM=1 LLVM_IAS=1 \
+make CC=clang HOSTCC=clang headers
+
+# There are also some hidden files used by the kernel
+# developers and not needed by CMLFS that are removed 
+# from the intermediate directory.
+find usr/include -name '.*' -delete
+
+# Install Headers
+cp -rv usr/include/* /usr/include
+rm -v /usr/include/Makefile
