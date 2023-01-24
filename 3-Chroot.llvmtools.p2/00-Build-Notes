@@ -1,0 +1,29 @@
+# General Build Notes for chroot
+
+# llvmtools has been built with the minimal packages
+# to enter a chroot. A chroot will prevent any built
+# packages from linking back to the host's software.
+
+# After entering chroot, the first order of business
+# is to build packages for testing [if desired] and
+# any packages needed to build the stage 2 clang,
+# also known as the final system's default compiler.
+
+# Once stage 2 clang its built, all packages built
+# for the final system should use the dynamic
+# linux loader/linker in /lib/ld-$(uname -m)-musl.so.1
+
+# For those who are familiar build LFS or MLFS, the
+# build approach differs: the packages used for testing
+# just-build packages will be built under chroot and
+# can be optionally installed on the final system.
+
+# Now is a good time to add packages for a package
+# manager so that package tracking can start right
+# away as the final system is built.
+
+# This is also a good time to backup llvmtools if
+# building another system with the same CPU archecture.
+# This can be accomplished with:
+cd $CMLFS
+tar Jcpf llvmtools-$(uname -u)-backup.txz llvmtools
