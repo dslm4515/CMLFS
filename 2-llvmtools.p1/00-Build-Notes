@@ -43,7 +43,7 @@
 # o Search utils = chimerautils
 # o Utility to search contents of file = chimerautils
 # o macro processor = chimerautils
-# o Manipulate files = heirloom-ng(nawk) or chimerautils
-# o Stream editor = chimerautils
+# o Manipulate files = heirloom-ng(nawk) or Gawk (chimerautils has no awk)
+# o Stream editor = sed (chimerautils' sed is not a 1:1 drop in replacement)
 # o test utilities (optional) = tcl, expect, dejagnu
 # o text editor (optional) = vim or nano or heirloom-ng
