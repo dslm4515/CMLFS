@@ -3,10 +3,13 @@
 #
 # NOTE: Replaces coreutils, diffutils, findutils, grep, sed, ed, m4, patch, bc,
 #       gzip
-# NOTE: Need musl-compat-headers, libxo, musl-fts, musl-rpmatch installed in
-#       llvmtools.
+# NOTE: Need musl-compat-headers, libxo, musl-fts, musl-rpmatch, libressl
+#       installed in llvmtools.
 #
 # NOTE: Can be replaced by heirloom-ng to build less dependancies
+
+# Apply patch a libreSSL does not support blake2b512 for EVP:
+patch -Np1 -i ../patches/chimerautils-cmlfs/libressl-evp-noblake2b512-support.patch
 
 CC=clang CXX=clang++ \
 AR=llvm-ar \
@@ -20,7 +23,7 @@ meson --prefix=/llvmtools \
       -Dstatic_fts=true \
       -Dstatic_rpmatch=true \
       -Dcolor_ls=true \
-      -Dlibcrypto=disabled \
+      -Dlibcrypto=enabled \
       -Dlibedit=disabled BUILD
 
 # compile

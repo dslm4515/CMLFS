@@ -1,0 +1,15 @@
+--- chimerautils-f5e7bc7ba541b46ff6ff8fe73b3b27a599e898b1.orig/src/extra/md5sum/md5sum.c	Sat Oct  8 06:33:05 2022
++++ chimerautils-f5e7bc7ba541b46ff6ff8fe73b3b27a599e898b1/src/extra/md5sum/md5sum.c	Tue Jan 24 11:29:52 2023
+@@ -476,9 +476,9 @@
+ 
+     const EVP_MD *md = NULL;
+     switch (hmode) {
+-        case MODE_BLAKE2:
+-            md = EVP_blake2b512();
+-            break;
++//        case MODE_BLAKE2:
++//            md = EVP_blake2b512();
++//            break;
+         case MODE_MD5:
+             md = EVP_md5();
+             break;
