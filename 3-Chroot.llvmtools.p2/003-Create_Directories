@@ -1,0 +1,50 @@
+# Chroot: Create Directories
+# This section is done in Chroot environment
+
+# Create a standard directory tree by issuing the following commands:
+mkdir -pv /boot /home /mnt /opt /srv /var
+mkdir -pv /etc/opt /etc/sysconfig
+mkdir -pv /media/cdrom
+mkdir -v -m 0750 /root
+mkdir -v -m 1777 /tmp /var/tmp
+
+for d in bin include lib sbin src
+do
+  mkdir -pv /usr/$d
+  mkdir -pv /usr/local/$d
+done
+
+for d in color dict doc info locale man misc terminfo zoneinfo
+do
+  mkdir -pv /usr/share/$d
+  mkdir -pv /usr/local/share/$d
+done
+
+for d in 1 2 3 4 5 6 7 8
+do
+  mkdir -pv /usr/share/man/man$d
+  mkdir -pv /usr/local/share/man/man$d
+done
+
+mkdir -v  /usr/libexec
+mkdir -pv /var/log
+mkdir -pv /var/mail
+mkdir -pv /var/spool
+
+ln -sv /run /var/run
+ln -sv /run/lock /var/lock
+
+for d in opt cache lib local
+do
+  mkdir -pv /var/$d
+done
+
+for d in color misc locate
+do
+  mkdir -pv /var/lib/$d
+done
+
+ln -sv usr/bin  /bin
+ln -sv usr/sbin /sbin
+ln -sv usr/lib  /lib
+mkdir -pv /usr/lib/firmware
