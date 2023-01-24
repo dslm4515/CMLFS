@@ -1,0 +1,24 @@
+# llvmtools: libreSSL
+# Build as cmlfs
+#
+# NOTE: Required by Chimerautils.
+
+# Run autoreconf
+autoreconf -vif
+
+CC=clang CXX=clang++       \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+CFLAGS="-L/llvmtools/lib" \
+./configure \
+           --build=${TARGET_TUPLE} \
+           --host=${TARGET_TUPLE} \
+           --prefix=/llvmtools \
+           --sysconfdir=/llvmtools/etc \
+           --mandir=/llvmtools/share/man \
+           --localstatedir=/llvmtools/var
+
+make && make install
