@@ -27,6 +27,10 @@
 # the dynamic [linux] loader/linker. Nothing should link to any libraries in
 # cgnutools.
 
+# Since binutils will be replaced with LLVM's binary tools [for llvmtools],
+# There are still packages that are hard coded for GNU's binutils. Symlinks
+# will be made to force those packages to use the LLVM counterparts.
+
 # Chroot environment needs:
 # o Compiler = clang
 # o Binary utilities = LLVM
