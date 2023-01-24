@@ -1,0 +1,12 @@
+# General Build Notes for chroot
+
+# To build stage2 clang, the following need to be built first:
+# o Kernel headers (required for compiling in general)
+# o Musl Libc (built clang will expect it in /lib)
+# o Zlib-ng (compression for debug symbols)
+# o zstd (optional conpression support)
+# o net-bsd-curses (optional terminal support)
+
+# Then elftoolchain to replace GNU's Binutils
+# o python -> needs libffi
+# o lsb-tools -> python
