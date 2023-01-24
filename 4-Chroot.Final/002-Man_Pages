@@ -1,0 +1,4 @@
+# Final System: Man Pages
+# Build under chroot
+
+make install
