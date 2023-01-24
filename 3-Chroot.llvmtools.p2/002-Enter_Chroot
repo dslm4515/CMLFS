@@ -20,3 +20,7 @@ mkidr -v -m 1777 $CMLFS/tmp
 
 # Clear all environment variables inherited from host.
 /llvmtools/bin/env -i dash
+
+# Setup the environment
+export PATH=/usr/bin:/usr/sbin:/llvmtools/bin
+export TERM=screen HOME=/root
