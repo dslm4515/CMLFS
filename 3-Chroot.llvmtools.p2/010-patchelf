@@ -1,0 +1,32 @@
+# llvmtools: pathelf
+# Build and install in chroot
+
+# Setting the dynamic linker configuration option in Clang
+# will cause static executables to segfault. As an alternative
+# for setting the dynamic linker/linux-loader/interpreter, build
+# patchelf to fix binaries until stage2 clang is built.
+
+# Configure source to use LLVM's binary tools
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --prefix=/llvmtools
+
+# Build and install to llvmtools
+make && make install
+
+# Create a script to easily set the dynamic loader/linker/interpreter
+# for a binary:
+cat > /llvmtools/bin/setDL << "EOF"
+#!/bin/sh
+# Set the dynamic loader/linker/interpreter of a binary
+# USAGE: setDL a.out
+
+export PROOT=" "
+patchelf --set-interpreter ${PROOT}/lib/ld-musl-$(uname -m).so.1 $1
+EOF
+
+chmod -v +x /llvmtools/bin/setDL
