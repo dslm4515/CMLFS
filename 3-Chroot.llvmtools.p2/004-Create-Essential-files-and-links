@@ -17,6 +17,7 @@ do
 ln -sv /llvmtools/lib/libc++.$e    /usr/lib
 ln -sv /llvmtools/lib/libc++abi.$e /usr/lib
 ln -sv /llvmtools/lib/libunwind.$e /usr/lib
+ln -sv /llvmtools/lib/libatomic.$e /usr/lib
 done
 ln -sv /llvmtools/lib/libunwind.a  /usr/lib
 ln -sv dash /bin/sh
