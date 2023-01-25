@@ -16,6 +16,7 @@ d1de637e1f21ac012ed0b10081cf5901  bmake-20230101.tar.gz
 2d435573d213c422724d5c08b0066bff  byacc-20221229.tgz
 50fcafcecde5a380415b12e9c574e0b2  check-0.15.2.tar.gz
 521a03b1c36412463eda0348bebf4765  cmake-3.25.1.tar.gz
+c1d9422709c74c208bfaf7f9d707b757  compiler-rt-15.0.6.src.tar.xz
 8b1ca4e018a7dce9bb937faec6618671  coreutils-9.1.tar.xz
 f3438e672e3fa273a7dc26339dd1eed6  cpio-2.13.tar.bz2
 6800b5dbfbfdd43ac3df2ba9d31d0706  dash-0.5.12.tar.gz

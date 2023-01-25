@@ -93,7 +93,7 @@ http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/llvm-15.0.5.src.tar.xz
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/llvm-project-15.0.5.src.tar.xz
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/clang-15.0.5.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/compiler-rt-15.0.5.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/compiler-rt-15.0.6.src.tar.xz
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/libcxx-15.0.5.src.tar.xz
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/libcxxabi-15.0.5.src.tar.xz
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/libunwind-15.0.5.src.tar.xz
