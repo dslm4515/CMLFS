@@ -1,0 +1,104 @@
+# Final System: Adjust Stage1 clang
+# Perform under chroot
+
+# Create a new configuration for stage1 clang:
+touch /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
+ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang
+ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
+
+# Re-configure stage1 clang to use new sysroot (/usr) with newly built musl Libc
+echo "--sysroot=/usr "   > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
+
+# With the sysroot changed, set the order of header paths
+cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
+-nostdinc++
+-I/llvmtools/include/c++/v1
+-I/usr/include/c++/v1
+-I/llvmtools/include
+-I/usr/include
+EOF
+
+# With the sysroot changed, clang will complain about missing libatomic.
+# Add a library path, but /usr/lib should be first:
+cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
+-L/usr/lib
+-L/llvmtools/lib
+EOF
+
+# Adjust the library search path for the dynamic loader in llvmtools:
+cp -v /llvmtools/etc/ld-musl-$(uname -m).path{,.orig}
+cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
+/lib
+/usr/lib
+/llvmtools/lib
+EOF
+
+# Test stage 1 clang
+echo "int main(){}" > dummy.c
+$(uname -m)-pc-linux-musl-clang dummy.c -v -Wl,--verbose &> dummy.log
+setDL a.out
+llvm-readelf -l a.out | grep ': /lib'
+
+# Should output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
+
+# Should output:
+# ld.lld: /usr/lib/Scrt1.o
+# ld.lld: /usr/lib/crti.o
+# ld.lld: /usr/lib/crtn.o
+
+# Check if stage1 clang++ has atomics. Usually atomics are provided by gcc,
+# therefore, stage 1 clang++ should not depend on gcc. Building the native
+# final clang (stage 2) requires stage 1 clang++ to support std::atomic
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+    ++y;
+      return ++x;
+      }
+EOF
+
+$(uname -m)-pc-linux-musl-clang++  atomics-test.cpp \
+    -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+
+# Should return nothing if there are no errors.
+
+# Test if stage1 clang still supports C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+$(uname -m)-pc-linux-musl-clang++ cxx11-test.cpp \
+   -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+
+# Test code should output "C++14"
+./a.out
+
+# Once everything is working correctly, clean up
+# the test files:
+rm -v dummy.c a.out dummy.log atomics-test.cpp atomics-test.log cxx11-test.cpp cxx11-test.log
