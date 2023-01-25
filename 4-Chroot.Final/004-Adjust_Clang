@@ -102,3 +102,7 @@ grep error: cxx11-test.log
 # Once everything is working correctly, clean up
 # the test files:
 rm -v dummy.c a.out dummy.log atomics-test.cpp atomics-test.log cxx11-test.cpp cxx11-test.log
+
+Set the configured stage1 clang as default for the chroot:
+export  CC=$(uname -m)-pc-linux-musl-clang
+export CXX=$(uname -m)-pc-linux-musl-clang++
