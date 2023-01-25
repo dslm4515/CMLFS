@@ -1,0 +1,13 @@
+# Final System: Zlib-ng
+# Build under chroot
+
+# Fix configure script to call bash directly
+patch -Np1 -i ../patches/zlib-ng-mlfs/configure-fix-interpreter.patch
+
+CC=$CC ./configure  --prefix=/usr --libdir=/lib --zlib-compat
+
+# Build and Install
+make
+make install
+ln -sv libz.so.1.2.11.zlib-ng /usr/lib/libz.so.1.2
+ln -sv libz.so.1.2.11.zlib-ng /usr/lib/libz.so.1.2.11
