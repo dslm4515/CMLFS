@@ -1,0 +1,15 @@
+# Final System: Zstd
+# Build under chroot
+
+CC=$CC  CXX=$CXX make
+CC=$CC  CXX=$CXX make -C contrib/pzstd
+
+make prefix=/usr install
+make prefix=/usr -C contrib/pzstd install
+mv -v /usr/local/bin/pzstd /usr/bin/
+
+# Set the dynamic loader for each executable
+for b in pzstd zstd
+do
+  setDL /usr/bin/$b
+done
