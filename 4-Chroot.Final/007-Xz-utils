@@ -1,0 +1,15 @@
+# Final System: Xz Utils
+# Build under chroot
+
+CC=$CC CXX=$CXX \
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/xz-5.4.0
+
+make && make install
+
+# Set the dynamic loader for each executable
+for b in lzmadec lzmainfo xz xzdec
+do
+  setDL /usr/bin/$b
+done
