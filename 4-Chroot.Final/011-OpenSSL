@@ -1,0 +1,28 @@
+# Final System: OpenSSL
+# Build under chroot
+
+# NOTE: Python 3.10+ no longer supports libreSSL.
+# Build OpenSSL as an auxillary package to build Python3
+
+# Disable openssl headers installed in llvmtools.
+mv -v  /llvmtools/include/openssl{,-DISABLED}
+
+# Configure source to install in /opt/openssl
+# Fails to build if stage1 clang changes chroot
+CC=clang \
+CXX=clang++ \
+./config --prefix=/opt/openssl \
+         --openssldir=/opt/openssl/etc/ssl \
+         --libdir=lib          \
+         shared                \
+         zlib-dynamic
+
+# Compile
+make
+
+# Install to /opt
+sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
+make MANSUFFIX=ssl install
+
+# Set the dynamic loader for a executable
+setDL opt/openssl/bin/openssl

@@ -1,0 +1,10 @@
+# Final System: expat
+# Build under chroot
+
+CC=$CC CXX=$CXX        \
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/expat-2.5.0
+make && make install
+
+setDL /usr/bin/xmlwf

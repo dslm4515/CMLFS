@@ -1,0 +1,20 @@
+# Final System: pkgconf
+# Build under chroot
+
+# Configure source
+./configure --prefix=/usr              \
+            --docdir=/usr/share/doc/pkgconf-1.9.3 \
+            --sysconfdir=/etc          \
+            --localstatedir=/var       \
+            --with-pkg-config-dir=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/opt/qt5/lib/pkgconfig
+
+# Build and Install
+make &&
+make install
+
+# Compatibility for pkgconfig
+ln -s pkgconf /usr/bin/pkg-config
+
+# Set the dynamic loader for each executable
+setDL /usr/bin/bomtool
+setDL /usr/bin/pkgconf
