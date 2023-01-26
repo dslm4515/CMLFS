@@ -1,0 +1,28 @@
+# Final System: LSB Tools
+# Build under chroot
+
+# NOTE: Required by elftoolchain to configure
+# https://github.com/lfs-book/LSB-Tools/releases/download/v0.10/LSB-Tools-0.10.tar.gz
+# 846c7ee94989c7d48d386c875dbd1d9f LSB-Tools-0.10.tar.gz
+
+python3 setup.py build
+
+python3 setup.py install --optimize=1
+
+# Create the status of the new system with respect to the Linux Standards
+# Base (LSB)
+cat > /etc/lsb-release << "EOF"
+DISTRIB_ID="CMLFS"
+DISTRIB_RELEASE="3.0.0_amd64"
+DISTRIB_CODENAME="15-elftool"
+DISTRIB_DESCRIPTION="Clang-built Musl Linux From Scratch, AMD64"
+EOF
+
+# The same information but used by some graphical desktop environments:
+cat > /etc/os-release << "EOF"
+NAME="Clang-built Musl Linux From Scratch"
+VERSION="3.0.0_amd64"
+ID=clfs
+PRETTY_NAME="Clang-built Musl Linux From Scratch 3.0.0_amd64"
+VERSION_CODENAME="15-elftool"
+EOF
