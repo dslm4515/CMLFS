@@ -1,4 +1,4 @@
-# llvmtools: Python
+# Final System: Python
 # Build under chroot
 #
 # NOTE: Build python for final system AND llvmtools

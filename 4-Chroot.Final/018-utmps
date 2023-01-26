@@ -1,4 +1,4 @@
-# llvmtools: utmps
+# Final System: utmps
 # Build under chroot
 #
 # NOTE: Required for LLVM's sanitizers.
