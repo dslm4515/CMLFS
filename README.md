@@ -48,9 +48,11 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [x] Build cgnutools with mussel </li>
 <li> [ ] Build successfully on a Glibc host </li>
 <li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools </li>
-<li> [ ] Build as much of llvmtools under chroot </li>
+<li> [x] Build as much of llvmtools under chroot </li>
 <li> [ ] Build on aarch64</li>
-<li> [ ] Replace coreutils with bsdutils</li>
+<li> [ ] Replace coreutils with chimerautils OR heirloom-ng</li>
+<li> [ ] Chroot with chimerautils+jchroot</li>
+<li> [ ] Chroot with heirloom-ng</li>
 <li> [ ] Replace binutils with elftoolchain>/li>
 </ul>
 
