@@ -1,0 +1,20 @@
+# Final System: Argp standalone
+# Build under chroot
+
+# Patch source to compile under Musl libc
+patch -Np0 -i ../patches/argp-standalone-void/fix-no_use_inline.patch
+patch -Np1 -i ../patches/argp-standalone-adelie/001-throw-in-funcdef.patch
+patch -Np1 -i ../patches/argp-standalone-adelie/gnu89-inline.patch
+
+# Configure source
+CFLAGS=" -fPIC" ./configure --prefix=/usr     \
+                            --disable-static  \
+                            --sysconfdir=/etc \
+                            --localstatedir=/var
+
+# Build
+make
+
+# Install
+install -v -D -m644  libargp.a /usr/lib/
+install -v -D -m644  argp.h    /usr/include/

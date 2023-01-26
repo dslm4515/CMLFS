@@ -1,0 +1,8 @@
+# Final System: file
+# Build under chroot
+
+# Configure
+./configure --prefix=/usr
+
+# Build and install
+make && make install

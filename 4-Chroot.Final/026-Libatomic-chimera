@@ -1,0 +1,8 @@
+# Final System: Libatomic-chimera
+# Build under chroot
+
+# Build
+make PREFIX=/usr
+
+# Install
+make PREFIX=/usr install
