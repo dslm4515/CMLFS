@@ -257,3 +257,6 @@ llvm-readelf -d /usr/lib/libLLVM-15.0.6.so | grep Shared | cut -b 37-
 # If all is well, clean up
 rm -rf build dummy.* atomics-test.* cxx11-test.*
 unset CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF CFLAGS CXXFLAGS
+
+# Set the default compiler for chroot to stage2 clang:
+export CC=clang CXX=clang++
