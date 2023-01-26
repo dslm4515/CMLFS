@@ -17,3 +17,6 @@ make
 
 # Install to llvmtools
 make install
+
+# Create a compatibility link
+ln -sv flex /llvmtools/bin/lex
