@@ -260,3 +260,13 @@ unset CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF CFLAGS CXXFLAGS
 
 # Set the default compiler for chroot to stage2 clang:
 export CC=clang CXX=clang++
+
+# Set LLD as default linker
+ln -sv ld.lld /usr/bin/ld
+
+# Many packages use the name cc to call the C compiler. To
+# satisfy those packages, create a symlink
+ln -sv clang-15 /usr/bin/cc
+
+# Create a symlink required by the FHS for "historical" reasons
+ln -sv ../bin/clang-15 /usr/lib/cpp
