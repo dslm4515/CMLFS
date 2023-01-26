@@ -11,8 +11,8 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li>Default binary tools: elftoolchain</li>
 <li>Secondary C Compiler: GCC</li>
 <li>Secondary C++ compiler: GCC</li>
-<li>Secondary binary tools: GNU Binutils</li>
-<li>Secondary linker(s): bfd, gold</li>
+<li>Secondary binary tools: LLVM</li>
+<li>Secondary linker(s): NONE </li>
 <li>C++ standard library: libcxx (LLVM)</li>
 <li>C++ ABI library: libcxxabi (LLVM)</li>
 <li>Unwinding Library: libunwind (LLVM)</li>
@@ -21,7 +21,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li>TLS Implementaion: LibreSSL+OpenSSL </li>
 <li>System Shell: Bash + Dash </li>
 <li>System Gettext: gettext-tiny</li>
-<li>Userland: bsdutils </li>
+<li>Userland: Chimerautils or Heirloom-ng </li>
 </ul>
 
 ## Supported Architectures
@@ -53,7 +53,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [ ] Replace coreutils with chimerautils OR heirloom-ng</li>
 <li> [ ] Chroot with chimerautils+jchroot</li>
 <li> [ ] Chroot with heirloom-ng</li>
-<li> [ ] Replace binutils with elftoolchain>/li>
+<li> [x] Replace binutils with elftoolchain>/li>
 </ul>
 
 ## Host System Requirements
