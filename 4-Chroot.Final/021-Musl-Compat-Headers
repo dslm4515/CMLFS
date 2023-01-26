@@ -1,0 +1,9 @@
+# Final System: Musl Compatibility Headers
+# Install under chroot
+#
+# NOTE: Required by elftoolchain
+
+for h in cdefs queue tree
+do
+    install -v -D -m644 src/$h.h /usr/include/sys
+done
