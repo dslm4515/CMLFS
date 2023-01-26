@@ -12,10 +12,14 @@ echo "--sysroot=/usr "   > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 # With the sysroot changed, set the order of header paths
 cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
 -nostdinc++
--I/llvmtools/include/c++/v1
+-nostdinc
 -I/usr/include/c++/v1
--I/llvmtools/include
 -I/usr/include
+-I/llvmtools/include/c++/v1
+-I/llvmtools/include
+-I/llvmtools/lib/clang/15.0.6/include
+-L/usr/lib
+-L/llvmtools/lib
 EOF
 
 # With the sysroot changed, clang will complain about missing libatomic.
