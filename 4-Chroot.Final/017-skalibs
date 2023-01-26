@@ -1,0 +1,14 @@
+# llvmtools: skalibs
+# Build under chroot
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/usr       \
+            --build=$(uname -m)-pc-linux-musl   \
+            --enable-static     \
+            --enable-shared     \
+            --libdir=/usr/lib
+
+# Build and Install
+make
+make install

@@ -1,0 +1,29 @@
+# llvmtools: utmps
+# Build under chroot
+#
+# NOTE: Required for LLVM's sanitizers.
+
+# Set version for pkgconfig file
+cp -v ../files/utmps-alpine/*.pc /tmp/
+sed -i -e "s/@@VERSION@@/0.1.2.0/g" -- /tmp/*.pc
+
+# Configure source
+CC=$CC CXX=$CXX \
+./configure --enable-shared      \
+            --enable-static      \
+            --disable-allstatic  \
+            --enable-static-libc \
+            --libdir=/usr/lib    \
+            --with-dynlib=/usr/lib   \
+            --libexecdir="/usr/lib/utmps" \
+            --with-dynlib=/usr/lib \
+            --build=$(uname -m)-pc-linux-musl
+# Build and Install
+make
+make install
+
+# Some packages look for utmpx.h in /usr/include
+ln -sv utmps/utmpx.h /usr/include/utmpx.h
+
+# Install pkgconfig
+install -v -D -m644 /tmp/utmps.pc /usr/lib/pkgconfig
