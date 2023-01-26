@@ -1,0 +1,18 @@
+# Final System: libarchive
+# Build under root
+#
+# NOTE: Required by elftoolchain
+
+# Apply patch to enable xz multithreaded compression by default.
+patch -Np1 -i ../patches/libarchive-chimera/filter-xz-enable-threads.patch
+
+# Configure source
+CC=clang CXX=clang++ \
+PKG_CONFIG_PATH=/opt/openssl/lib/pkgconfig \
+./configure --prefix=/usr \
+            --disable-static \
+            --without-xml2 \
+            --without-nettle
+
+# Compile
+make
