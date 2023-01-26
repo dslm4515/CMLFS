@@ -2,8 +2,6 @@
 # Build under chroot
 
 # NOTE: Required by elftoolchain to configure
-# https://github.com/lfs-book/LSB-Tools/releases/download/v0.10/LSB-Tools-0.10.tar.gz
-# 846c7ee94989c7d48d386c875dbd1d9f LSB-Tools-0.10.tar.gz
 
 python3 setup.py build
 
