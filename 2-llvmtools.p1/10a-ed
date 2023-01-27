@@ -1,0 +1,16 @@
+# llvmtools: ed
+# Build as cmlfs
+
+# NOTE: Required for heirloom-ng
+# https://gnu.askapache.com/ed/ed-1.19.tar.lz
+# fa861f0c9ebb8c0e1b79fda770a73b1c  ed-1.19.tar.lz
+
+./configure CC=clang CXX=clang++ \
+            --prefix=/llvmtools
+
+# Compile
+make
+
+# Just install binary to cgnutools
+install -Dvm755 ed /llvmtools/bin/ed.gnu
+ln -sv ed.gnu /llvmtools/bin/ed

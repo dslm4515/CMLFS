@@ -3,23 +3,18 @@
 #
 # NOTE: Replaces coreutils, diffutils, findutils, grep, sed
 
-# Add a missing flag for nawk/Makefile.mk
-# b.o: b.c
-#        $(CC) $(CFLAGSS) $(CPPFLAGS) $(XO5FL) $(LARGEF) $(IWCHAR) $(ICOMMON) $(IUXRE) -c b.c -std=c99
+# Fix an issue with nawk source
+patch -Np1 -i ../patches/heirloom-ng-cmlfs/fix_nawk_main_args.patch
 
 # Use a config file with correct values
 mv -v build/mk.config{,.orig}
-mv -v ../file/heirloom-ng/mk.config build/
+cp -v ../files/heirloom-ng/mk.config build/
 
 # compile
-make ............................................. FAIL:
-make[1]: Entering directory '/mnt/cmlfs/sources/heirloom-ng-230120/nawk'
-yacc -d awk.g.y
-yacc: 46 shift/reduce conflicts, 178 reduce/reduce conflicts.
-mv -f y.tab.c awk.g.c
-(echo '1i'; echo '#include <inttypes.h>'; echo '.'; echo 'w';) | \
-        ed -s y.tab.h
-/llvmtools/bin/sh: 2: ed: not found
-make[1]: *** [Makefile:114: awk.g.c] Error 127
-make[1]: Leaving directory '/mnt/cmlfs/sources/heirloom-ng-230120/nawk'
-make: *** [makefile:23: all] Error 2
+make
+
+# install
+make install
+
+# Make links for 'missing' binary
+ln -s ../ucbbin/install /llvmtools/bin/install

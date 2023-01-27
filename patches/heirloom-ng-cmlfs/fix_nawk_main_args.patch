@@ -1,0 +1,12 @@
+diff -uNr heirloom-ng-230120.orig/nawk/main.c heirloom-ng-230120/nawk/main.c
+--- heirloom-ng-230120.orig/nawk/main.c	Fri Jan 20 03:31:26 2023
++++ heirloom-ng-230120/nawk/main.c	Thu Jan 26 23:30:04 2023
+@@ -53,7 +53,7 @@
+ 
+ extern const char badopen[];
+ 
+-int main(int argc, unsigned char *argv[], unsigned char *envp[])
++int main(int argc, char *argv[], char *envp[])
+ {
+ 	unsigned char *fs = NULL;
+ 	char label[MAXLABEL+1];	/* Space for the catalogue label */
