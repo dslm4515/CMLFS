@@ -26,4 +26,4 @@ make install
 
 # Chimerautils will not find byacc and may use host's bison.
 # Create a link:
-ln -sv yacc /llvmorg/bin/byacc
+ln -sv yacc /llvmtools/bin/byacc
