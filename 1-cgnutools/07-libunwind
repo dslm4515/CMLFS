@@ -34,11 +34,11 @@ patch -Np1 -i ../patches/llvm1506-chimera/unsupport-print-multiarch.patch
 patch -Np1 -i ../patches/llvm1506-chimera/unwind-chain-inclusion.patch
 
 # Musl doesn't support strtoll_l(), so replace it with a simple strtoll() call.
-# Apply patches to allow localization of libc++: 
+# Apply patches to allow localization of libc++:
 patch -Np1 -i ../patches/llvm1506-cmlfs/libcxx-use-strtoll_strtoul.patch
 
 # Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
-patch -Np1 -i ../remove-locale-inlines.patch
+patch -Np1 -i ../patches/llvm1506-cmlfs/remove-locale-inlines.patch
 
 export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
