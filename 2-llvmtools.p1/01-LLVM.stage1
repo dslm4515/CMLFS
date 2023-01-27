@@ -112,6 +112,10 @@ cmake --install build --strip
 # Make LLD the default linker
 ln -sv lld /llvmtools/bin/ld
 
+# Many packages use the name cc to call the C compiler. To
+# satisfy those packages, create a symlink
+ln -sv clang-15 /llvmtools/bin/cc
+
 # Clear variables used in the CMake invocation:
 unset CFLAGS CXXFLAGS CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF
 
