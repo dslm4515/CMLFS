@@ -7,7 +7,7 @@
 # o Stage0 wll install in cgnutools, but Sysroot will be llvmtools. This will
 #   avoid duplicate building of packages.
 
-# Force clang to use dynamic linux loader in /cgnutools
+# Force clang to use dynamic linux loader in /llvmtools
 patch -Np1 -i ../patches/llvm1505-cmlfs/modify-toolchain-dynamic-loader.llvmtools.patch
 patch -Np1 -i ../patches/llvm1505-cmlfs/modify-test-dynamic-loader.llvmtools.patch
 
