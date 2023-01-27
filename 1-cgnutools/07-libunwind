@@ -66,3 +66,7 @@ ninja -C build unwind
 
 # install to cgnutools
 ninja -C build install-unwind-stripped
+
+# Remove build directory & clear flags
+rm -rf build
+unset CXXFLAGS CFLAGS
