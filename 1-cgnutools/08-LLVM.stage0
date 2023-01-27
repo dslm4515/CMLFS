@@ -136,7 +136,7 @@ EOF
 ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang
 ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang++
 
-# Binaried built by stage0 clang will look for libc++ .
+# Binaries built by stage0 clang will look for libc++ .
 # Add a search path for the dynamic linker/loader in llvmtools:
 echo "/cgnutools/lib" >> /llvmtools/etc/ld-musl-$(uname -m).path
 
