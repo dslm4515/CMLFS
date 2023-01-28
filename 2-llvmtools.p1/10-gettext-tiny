@@ -14,3 +14,8 @@ make LIBINTL=MUSL prefix=/llvmtools
 
 # Install the msgfmt, msgmerge and xgettext programs to toolchain
 cp -v autopoint msgfmt msgmerge xgettext /llvmtools/bin
+
+# Create a shared library
+clang -O0 -fPIC -c -o libintl-musl.o libintl/libintl-musl.c
+clang -shared -o libintl.so libintl-musl.o
+cp -v libintl.so /llvmtools/lib/
