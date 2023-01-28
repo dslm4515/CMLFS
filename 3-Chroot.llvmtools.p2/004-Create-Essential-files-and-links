@@ -83,3 +83,11 @@ done
 chgrp -v utmp /var/log/lastlog
 chmod -v 664  /var/log/lastlog
 chmod -v 600  /var/log/btmp
+
+# Create a basic /etc/hosts file to be referenced
+# in some test suites, and in one of Perl's
+# configuration files as well:
+cat > /etc/hosts << EOF
+127.0.0.1  localhost $(hostname)
+::1        localhost
+EOF
