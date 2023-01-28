@@ -1,5 +1,5 @@
 # llvmtools: bmake
-# Build under chroot
+# Build as cmlfs
 #
 # NOTE: Required for elftoolchain
 
@@ -28,5 +28,3 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 ../bmake/boot-strap --prefix=/llvmtools op=install
-
-unset FTESTS

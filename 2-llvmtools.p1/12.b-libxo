@@ -20,10 +20,12 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 ../configure --prefix=/llvmtools \
+            --exec-prefix=/llvmtools \
             --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE}
+            --host=${TARGET_TUPLE} \
+            --with-gettext=/llvmtools
 
 # Compile
-bmake
+make
 
-bmake install
+make install

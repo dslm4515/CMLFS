@@ -7,10 +7,10 @@
 CC=clang   \
 AR=llvm-ar \
 PREFIX=/llvmtools \
-bmake
+make
 
 # Install to llvmtools
 CC=clang   \
 AR=llvm-ar \
 PREFIX=/llvmtools \
-bmake install
+make install
