@@ -15,17 +15,9 @@ echo "--sysroot=/usr "   > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
 -nostdinc++
 -nostdinc
--nostdlib
 -isystem/usr/include/c++/v1
 -L/usr/lib
-#-Wl,-rpath,/usr/lib
 -lc -lc++ -lunwind -latomic
-/usr/lib/Scrt1.o
-/usr/lib/crti.o
-/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
-/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
-/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
-/usr/lib/crtn.o
 -I/llvmtools/include/c++/v1
 -I/usr/include
 -I/llvmtools/include
