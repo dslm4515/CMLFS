@@ -1,0 +1,56 @@
+# llvmtools: elftoolchain
+# Build as cmlfs
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/elftoolchain-chimera/0001-disable-ld-build.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/allow-empty-elf-data.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/cxxfilt.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/use-symlinks.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/werror.patch
+
+# Create links as GNU binutils was expected to be present
+ln -sv llvm-ar      /llvmtools/bin/ar
+ln -sv llvm-ranlib  /llvmtools/bin/ranlib
+ln -sv llvm-strip   /llvmtools/bin/strip
+
+# No PREFIX can be set. Create a temporary directory for the install:
+mkdir /BUILD
+
+# Compile
+bmake WITH_ADDITIONAL_DOCUMENTATION=no \
+      WITH_TESTS=no \
+      MANTARGET=man \
+      MKDOC=no
+
+# Install
+bmake WITH_ADDITIONAL_DOCUMENTATION=no \
+      WITH_TESTS=no \
+      MANTARGET=man \
+      DESTDIR=/BUILD install
+
+# Install manually to llvmtools:
+for b in addr2line ar brandelf c++filt elfcopy elfdump findtextrel \
+         nm readelf size strings
+do
+  rm -v /llvmtools/bin/$b
+  install -v -m755 /BUILD/usr/bin/$b /llvmtools/bin/$b
+done
+for b in mcs objcopy strip
+do
+  rm -v /llvmtools/bin/$b
+  ln -sv elfcopy /llvmtools/bin/$b
+done
+rm -v  /llvmtools/bin/ranlib
+ln -sv ar      /llvmtools/bin/ranlib
+
+for d in include lib
+do
+  cp -rv /BUILD/usr/$d/* /llvmtools/$d/
+done
+
+# Install musl-compatible elfdefinitions.h
+rm -v /llvmtools/include/elfdefinitions.h
+cp -v ../files/elftoolchain-chimera/elfdefinitions.h /llvmtools/include/sys/
+
+# Remove temporary directory:
+rm -rf /BUILD
