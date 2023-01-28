@@ -3,17 +3,14 @@
 # Optional package used for testing final system packages
 
 # Build will expect ar. Create a link for it:
-ln -sv llvm-ar /llvmtools/bin/ar
+#ln -sv llvm-ar /llvmtools/bin/ar
 
 cd unix
 
 # Configure source
-CC=clang CXX=clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
+CC=clang \
+CXX=clang++ \
 LD=ld.lld \
-STRIP=llvm-strip \
 ./configure --prefix=/llvmtools
 
 # Build and install to toolchain

@@ -7,12 +7,9 @@
 # patchelf to fix binaries until stage2 clang is built.
 
 # Configure source to use LLVM's binary tools
-CC=clang CXX=clang++ \
-AR=llvm-ar \
-AS=llvm-as \
-RANLIB=llvm-ranlib \
+CC=clang \
+CXX=clang++ \
 LD=ld.lld \
-STRIP=llvm-strip \
 ./configure --prefix=/llvmtools
 
 # Build and install to llvmtools
