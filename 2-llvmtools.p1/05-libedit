@@ -1,10 +1,12 @@
-# llvmtools: DASH
+# llvmtools: libedit
 # Build as cmlfs
 #
-# NOTE: Replaces bash as POSIX compliant shell
+# NOTE: Optional library for dash
 
-# Generate the configure script
-autoreconf -vfi
+# Apply patch from chimera linux
+pushd src
+  patch -Np1 -i ../../patches/libedit-chimera/clang.patch
+popd
 
 # Configure source
 CC=clang CXX=clang++ \
@@ -15,14 +17,10 @@ LD=ld.lld \
 STRIP=llvm-strip \
 ./configure --prefix=/llvmtools \
             --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
-            --with-libedit
+            --host=${TARGET_TUPLE}
 
 # Compile
 make
 
 # Install to llvmtools
 make install
-
-# Create a link as dash will be used for sh
-ln -sv dash /llvmtools/bin/sh

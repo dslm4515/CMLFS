@@ -19,12 +19,13 @@ LD=ld.lld \
 STRIP=llvm-strip \
 LDFLAGS="-lterminfo " \
 meson --prefix=/llvmtools \
+      --sbindir=bin \
       --pkg-config-path /llvmtools/lib/pkgconfig \
       -Dstatic_fts=true \
       -Dstatic_rpmatch=true \
       -Dcolor_ls=true \
       -Dlibcrypto=enabled \
-      -Dlibedit=disabled BUILD
+      -Dlibedit=enabled BUILD
 
 # compile
 ninja -C BUILD
