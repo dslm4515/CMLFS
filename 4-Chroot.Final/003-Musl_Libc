@@ -33,10 +33,9 @@ patch -Np1 -i ../patches/musl-chimera/plt.patch
 patch -Np1 -i ../patches/musl-mlfs/fix-utmp-wtmp-paths.patch
 
 # Configure source
-CC=clang CXX=clang++ \
-RANLIB=llvm-ranlib \
-AS=llvm-as AR=llvm-ar \
-LD=ld.lld STRIP=llvm-strip \
+CC=clang \
+CXX=clang++ \
+LD=ld.lld \
 ./configure --prefix=/usr \
             --disable-gcc-wrapper \
             --sysconfdir=/etc \
@@ -51,7 +50,8 @@ make Install
 
 # Provide minimal libssp_nonshared.a so we don't need libssp from gcc
 clang -fpie -c ../files/musl-alpine/__stack_chk_fail_local.c -o __stack_chk_fail_local.o
-llvm-ar r libssp_nonshared.a __stack_chk_fail_local.o
+#llvm-ar r libssp_nonshared.a __stack_chk_fail_local.o
+ar r libssp_nonshared.a __stack_chk_fail_local.o
 cp -v libssp_nonshared.a /usr/lib/
 
 # Create link for ldd:
