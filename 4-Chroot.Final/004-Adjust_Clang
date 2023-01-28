@@ -45,7 +45,7 @@ EOF
 echo "int main(){}" > dummy.c
 $(uname -m)-pc-linux-musl-clang dummy.c -v -Wl,--verbose &> dummy.log
 setDL a.out
-llvm-readelf -l a.out | grep ': /lib'
+readelf -l a.out | grep ': /lib'
 
 # Should output:
 # [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
