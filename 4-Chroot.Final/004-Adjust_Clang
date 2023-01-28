@@ -18,8 +18,6 @@ cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
 -I/llvmtools/include/c++/v1
 -I/llvmtools/include
 -I/llvmtools/lib/clang/15.0.6/include
--L/usr/lib
--L/llvmtools/lib
 EOF
 
 # With the sysroot changed, clang will complain about missing libatomic.
