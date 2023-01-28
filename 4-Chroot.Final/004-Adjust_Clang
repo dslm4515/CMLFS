@@ -9,23 +9,29 @@ ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
 # Re-configure stage1 clang to use new sysroot (/usr) with newly built musl Libc
 echo "--sysroot=/usr "   > /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 
-# With the sysroot changed, set the order of header paths
+# With the sysroot changed, disable the stage1 clang's defaults. Then
+# manually set the order of header paths, library paths and default shared
+# objects that are linked:
 cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
 -nostdinc++
 -nostdinc
--I/usr/include/c++/v1
--I/usr/include
+-nostdlib
+-isystem/usr/include/c++/v1
+-L/usr/lib
+#-Wl,-rpath,/usr/lib
+-lc -lc++ -lunwind -latomic
+/usr/lib/Scrt1.o
+/usr/lib/crti.o
+/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+/usr/lib/crtn.o
 -I/llvmtools/include/c++/v1
+-I/usr/include
 -I/llvmtools/include
 -I/llvmtools/lib/clang/15.0.6/include
 EOF
 
-# With the sysroot changed, clang will complain about missing libatomic.
-# Add a library path, but /usr/lib should be first:
-cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
--L/usr/lib
--L/llvmtools/lib
-EOF
 
 # Adjust the library search path for the dynamic loader in llvmtools:
 cp -v /llvmtools/etc/ld-musl-$(uname -m).path{,.orig}
