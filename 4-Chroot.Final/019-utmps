@@ -7,8 +7,10 @@
 cp -v ../files/utmps-alpine/*.pc /tmp/
 sed -i -e "s/@@VERSION@@/0.1.2.0/g" -- /tmp/*.pc
 
-# Configure source
-CC=$CC CXX=$CXX \
+# Configure source un-configured stage1 clang.
+CC=clang CXX=clang++ \
+CFLAGS="-L/usr/lib -I/usr/include" \
+CXXFLAGS=$CFLAGS \
 ./configure --enable-shared      \
             --enable-static      \
             --disable-allstatic  \
