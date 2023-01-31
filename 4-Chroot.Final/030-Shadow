@@ -1,0 +1,64 @@
+# Final System: shadow
+# Build under chroot
+
+# Apply patches from Chimera linux
+patch -Np1 -i ../patches/shadow-chimera/usermod-move-home-errmsg.patch
+patch -Np1 -i ../patches/shadow-chimera/xstrdup.patch
+
+# Disable the installation of the groups program and its
+# man pages, as Coreutils provides a better version. Also,
+# prevent the installation of manual pages that were
+# already installed
+sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+
+# Per LFS:
+# Instead of using the default crypt method, use the more
+# secure SHA-512 method of password encryption, which also
+# allows passwords longer than 8 characters. In addition, set
+# the number of rounds to 500,000 instead of the default 5000,
+# which is much too low to prevent brute force password attacks.
+# It is also necessary to change the obsolete /var/spool/mail
+# location for user mailboxes that Shadow uses by default to
+# the /var/mail location used currently. And, remove /bin and
+# /sbin from the PATH, since they are simply symlinks to their
+# counterparts in /usr.
+sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD SHA512:' \
+    -e 's@#\(SHA_CRYPT_..._ROUNDS 5000\)@\100@'       \
+    -e 's:/var/spool/mail:/var/mail:'                 \
+    -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                \
+    -i etc/login.defs
+
+# Per https://github.com/dslm4515/Musl-LFS/issues/79,
+# Apply musl's limit to shadow for SHA_ROUNDS_MAX
+sed -i -e 's/^\(#define SHA_ROUNDS_MAX 9999999\)99/\1/' libmisc/salt.c
+
+# Configure the source to enable utmpx & use skalibs:
+touch /usr/bin/passwd
+LIBS="-lutmps -lskarnet" \
+./configure --sysconfdir=/etc \
+            --disable-static  \
+            --with-group-name-max-length=32 \
+            --enable-utmpx \
+            --bindir=/usr/bin \
+            --sbindir=/usr/sbin \
+            --libdir=/usr/lib
+
+# Build and install
+make && make install
+
+# Enable shadowed passwords and shadowed group passwords:
+pwconv
+grpconv
+
+# Set system root password
+passwd root
+
+# Create the default parameters for useradd:
+mkdir -p /etc/default
+useradd -D --gid 999
+
+# If desired, have useradd to NOT create a mailbox file for each new user:
+sed -i '/MAIL/s/yes/no/' /etc/default/useradd

@@ -1,0 +1,10 @@
+--- a/libmisc/xmalloc.c
++++ b/libmisc/xmalloc.c
+@@ -42,6 +42,7 @@
+ 
+ /*@maynotreturn@*/ /*@only@*//*@notnull@*/char *xstrdup (const char *str)
+ {
++	if (str == NULL) return NULL;
+ 	return strcpy (xmalloc (strlen (str) + 1), str);
+ }
+ 
