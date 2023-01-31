@@ -3,30 +3,12 @@
 #
 # NOTE: Build python for final system AND llvmtools
 
-# OpenSSL was installed in /opt/openssl. Add a library path
-# to stage1 clang's cfg (order of library paths matter):
-mv -v /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg{,.orig}
-cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
--nostdinc++
--I/llvmtools/include/c++/v1
--I/usr/include/c++/v1
--I/llvmtools/include
--I/usr/include
--L/usr/lib
--L/opt/openssl/lib
--L/llvmtools/lib
-EOF
-
-
 # Apply fixes to build under musl, from Alpine Linux
 patch -Np1 -i ../patches/python-alpine/musl-find_library.patch
 
 # Remove to ensure system libraries are used.
 rm -r Modules/expat
 rm -r Modules/_ctypes/{darwin,libffi}*
-
-# Disable multiarch detection in configure:
-patch -Np1 -i ../patches/python-cmlfs/disable-multiarch-detection.patch
 
 # Configure source with clang
 CC=$CC CXX=$CXX \
@@ -54,7 +36,3 @@ ln -sv python3 /usr/bin/python
 
 # Set the dynamic loader:
 setDL /usr/bin/python3.11
-
-# OpenSSL will not be the final system's SSL implementation.
-# Remove the library search path for it:
- mv -v /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg{.orig,}
