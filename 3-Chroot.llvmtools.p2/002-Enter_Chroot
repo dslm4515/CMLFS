@@ -1,26 +1,21 @@
 # Chroot: Prepare the virtual kernel file systems
 # This section is done by root
 
-# If llvmtools has heirloom-ng:
 chroot "$CMLFS" /llvmtools/bin/env -i \
     HOME=/root                  \
     TERM="$TERM"                \
+    PS1='(cmlfs chroot) \u:\w\$ ' \
     PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
-    /llvmtools/bin/dash
+    /llvmtools/bin/bash --login +h
 
-# If llvmtools has chimerautils+jchroot, then create
-# a tmp directory as required by jchroot
-mkidr -v -m 1777 $CMLFS/tmp
+# Establish variables for build
+case $(uname -m) in
+     i686)    export TUPLE="i686-pc-linux-musl"       ;;
+     x86_64)  export TUPLE="x86_64-pc-linux-musl"     ;;
+     aarch64) export TUPLE="aarch64-linux-musleabihf" ;;
+     armv7*)  export TUPLE="armv7l-linux-musleabihf"  ;;
+     armv6*)  export TUPLE="armv6l-linux-musleabihf"  ;;
+esac
 
-# Then enter chroot.
-/llvmtools/bin/jchroot $CMLFS \
-   -c /sources -e TERM="$TERM" \
-   -e PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
-   /llvmtools/bin/dash
-
-# Clear all environment variables inherited from host.
-/llvmtools/bin/env -i dash
-
-# Setup the environment
-export PATH=/usr/bin:/usr/sbin:/llvmtools/bin
-export TERM=screen HOME=/root
+# Set clang as default Compiler
+export CC=clang CXX=clang++
