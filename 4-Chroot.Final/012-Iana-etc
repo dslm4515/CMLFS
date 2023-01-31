@@ -1,0 +1,4 @@
+# Final System: Iana-etc
+# Build under chroot
+
+cp services protocols /etc
