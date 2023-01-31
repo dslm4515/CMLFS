@@ -1,13 +1,12 @@
 # Final System: M4
 # Build under chroot
 
-# Apply patches from Alpine Linux
-patch -Np1 -i ../patches/m4-alpine/fix-sysval-test.patch
-patch -Np1 -i ../patches/m4-alpine/musl-realpath.patch
-patch -Np1 -i ../patches/m4-alpine/test-posix_spawn_file_actions_addclose.patch
-
 # Configure
-./configure --prefix=/usr
+ac_cv_lib_error_at_line=no \
+ac_cv_header_sys_cdefs_h=no \
+./configure --prefix=/usr \
+            --enable-changeword \
+            --enable-threads
 
 # Build and install
 make && make install
