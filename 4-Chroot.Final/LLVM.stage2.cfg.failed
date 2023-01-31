@@ -1,0 +1,280 @@
+# Final Stage2 clang (with compiler-rt,libcxx,libcxxabi,libunwind,lld)
+# Build under chroot
+#
+# NOTE: Reuse llvm-project source tree from before
+# NOTE: Using CC=clang instead of CC=${TARGET_TUPLE}-clang
+
+# Restore default dynamic linker/loader path to /lib
+patch -Np1 -i ../patches/llvm1506-cmlfs/modify-test-dynamic-loader_restore.patch
+patch -Np1 -i ../patches/llvm1506-cmlfs/modify-toolchain-dynamic-loader_restore.patch
+
+# stage1 clang cannot find zstd headers
+ln -sv /usr/include/zstd.h  /llvmtools/include/
+
+# Set the compiler and linker flags...
+export  CT="-DCMAKE_C_COMPILER=clang "
+export CT+="-DCMAKE_CXX_COMPILER=clang++ "
+export CT+="-DCMAKE_AR=/llvmtools/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/llvmtools/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/llvmtools/bin/llvm-ranlib "
+export CT+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
+export CTG+="-DLLVM_TARGET_ARCH=host "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host;AMDGPU "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/usr "
+
+# Set options for compiler-rt
+# + avoid all the optional runtimes:
+#export  CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+#export CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+#export CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+#export CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+#export CRT+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+# + Avoid need for libexecinfo:
+export  CRT="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
+
+# Set options for clang
+# + Set the standard C++ library that clang will use to LLVM's libc++
+# + Set compiler-rt as default runtime
+export  CLG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CLG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CLG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CLG+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=ON "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+
+# Set options for libunwind
+export  CUW="-DLIBUNWIND_INSTALL_HEADERS=ON "
+export CUW+="-DLIBUNWIND_USE_COMPILER_RT=ON "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CLLVM+="-DLLVM_ENABLE_ZLIB=ON "
+export CLLVM+="-DZLIB_INCLUDE_DIR=/usr/include "
+export CLLVM+="-DZLIB_LIBRARY_RELEASE=/usr/lib/libz.so "
+export CLLVM+="-DLLVM_INSTALL_UTILS=ON "
+export CLLVM+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CLLVM+="-DLLVM_LINK_LLVM_DYLIB=ON "
+export CLLVM+="-DENABLE_LINKER_BUILD_ID=ON "
+export CLLVM+="-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON "
+export CLLVM+="-DLLVM_ENABLE_LIBCXX=ON "
+export CLLVM+="-DLLVM_ENABLE_LLD=ON "
+export CLLVM+="-DLLVM_ENABLE_ZSTD=ON "
+export CLLVM+="-DLLVM_ENABLE_TERMINFO=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF "
+export COFF+="-DLLVM_ENABLE_LIBPFM=OFF "
+
+cmake -B build -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+      -DCLANG_VENDOR="CMLFS 3.0.0" -DLLD_VENDOR="CMLFS 3.0.0" \
+      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF \
+      -DCMAKE_INSTALL_LIBDIR=lib -DCOMPILER_RT_CXX_LIBRARY=libcxx \
+      -DFFI_INCLUDE_DIR=/usr/include -DFFI_LIBRARY_DIR=/usr/lib
+
+# compile
+ninja -C build
+
+# If build fails to compile, use below to see what component failed.
+# ninja -C build $TARGET
+# Build target break down:
+builtins # 166 ............. PASS
+unwind # 19 ................ PASS
+cxxabi # 828 ............... PASS
+cxx # 89 ................... PASS
+compiler-rt # 646 .......... PASS
+llvm-tblgen # 242 .......... PASS
+lld # 1824 ................. FAIL
+libclang # 798 .............
+clang # 336 ................
+remaining targets # 678.....
+
+ERROR:
+[14/1806] Building CXX object lib/MCA/CMakeFiles/LLVMMCA.dir/HardwareUnits/RetireControlUnit.cpp.o
+ninja: job failed: cd /sources/llvm-project-15.0.6.src/build && /sources/llvm-project-15.0.6.src/build/bin/llvm-tblgen -gen-opt-parser-defs -I /sources
+/llvm-project-15.0.6.src/lld/wasm -I/sources/llvm-project-15.0.6.src/lld/include -I/sources/llvm-project-15.0.6.src/build/tools/lld/include -I/sources/
+llvm-project-15.0.6.src/build/include -I/sources/llvm-project-15.0.6.src/llvm/include /sources/llvm-project-15.0.6.src/lld/wasm/Options.td --write-if-c
+hanged -o tools/lld/wasm/Options.inc -d tools/lld/wasm/Options.inc.d
+Error relocating /sources/llvm-project-15.0.6.src/build/bin/../lib/libc++.so.1: __divti3: symbol not found
+
+# Install
+cmake --install build --strip
+
+# Fix the dynamic linker for the executables:
+for b in bugpoint c-index-test clang-15 count diagtool dsymutil FileCheck \
+         llc lld lli lli-child-target not obj2yaml opt sancov sanstats \
+         split-file UnicodeNameMappingGenerator verify-uselistorder yaml2obj \
+         yaml-bench
+do
+  setDL /usr/bin/$b
+done
+
+for b in check extdef-mapping format linker-wrapper nvlink-wrapper \
+         offload-bundler offload-packager offload-wrapper refactor \
+         rename repl scan-deps
+do
+  setDL /usr/bin/clang-$b
+done
+
+for b in ar as bcanalyzer cat cfi-verify config cov c-test cvtres cxxdump \
+         cxxfilt cxxmap debuginfod debuginfod-find diff dis dwarfdump \
+         dwarfutil dwp exegesis extract gsymutil ifs jitlink jitlink-executor \
+         libtool-darwin link lipo lto lto2 mc mca ml modextract mt nm objcopy \
+         objdump opt-report pdbutil PerfectShuffle profdata profgen rc readobj \
+         reduce remark-size-diff rtdyld sim size split stress strings \
+         symbolizer tapi-diff tblgen tli-checker undname xray
+do
+  setDL /usr/bin/llvm-$b
+done
+
+# Test stage2 Clang
+echo "int main(){}" > dummy.c
+/usr/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
+llvm-readelf -l a.out | grep ': /lib'
+# Shoud output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
+# Should output:
+# ld.lld: /lib/Scrt1.o
+# ld.lld: /lib/crti.o
+# ld.lld: /lib/crtn.o
+# * /lib is a link to /usr/lib, therefore this is acceptable
+
+# Verify that stage2 clang is searching for the correct header files:
+grep -B1 -A1 '^ /usr' dummy.log
+# It should output:
+# #include <...> search starts here:
+#  /usr/local/include
+#  /usr/include
+#  /usr/lib/clang/15.0.6/include
+# End of search list.
+
+# Make sure no libraries are loaded from llvmtools
+grep ld.lld:  dummy.log
+# ld.lld: /lib/Scrt1.o
+# ld.lld: /lib/crti.o
+# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /tmp/dummy-1f0e32.o
+# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /lib/libunwind.so
+# ld.lld: /lib/libatomic.so
+# ld.lld: /lib/libc.so
+# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /lib/libunwind.so
+# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /lib/crtn.o
+
+# Check if stage2 clang++ supports atomics.
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+/usr/bin/clang++ \
+atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# Make sure stage2 clang can find libc++ headers:
+grep -B4 -A1 '^ /usr/lib' atomics-test.log
+# It should output this order:
+# #include <...> search starts here:
+#  /usr/bin/../include/c++/v1
+#  /usr/local/include
+#  /usr/include
+#  /usr/lib/clang/15.0.6/include
+# It should be in this order
+
+# Test if stage1 clang supports C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+/usr/bin/clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# Should return nothing if there are no errors.
+
+# Execute the binary. Should output "C++14"
+./a.out
+
+# Check that libunwind, libc++abi, libc++ and LLVM.so are GCC-free:
+llvm-readelf -d /usr/lib/libunwind.so.1.0  | grep Shared | cut -b 37-
+# Shared library: [libc.so]
+llvm-readelf -d /usr/lib/libc++.so.1.0  | grep Shared | cut -b 37-
+# Shared library: [libc.so]
+llvm-readelf -d /usr/lib/libc++abi.so.1.0  | grep Shared | cut -b 37-
+# Shared library: [libc.so]
+llvm-readelf -d /usr/lib/libLLVM-15.0.6.so | grep Shared | cut -b 37-
+# Shared library: [libz.so.1]
+# Shared library: [libzstd.so.1]
+# Shared library: [libterminfo.so]
+# Shared library: [libc++.so.1]
+# Shared library: [libc.so]
+
+# If all is well, clean up
+rm -rf build dummy.* atomics-test.* cxx11-test.*
+unset CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF CFLAGS CXXFLAGS
+
+# Set the default compiler for chroot to stage2 clang:
+export CC=clang CXX=clang++
+
+# Set LLD as default linker
+ln -sv ld.lld /usr/bin/ld
+
+# Many packages use the name cc to call the C compiler. To
+# satisfy those packages, create a symlink
+ln -sv clang-15 /usr/bin/cc
+
+# Create a symlink required by the FHS for "historical" reasons
+ln -sv ../bin/clang-15 /usr/lib/cpp
