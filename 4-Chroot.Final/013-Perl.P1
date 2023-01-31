@@ -1,11 +1,11 @@
-# Final System: Perl
+# Final System: Perl Pass1
 # Build under chroot
 
 # Note: Stage1 clang with cfg will not compile Compress:RAW:Zlib module
 #       Use stage1 clang w/o cfg
 
-export BUILD_ZLIB=True
-export BUILD_BZIP2=0
+#export BUILD_ZLIB=True
+#export BUILD_BZIP2=0
 
 export  CFLAGS=" -DNO_POSIX_2008_LOCALE"
 export CFLAGS+=" -D_GNU_SOURCE"
@@ -14,12 +14,12 @@ export CFLAGS+=" -Wno-compound-token-split-by-macro"
 #patch -Np1 -i ../patches/perl-alpine/musl-locale.patch     &&
 #patch -Np1 -i ../patches/perl-alpine/musl-stack-size.patch
 
-patch -Np1 -i ../patches/perl-chimera/D-SHA-CFLAGS.diff
-patch -Np1 -i ../patches/perl-chimera/cleanup-paths.diff
-patch -Np1 -i ../patches/perl-chimera/cpan_definstalldirs.diff
-patch -Np1 -i ../patches/perl-chimera/cross-Makefile.SH.patch
-patch -Np1 -i ../patches/perl-chimera/drop_fstack_protector.diff
-patch -Np1 -i ../patches/perl-chimera/usr_local.diff
+#patch -Np1 -i ../patches/perl-chimera/D-SHA-CFLAGS.diff
+#patch -Np1 -i ../patches/perl-chimera/cleanup-paths.diff
+#patch -Np1 -i ../patches/perl-chimera/cpan_definstalldirs.diff
+#patch -Np1 -i ../patches/perl-chimera/cross-Makefile.SH.patch
+#patch -Np1 -i ../patches/perl-chimera/drop_fstack_protector.diff
+#patch -Np1 -i ../patches/perl-chimera/usr_local.diff
 
 sh Configure -des                                         \
              -Dcc=clang \
