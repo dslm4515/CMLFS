@@ -8,14 +8,11 @@
 mv -v  /llvmtools/include/openssl{,-DISABLED}
 
 # Configure source to install in /opt/openssl
-# Fails to build if stage1 clang changes chroot
-CC=clang \
-CXX=clang++ \
 ./config --prefix=/opt/openssl \
          --openssldir=/opt/openssl/etc/ssl \
          --libdir=lib          \
          shared                \
-         zlib-dynamic
+         zlib-dynamic no-ssl3-method -Wa,--noexecstack
 
 # Compile
 make
