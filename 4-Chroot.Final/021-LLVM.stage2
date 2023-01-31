@@ -14,9 +14,9 @@ ln -sv /usr/include/zstd.h  /llvmtools/include/
 # Set the compiler and linker flags...
 export  CT="-DCMAKE_C_COMPILER=clang "
 export CT+="-DCMAKE_CXX_COMPILER=clang++ "
-export CT+="-DCMAKE_AR=/llvmtools/bin/llvm-ar "
-export CT+="-DCMAKE_NM=/llvmtools/bin/llvm-nm "
-export CT+="-DCMAKE_RANLIB=/llvmtools/bin/llvm-ranlib "
+export CT+="-DCMAKE_AR=/llvmtools/bin/ar "
+export CT+="-DCMAKE_NM=/llvmtools/bin/nm "
+export CT+="-DCMAKE_RANLIB=/llvmtools/bin/ranlib "
 export CT+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
 
 # Set the tuples & build target ...
