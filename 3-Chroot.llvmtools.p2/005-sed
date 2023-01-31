@@ -1,6 +1,8 @@
 # llvmtools: Sed
 # Build and install in chroot
 
+# NOTE: Replacing Sed provided by chimerautils/heirloom-ng. Some
+#       sed commands fail if not using GNU's sed
 # Configure source to use LLVM's binary tools
 CC=clang CXX=clang++ \
 AR=llvm-ar \
