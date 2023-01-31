@@ -1,0 +1,21 @@
+# Final System: GDBM
+# Build under chroot
+
+# Configure source
+CC=$CC CXX=$CXX \
+LD=ld.lld \
+./configure --prefix=/usr \
+            --disable-static \
+            --enable-libgdbm-compat
+
+# Compile
+make
+
+# Install
+make install
+
+# Set the dynamic loader for each executable
+for b in _dump _load tool
+do
+  setDL /usr/bin/gdbm$b
+done
