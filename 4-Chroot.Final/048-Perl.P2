@@ -12,7 +12,6 @@ export CFLAGS+=" -D_GNU_SOURCE"
 export CFLAGS+=" -Wno-compound-token-split-by-macro"
 
 patch -Np1 -i ../patches/perl-chimera/D-SHA-CFLAGS.diff
-patch -Np1 -i ../patches/perl-chimera/cleanup-paths.diff
 patch -Np1 -i ../patches/perl-chimera/cpan_definstalldirs.diff
 patch -Np1 -i ../patches/perl-chimera/cross-Makefile.SH.patch
 patch -Np1 -i ../patches/perl-chimera/drop_fstack_protector.diff
