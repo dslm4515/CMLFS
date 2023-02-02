@@ -1,0 +1,23 @@
+# Final System: Kmod
+# Build under chroot
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/kmod-chimera/stdout.patch
+patch -Np1 -i ../patches/kmod-chimera/strndupa.patch
+
+CC=clang CXX=clang++               \
+./configure --prefix=/usr          \
+            --bindir=/usr/bin          \
+            --sysconfdir=/etc      \
+            --with-rootlibdir=/usr/lib \
+            --with-xz              \
+            --with-zlib \
+            --with-zstd
+
+make && make install
+
+for target in depmod insmod lsmod modinfo modprobe rmmod; do
+  ln -sfv ../bin/kmod /usr/sbin/$target
+done
+
+ln -sfv kmod /usr/bin/lsmod
