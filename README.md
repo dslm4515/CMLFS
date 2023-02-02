@@ -1,6 +1,6 @@
 # CMLFS - Clang Musl Linux From Scratch
 
-CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on [Linux From Scratch](www.linuxfromscratch.org) and my previous work [MLFS](https://github.com/dslm4515/Musl-LFS).
+CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on [Linux From Scratch](www.linuxfromscratch.org), my previous work [MLFS](https://github.com/dslm4515/Musl-LFS), and especially [Chimera Linux](https://github.com/chimera-linux/cports)
 
 ## Specification
 <ul>
