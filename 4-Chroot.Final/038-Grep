@@ -1,0 +1,9 @@
+# Final System: grep
+# Build under chroot
+
+CC=clang && CXX=clang++ \
+./configure --prefix=/usr \
+            --bindir=/usr/bin \
+            --sysconfdir=/etc
+
+make && make install
