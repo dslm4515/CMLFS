@@ -1,0 +1,32 @@
+# Final system: Libtool Pass2
+# Build under chroot
+
+# Applying patches requires autotools
+
+# Apply patches from Chimera Linux:
+patch -Np1 -i ../patches/libtool-chimera/0001-trailingslash.patch
+patch -Np1 -i ../patches/libtool-chimera/0002-rename-with-sysroot.patch
+patch -Np1 -i ../patches/libtool-chimera/0004-use-sysroot-in-libpath.patch
+patch -Np1 -i ../patches/libtool-chimera/cxx-clang-runtimes.patch
+patch -Np1 -i ../patches/libtool-chimera/skip-failing-tests.patch
+
+# Source was patched, triggers autotools to run.
+# Try to prevent 'missing' script from running (requires help2man)
+./bootstrap --force
+for t in aclocal.m4 Makefile.am Makefile.in
+do
+  touch $t
+  touch libltdl/$t
+done
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+# Create a link to let build compile
+ln -sv true /llvmtools/bin/help2man
+
+# Compile & install
+make && make install
+
+# Remove link.
+rm -v /llvmtools/bin/help2man
