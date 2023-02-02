@@ -1,0 +1,12 @@
+# Final System: musl fts
+# Build under chroot
+
+# Compile
+CC=clang   \
+PREFIX=/usr \
+make
+
+# Install
+CC=clang   \
+PREFIX=/usr \
+make install
