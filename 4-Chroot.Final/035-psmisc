@@ -1,0 +1,12 @@
+# Final system psmisc
+# Build under chroot
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr        \
+            --sysconfdir=/etc     \
+            --localstatedir=/var  \
+            --disable-selinux     \
+            --enable-harden-flags \
+            --enable-ipv6
+
+make && make install
