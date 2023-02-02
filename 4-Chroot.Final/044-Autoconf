@@ -1,0 +1,7 @@
+# Final System: Autoconf
+# Build under chroot
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+make && make install
