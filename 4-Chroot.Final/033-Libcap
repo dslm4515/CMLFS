@@ -1,0 +1,19 @@
+# Final System: Libcap
+# Build under chroot
+
+# Apply patches from Chimera Linux:
+patch -Np1 -i ../patches/libcap-chimera/no-bash.patch
+patch -Np1 -i ../patches/libcap-chimera/remove-so-main.patch
+
+# Prevent static libraries from being installed:
+sed -i '/install -m.*STA/d' libcap/Makefile
+
+make prefix=/usr lib=lib CC=clang OBJCOPY=llvm-objcopy RANLIB=llvm-ranlib
+
+make prefix=/usr \
+     lib=lib \
+     exec_prefix=/usr \
+     RAISE_SETFCAP=no \
+     PKGCONFIGDIR=/usr/lib/pkgconfig \
+     SBINDIR=/usr/bin \
+     LIBDIR=/usr/lib install
