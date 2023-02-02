@@ -1,0 +1,11 @@
+# Final System: attr
+# Build under chroot
+
+CC=clang CXX=clang++          \
+./configure --prefix=/usr     \
+            --bindir=/usr/bin     \
+            --disable-static  \
+            --sysconfdir=/etc \
+            --docdir=/usr/share/doc/attr-2.5.1
+
+make && make install

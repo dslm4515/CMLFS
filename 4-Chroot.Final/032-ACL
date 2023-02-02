@@ -1,0 +1,11 @@
+# Final System: ACL
+# Build under chroot
+
+CC=clang CXX=clang++              \
+./configure --prefix=/usr         \
+            --bindir=/usr/bin         \
+            --disable-static      \
+            --libexecdir=/usr/lib \
+            --docdir=/usr/share/doc/acl-2.3.1
+
+make && make install
