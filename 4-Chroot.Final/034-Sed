@@ -1,0 +1,12 @@
+# Final System: Sed
+# Build under root
+
+CC=clang CXX=clang++  \
+./configure --prefix=/usr \
+            --bindir=/usr/bin \
+            --enable-acl \
+            gl_cv_func_working_acl_get_file=yes \
+            ac_cv_lib_error_at_line=no \
+            ac_cv_header_sys_cdefs_h=no
+
+make && make install
