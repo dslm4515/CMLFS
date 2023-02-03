@@ -1,0 +1,22 @@
+# Final System: Eudev
+# Build under chroot
+
+# Re-generate the configure script
+autoreconf -fiv
+
+# Fix the location of udev rules in the .pc file:
+sed -i '/udevdir/a udev_dir=${udevdir}' src/udev/udev.pc.in
+
+CC=clang CXX=clang++                \
+./configure --prefix=/usr           \
+            --bindir=/usr/sbin      \
+            --sysconfdir=/etc       \
+            --enable-manpages       \
+            --disable-static
+
+make && make install
+
+# Install some useful udev rules
+cd /sources
+cp -r files/udev-mlfs-20191014 ./
+make -f udev-mlfs-20191014/Makefile.mlfs install
