@@ -1,0 +1,50 @@
+# Final System: Vim
+# Build under chroot
+
+# Change the default location of the vimrc
+# configuration file to /etc
+echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+
+# Configure with clang
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+# Compile and install
+make && make install
+
+# Many users reflexively type vi instead of vim. To allow
+# execution of vim when users habitually enter vi, create a
+# symlink for both the binary and the man page in the
+# provided languages:
+ln -sv vim /usr/bin/vi
+for L in  /usr/share/man/{,*/}man1/vim.1; do
+    ln -sv vim.1 $(dirname $L)/vi.1
+done
+ln -sv ../vim/vim90/doc /usr/share/doc/vim-9.0.1060
+
+# Gvim was not compiled. Remove desktop & icon files for it:
+rm -v   /usr/share/applications/gvim.desktop
+for s in 16x16 32x32
+do
+ rm -v  /usr/share/icons/locolor/$s/apps/gvim.png
+done
+rm -v  /usr/share/icons/hiolor/48x48/apps/gvim.png
+
+# Create a default vim configuration file by running the following:
+cat > /etc/vimrc << "EOF"
+" Begin /etc/vimrc
+
+" Ensure defaults are set before customizing settings, not after
+source $VIMRUNTIME/defaults.vim
+let skip_defaults_vim=1
+
+set nocompatible
+set backspace=2
+set mouse=
+syntax on
+if (&term == "xterm") || (&term == "putty")
+  set background=dark
+endif
+
+" End /etc/vimrc
+EOF
