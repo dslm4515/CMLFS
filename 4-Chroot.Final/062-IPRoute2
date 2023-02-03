@@ -1,0 +1,11 @@
+# Final System: IPRoute2
+# Build under chroot
+
+# The arpd program included in this package will not
+# be built since it depends on Berkeley DB.
+sed -i /ARPD/d Makefile
+rm -fv man/man8/arpd.8
+
+make CC=clang NETNS_RUN_DIR=/run/netns
+make DOCDIR=/usr/share/doc/iproute2-6.1.0 \
+     SBINDIR=/usr/sbin install
