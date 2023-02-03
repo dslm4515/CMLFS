@@ -1,0 +1,41 @@
+# Final System: KBD
+# Build under chroot
+
+# The behavior of the backspace and delete keys is not
+# consistent across the keymaps in the Kbd package.
+# Apply patch:
+patch -Np1 -i ../patches/kbd-chimera/kbd-2.0.2-backspace-1.patch
+
+# Adjust source BSD style of install
+patch -Np1 -i ../patches/kbd-chimera/bsd_install.patch
+
+# Fix missing include
+patch -Np1 -i ../patches/kbd-chimera/fix-euro-symbol-es-keymap.patch
+
+# rename conflicting keymaps
+mv -v data/keymaps/i386/qwerty/cz{.map,-qwerty.map}
+mv -v data/keymaps/i386/fgGIod/trf{.map,-fgGIod.map}
+
+# Apply fixes from fedora
+# 7-bit maps are obsolete; so are non-euro maps
+cp -v data/keymaps/i386/qwerty/pt{-latin9.map,.map}
+cp -v data/keymaps/i386/qwerty/{sv-latin1.map,se-latin1.map}
+mv -v data/keymaps/i386/azerty/fr{.map,-old.map}
+cp -v data/keymaps/i386/azerty/fr{-latin9.map,.map}
+# legacy alias
+cp -v data/keymaps/i386/azerty/fr-{latin9.map,latin0.map}
+
+# Configure
+CC=clang CXX=clang++ \
+./configure --prefix=/usr \
+            --disable-vlock \
+            --disable-tests
+
+# Build and install
+make && make install
+
+# Remove keymaps for sun, amiga and atari.
+for f in sun amiga atari; do
+  rm -vrf /usr/share/keymaps/${f}
+done
+rm -rf /usr/share/keymaps/i386/olpc
