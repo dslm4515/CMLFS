@@ -1,4 +1,4 @@
-# /etc/udev/rules.d/55-lfs.rules: Rule definitions for LFS.
+# /etc/udev/rules.d/55-mlfs.rules: Rule definitions for MLFS.
 
 # Core kernel devices
 

@@ -1,4 +1,4 @@
-# Custom systemd Makefile that installs udev rules for LFS
+# Custom systemd Makefile that installs udev rules for MLFS
 # Bruce Dubbs 2014-04-02
 
 # vim: tabstop=3
@@ -15,7 +15,7 @@ endif
 all:
 	@echo "Use the install target"
 
-install: 
+install:
 	@mkdir -pv $(DESTDIR)/lib/udev/rules.d \
               $(DESTDIR)/etc/udev/rules.d \
               $(DESTDIR)/usr/share/doc/udev-$(VERSION)/mlfs
