@@ -1,0 +1,10 @@
+# Final System: check
+# Build under chroot
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr --disable-static &&
+
+make && make install
+
+# Fix a script
+sed -i '1 s/llvmtools/usr/' /usr/bin/checkmk

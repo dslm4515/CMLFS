@@ -1,0 +1,9 @@
+# Final System: GNU make
+# Build under chroot
+
+# NOTE: Required for compiling the Linux kernel
+
+CC=clang && CXX=clang++ \
+./configure --prefix=/usr
+
+make && make install

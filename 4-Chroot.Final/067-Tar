@@ -1,0 +1,10 @@
+# Final System: GNU Tar
+# Build under chroot
+
+CC=clang CXX=clang++     \
+FORCE_UNSAFE_CONFIGURE=1  \
+gl_cv_struct_dirent_d_ino=yes \
+./configure --prefix=/usr  \
+            --bindir=/usr/bin
+
+make && make install
