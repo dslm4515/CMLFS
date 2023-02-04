@@ -1,0 +1,28 @@
+# Final System: Procps-ng
+# Build under chroot
+
+# Update configure script
+autoreconf -fiv
+
+# Apply patch for utmpx support
+patch -Np1 -i ../patches/procps-mlfs/use_utmpx.patch
+
+# Apply patch for netbsd-curses compatibility:
+patch -Np1 -i ../patches/procps-mlfs/netbsd-curses-compat.patch
+
+LIBS="$LIBS -lutmps -lskarnet"   \
+ac_cv_func_malloc_0_nonnull=yes  \
+ac_cv_func_realloc_0_nonnull=yes \
+./configure --prefix=/usr                            \
+            --exec-prefix=                           \
+            --sbindir=/usr/sbin                      \
+            --bindir=/usr/bin                        \
+            --libdir=/usr/lib                        \
+            --docdir=/usr/share/doc/procps-ng-4.0.2  \
+            --disable-static                         \
+            --disable-kill                           \
+            --without-systemd                        \
+            --disable-modern-top                     \
+            --enable-watch8bit
+
+make && make install
