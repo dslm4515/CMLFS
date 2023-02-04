@@ -1,0 +1,18 @@
+# Final System: S6
+# Build under chroot
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/usr        \
+            --enable-shared      \
+            --enable-static      \
+            --enable-allstatic   \
+            --enable-static-libc \
+            --libdir=/usr/lib    \
+            --libexecdir=/usr/lib/s6 \
+            --with-dynlib=/usr/lib
+# Build
+make
+
+# Install
+make install
