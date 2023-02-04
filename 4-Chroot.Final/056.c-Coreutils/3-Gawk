@@ -1,0 +1,10 @@
+# Final System: GNU Gawk
+# Build under chroot
+
+# Ensure some unneeded files are not installed
+sed -i 's/extras//' Makefile.in
+
+CC=clang CXX=xlang++ \
+./configure --prefix=/usr
+
+make && make install

@@ -1,0 +1,9 @@
+# Final System: GNU Gzip
+# Build under chroot
+
+CC=clang CXX=clang++ \
+DEFS=NO_ASM gl_cv_func_fflush_stdin=yes \
+./configure --prefix=/usr
+
+# Build and install
+make && make install

@@ -1,0 +1,7 @@
+# Final System: GNU patch
+# Build under chroot
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+make && make install

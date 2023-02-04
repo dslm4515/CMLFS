@@ -1,0 +1,9 @@
+# Final System: GNU Diffutils
+# Build under chroot
+
+# Configure
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+# Compile and install
+make && make install
