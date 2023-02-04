@@ -1,0 +1,29 @@
+# Final System: E2fsprogs
+# Build under chroot
+
+# Build in a dedicated directory
+mkdir -v build && cd build
+
+# Configure
+CC=clang CXX=clang++                 \
+e2fsprogs_cv_struct_st_flags=no      \
+../configure --prefix=/usr           \
+             --bindir=/usr/bin       \
+             --libdir=/usr/lib   \
+             --sbindir=/usr/sbin \
+             --with-root-prefix=/usr   \
+             --enable-elf-shlibs     \
+             --disable-libblkid      \
+             --disable-libuuid       \
+             --disable-uuidd         \
+             --disable-fsck \
+             --enable-e2initrd-helper \
+             --disable-rpath
+# Compile
+make
+
+# Install
+make install && make install-libs
+chmod -v u+w /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+gunzip -v /usr/share/info/libext2fs.info.gz
+install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info
