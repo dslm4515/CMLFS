@@ -1,0 +1,15 @@
+# Final System: Samurai
+# Build under chroot
+
+# NOTE: A simple alternative to ninja. Number of
+#       compile jobs cannot be manually set.
+
+# Build
+CC=clang make PREFIX=/usr
+
+# Install
+make PREFIX=/usr install
+
+# If ninja is not built OR ninja will not be the default,
+# create the link:
+ln -sv samu /usr/bin/ninja

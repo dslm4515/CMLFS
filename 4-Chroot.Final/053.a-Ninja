@@ -1,0 +1,25 @@
+# Final System: Ninja
+# Build under chroot
+
+# NOTE: The number of compile jobs can be set for ninja. This cannot
+#       be done to the alternative, samurai.
+
+# If desired, add the capability to use the
+# environment variable NINJAJOBS
+sed -i '/int Guess/a \
+  int   j = 0;\
+  char* jobs = getenv( "NINJAJOBS" );\
+  if ( jobs != NULL ) j = atoi( jobs );\
+  if ( j > 0 ) return j;\
+' src/ninja.cc
+
+
+# Now configure and build
+CC=clang CXX=clang++ \
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=MinSizeRel
+make -C build
+
+# Install
+install -vm755 build/ninja /usr/bin/
+install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja
+install -vDm644 misc/zsh-completion /usr/share/zsh/site-functions/_ninja
