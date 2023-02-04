@@ -1,0 +1,7 @@
+# Final System: Less
+# Build under chroot
+
+CC=clang CXX=clang++ \
+./configure --prefix=/usr --sysconfdir=/etc
+
+make && make install
