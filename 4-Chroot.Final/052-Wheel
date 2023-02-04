@@ -1,0 +1,8 @@
+# Final System: Wheel
+# Builder under chroot
+
+# Configure
+PYTHONPATH=src pip3 wheel -w dist --no-build-isolation --no-deps $PWD
+
+# Install
+pip3 install --no-index --find-links=dist wheel
