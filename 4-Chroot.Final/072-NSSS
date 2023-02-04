@@ -1,0 +1,22 @@
+# Final System: NSSS
+# Build under chroot
+
+# NOTE: Optional package to add nss support
+
+# Configure
+CC=clang CXX=clang++ \
+./configure --prefix=/usr              \
+            --exec-prefix=/usr         \
+            --with-dynlib=/usr/lib     \
+            --libexecdir=/usr/lib/nsss \
+            --libdir=/usr/lib          \
+            --with-dynlib=/usr/lib     \
+            --enable-shared \
+            --enable-static \
+            --disable-allstatic
+
+# Compile
+make
+
+# Install
+make install
