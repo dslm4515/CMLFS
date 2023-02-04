@@ -1,0 +1,17 @@
+# Final System: Execline
+# Build under chroot
+
+# Configure with nsss, unless not installed
+CC=clang CXX=clang++ \
+./configure --prefix=/usr         \
+            --enable-shared       \
+            --enable-static       \
+            --enable-allstatic    \
+            --enable-static-libc  \
+            --libdir=/usr/lib     \
+            --with-dynlib=/usr/lib    \
+            --enable-pedantic-posix \
+            --enable-nsss
+
+make
+make install
