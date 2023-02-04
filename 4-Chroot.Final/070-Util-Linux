@@ -1,0 +1,47 @@
+# Final System: Util-Linux
+# Build under chroot
+
+# Apply patch from Glucus to fix utmp paths
+patch -Np0 -i ../patches/util-linux-glaucus/0001-fix-utmp-file-path.patch
+
+# Configure source. Disable more, as it does not support netbsd-curses
+CC=clang CXX=clang++    \
+LIBS="-lutmps -lskarnet" \
+./configure ADJTIME_PATH=/var/lib/hwclock/adjtime     \
+            --bindir=/usr/bin    \
+            --libdir=/usr/lib    \
+            --sbindir=/usr/sbin  \
+            --disable-chfn-chsh  \
+            --disable-login      \
+            --disable-nologin    \
+            --disable-su         \
+            --disable-setpriv    \
+            --disable-runuser    \
+            --disable-pylibmount \
+            --disable-static     \
+            --without-python     \
+            --without-systemd    \
+            --without-systemdsystemunitdir \
+            --docdir=/usr/share/doc/util-linux-2.38.1 \
+            --disable-more
+
+# Compile
+make
+
+# Install to a temporary directory
+make DESTDIR=$PWD/DEST install
+
+# If Chimerautils were installed to replace coreutils, some utilities
+# conflict with chimerautils
+for b in col colrm column hexdump look renice rev
+do
+  rm -v DEST/usr/bin/$b
+  rm -v DEST/usr/share/man/man1/$b.1
+  rm -v DEST/usr/share/man/man8/$b.8
+  rm -v DEST/usr/share/bash-completion/completions/$b
+done
+mv -v DEST/usr/bin/{,util-linux-}getopt
+mv -v DEST/usr/share/man/man1/{,util-linux-}getopt.1
+
+# Now install:
+cp -rav DEST/* /
