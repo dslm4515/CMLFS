@@ -1,0 +1,20 @@
+# Final System: Dash
+# Build under chroot
+
+# NOTE: Dash will be the sh shell used by the bootscripts.
+
+# Generate the configure script
+autoreconf -vfi
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+# Compile
+make
+
+# Install
+make install
+
+# Create a link as dash will be used for sh
+ln -sv dash /usr/bin/sh
