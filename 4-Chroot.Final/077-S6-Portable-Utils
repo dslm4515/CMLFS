@@ -1,0 +1,13 @@
+# Final System: S6-Portable-Utils
+# Build under chroot
+
+CC=clang CXx=clang++ \
+./configure --enable-shared         \
+            --enable-static         \
+            --enable-allstatic      \
+            --enable-static-libc    \
+            --libdir=/usr/lib       \
+            --libexecdir=/usr/lib/s6-portable-utils \
+            --with-dynlib=/usr/lib
+make
+make install
