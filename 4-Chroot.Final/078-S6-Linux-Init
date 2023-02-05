@@ -1,0 +1,34 @@
+# Final System: S6-Linux-init
+# Build under chroot
+
+# Configure with nsss. If nsss was not installed,
+# omit --enable-nsss
+CC=clang CXX=clang++ \
+./configure --enable-shared      \
+            --enable-static      \
+            --enable-allstatic   \
+            --enable-static-libc \
+            --libdir=/usr/lib \
+            --libexecdir=/usr/lib/s6-linux-init \
+            --with-dynlib=/usr/lib   \
+            --enable-utmps \
+            --enable-nsss
+
+# Compile
+make
+
+# Install
+make install
+
+# Configure scripts to match bootscripts:
+cat >> /etc/s6-linux-init/skel/rc.init << "EOF"
+s6-rc-init -c /etc/s6/db/current /run/service
+exec /etc/s6/base/scripts/runlevel "$rl"
+EOF
+
+cat >> /etc/s6-linux-init/skel/rc.shutdown << "EOF"
+exec s6-rc -v2 -bDa change
+EOF
+
+cat >> /etc/s6-linux-init/skel/runlevel << "EOF"
+exec s
