@@ -1,0 +1,53 @@
+# Final System: S6 Bootscripts
+# Source: https://github.com/dslm4515/MLFS-S6-Bootscripts
+# Branch: sh-shell
+# This section is done in Chroot environment
+
+# Copy boot services sources directory to /etc
+cp -ar s6 /etc/
+
+# Create directory to store compiled databases
+mkdir -v /etc/s6/db
+
+# Copy scripts to bring NIC's up and down
+install -v -m755 if* /usr/sbin/
+mkdir -pv /usr/lib/services
+install -v -m755 net-services/* /usr/lib/services/
+
+# For logging services, create the log user as root:
+groupadd -g 983 s6log &&
+useradd -c "S6-Log User" -d / \
+        -u 983 -g s6log -s /usr/bin/false s6log
+
+# For utmps, create a utmp user:
+useradd -c "utmps user" -d /run/utmps \
+        -u 984 -g utmp -s /bin/false utmp
+
+# Make sure the directory for wtmp is owned by utmp user:
+mkdir -pv /var/log/utmps
+mv -v /var/log/wtmp /var/log/utmps/
+chown -vR utmp:utmp /var/log/utmps
+ln -sv utmps/wtmp /var/log/wtmp
+
+# Compile a basic database for boot
+s6-rc-compile /etc/s6/db/basic /etc/s6/dbsrc
+ln -sv /etc/s6/db/basic /etc/s6/db/current
+
+# Re-initialize s6 init base.
+# ** Must be done anytime s6 init base is unpacked or copied. **
+rm -rf /etc/s6/base
+s6-linux-init-maker -1 -f /etc/s6-linux-init/skel \
+                    -p "/bin:/sbin:/usr/bin:/usr/sbin"    \
+                    -D default -G "/sbin/agetty -L -8 tty1 115200" \
+                    -c /etc/s6/base -t 2 -L -u root -U utmp /etc/s6/base
+
+# Copy or link necessary scripts to boot, reboot, and poweroff system
+ln -sv /etc/s6/base/bin/halt       /usr/sbin/
+ln -sv /etc/s6/base/bin/poweroff   /usr/sbin/
+ln -sv /etc/s6/base/bin/reboot     /usr/sbin/
+ln -sv /etc/s6/base/bin/shutdown   /usr/sbin/
+cp -v  /etc/s6/base/bin/init       /usr/sbin/
+
+# Create the safemode init script:
+cp -v  /etc/s6/base/bin/init       /usr/sbin/init-safemode
+sed -i 's/default/safemode/g'      /usr/sbin/init-safemode
