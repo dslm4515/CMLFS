@@ -31,4 +31,5 @@ exec s6-rc -v2 -bDa change
 EOF
 
 cat >> /etc/s6-linux-init/skel/runlevel << "EOF"
-exec s
+exec s6-rc -v1 -up change "$1"
+EOF
