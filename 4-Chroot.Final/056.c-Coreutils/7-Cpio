@@ -1,0 +1,23 @@
+# Final system: Cpio
+# Build under chroot
+
+# NOTE: Optional package for building initramfs
+
+# Recreate configure
+autoreconf -ifv
+
+export CFLAGS="-fcommon"
+sed -i '/The name/,+2 d' src/global.c
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/usr \
+            --bindir=/usr/bin \
+            --enable-mt   \
+            --with-rmt=/usr/libexec/rmt
+
+# Build and install
+make
+make install
+
+unset CFLAGS
