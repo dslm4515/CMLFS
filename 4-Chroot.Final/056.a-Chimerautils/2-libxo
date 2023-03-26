@@ -1,0 +1,22 @@
+# Final System: libxo
+# Build under chroot
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/libxo-chimera/portability.patch
+patch -Np1 -i ../patches/libxo-chimera/bmake.patch
+patch -Np1 -i ../patches/libxo-chimera/gettext.patch
+
+# Generate the configure script
+sh bin/setup.sh
+
+# Configure source
+cd build
+CC=clang CXX=clang++ \
+../configure --prefix=/usr \
+             --with-gettext=/usr
+
+# Compile
+make
+
+# Install
+make install
