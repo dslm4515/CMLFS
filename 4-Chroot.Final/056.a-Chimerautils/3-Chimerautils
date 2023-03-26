@@ -1,0 +1,24 @@
+# Final System: Chimerautils
+# Build under chroot
+
+# NOTE: Requires libxo and musl-rpmatch
+# NOTE: Replaces Coreutils or heirloom-ng
+
+# Apply patch a libreSSL does not support blake2b512 for EVP:
+patch -Np1 -i ../patches/chimerautils-cmlfs/libressl-evp-noblake2b512-support.patch
+
+CC=clang CXX=clang++ \
+LDFLAGS="-lterminfo " \
+meson --prefix=/usr \
+      --sbindir=/usr/sbin \
+      -Dstatic_fts=true \
+      -Dstatic_rpmatch=true \
+      -Dcolor_ls=true \
+      -Dlibcrypto=enabled \
+      -Dlibedit=disabled BUILD
+
+# compile
+ninja -C BUILD
+
+# Install
+ninja -C BUILD install
