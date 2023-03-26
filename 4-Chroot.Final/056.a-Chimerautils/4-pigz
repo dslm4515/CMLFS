@@ -1,0 +1,14 @@
+# Final System: Pigz
+# Build under chroot
+
+# NOTE: Replaces GNU's gzip
+
+# Makefile is hard-coded to use gcc. Fix it:
+sed -i '1d' Makefile
+
+# Compile
+CC=clang make
+
+# Install
+install -Dvm755 pigz /usr/bin/
+ln -sv pigz /usr/bin/unpigz
