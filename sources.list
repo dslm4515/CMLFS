@@ -88,7 +88,7 @@ ftp://mama.indstate.edu/linux/tree/tree-1.8.0.tgz
 https://downloads.sourceforge.net/tcl/tcl8.6.10-src.tar.gz
 https://sourceforge.net/projects/expect/files/Expect/5.45.3/expect5.45.3.tar.gz
 http://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.2.tar.gz
-https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.12.10.tar.xz 
+https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz 
 http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2 
 https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-12.0.0.src.tar.xz
 https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang-12.0.0.src.tar.xz
