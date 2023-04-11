@@ -1,0 +1,38 @@
+This fixes the compiler complaining about the __has_include_next.
+
+diff --git a/clang/lib/Headers/unwind.h b/clang/lib/Headers/unwind.h
+index 6e069798f..3a24920d1 100644
+--- a/clang/lib/Headers/unwind.h
++++ b/clang/lib/Headers/unwind.h
+@@ -9,9 +9,6 @@
+ 
+ /* See "Data Definitions for libgcc_s" in the Linux Standard Base.*/
+ 
+-#ifndef __CLANG_UNWIND_H
+-#define __CLANG_UNWIND_H
+-
+ #if defined(__APPLE__) && __has_include_next(<unwind.h>)
+ /* Darwin (from 11.x on) provide an unwind.h. If that's available,
+  * use it. libunwind wraps some of its definitions in #ifdef _GNU_SOURCE,
+@@ -39,6 +36,9 @@
+ # endif
+ #else
+ 
++#ifndef __CLANG_UNWIND_H
++#define __CLANG_UNWIND_H
++
+ #include <stdint.h>
+ 
+ #ifdef __cplusplus
+@@ -326,6 +326,7 @@ _Unwind_Ptr _Unwind_GetTextRelBase(struct _Unwind_Context *);
+ }
+ #endif
+ 
++#endif /* __CLANG_UNWIND_H */
++
+ #endif
+ 
+-#endif /* __CLANG_UNWIND_H */
+-- 
+2.35.1
+

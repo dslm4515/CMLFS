@@ -1,0 +1,71 @@
+# cgnutools: libunwind
+# Build as cmlfs
+#
+# o Use patches from Chimera Linux
+# o build libunwind as building stage0 clang requires it
+# o Use the monorepo source, i.e llvm-project-x.x.x.tar.xz
+
+# Source tree will be reused later. Apply patches from Chimera Linux
+# For now, just patching for x86_64
+patch -Np1 -i ../patches/llvm1506-chimera/0001-llvm-always-set-a-larger-stack-size-explicitly.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0003-llvm-musl-workarounds.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0005-clang-disable-multiarch-layout-on-musl.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0006-clang-drop-incorrect-warning-about-vector-equality-r.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0008-compiler-rt-default-to-libc-for-sanitizers.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0009-compiler-rt-build-crt-in-runtimes-build.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0010-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0012-compiler-rt-HACK-force-fno-lto-for-builtins.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0013-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0014-libc-libc-abi-libunwind-disable-multiarch-locations.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0018-lldb-cross-compiling-workarounds-for-python.patch
+patch -Np1 -i ../patches/llvm1506-chimera/0019-lldb-musl-fixes.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-001-fortify-include.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-002-fortify-enable.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-003-as-needed.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-004-relro-hash.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-default-libatomic.patch
+patch -Np1 -i ../patches/llvm1506-chimera/clang-default-strong-ssp.patch
+patch -Np1 -i ../patches/llvm1506-chimera/llvm-endbr-cfi.patch
+patch -Np1 -i ../patches/llvm1506-chimera/lsan-dtp-offset.patch
+patch -Np1 -i ../patches/llvm1506-chimera/no-execinfo.patch
+patch -Np1 -i ../patches/llvm1506-chimera/unsupport-print-multiarch.patch
+patch -Np1 -i ../patches/llvm1506-chimera/unwind-chain-inclusion.patch
+
+# Musl doesn't support strtoll_l(), so replace it with a simple strtoll() call.
+# Apply patches to allow localization of libc++:
+patch -Np1 -i ../patches/llvm1506-cmlfs/libcxx-use-strtoll_strtoul.patch
+
+# Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
+patch -Np1 -i ../patches/llvm1506-cmlfs/remove-locale-inlines.patch
+
+export CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags...
+export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
+export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
+export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
+export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/${TARGET_TUPLE}-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/${TARGET_TUPLE}-ranlib "
+
+# Configure source in a build directory
+cmake -G Ninja -B build -S libunwind -Wno-dev \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/cgnutools \
+      -DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include \
+      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
+      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
+      -DLIBUNWIND_INSTALL_HEADERS=ON \
+      -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON $CT
+
+# compile
+ninja -C build unwind
+
+# install to cgnutools
+ninja -C build install-unwind-stripped
+
+# Remove build directory & clear flags
+# Do not remove source tree as it will be used later
+rm -rf build
+unset CXXFLAGS CFLAGS CT

@@ -90,13 +90,7 @@ https://sourceforge.net/projects/expect/files/Expect/5.45.3/expect5.45.3.tar.gz
 http://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.2.tar.gz
 https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
 http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-12.0.0.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang-12.0.0.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/compiler-rt-12.0.0.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/libcxx-12.0.0.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/libcxxabi-12.0.0.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/libunwind-12.0.0.src.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/lld-12.0.0.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/llvm-project-15.0.6.src.tar.xz
 https://cmake.org/files/v3.20/cmake-3.20.4.tar.gz
 https://dist.libuv.org/dist/v1.41.0/libuv-v1.41.0.tar.gz
 https://github.com/chimera-linux/libatomic-chimera/archive/refs/tags/v0.90.0.tar.gz
