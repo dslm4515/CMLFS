@@ -1,0 +1,52 @@
+# General Build Notes for llvmtools
+
+# As before, everything should be built by cmlfs user
+
+# Cross-gcc has built the following for llvmtools:
+# o kernel headers
+# o musl libc [headers+libraries]
+# o zlib-ng
+# o libatomic-chimera
+
+# cgnutools contains the following:
+# o cross-gcc [built by mussel, disabled in favor for clang]
+# o stage 2 clang
+#    - libunwind
+#    - libc++abi
+#    - libc++
+#    - compiler-rt
+#    - lld
+#    - clang
+
+# Since stage0 clang is now built, it will build stage1 clang with out any
+# dependency on gcc (libgcc_s & libstdc++) with sysroot at llvmtools.
+# The rest of llvmtools will be built in order to chroot with just llvmtools.
+
+# All binaries should build with `/llvmtools/lib/ld-musl-$(uname -m).so.1` as
+# the dynamic [linux] loader/linker. Nothing should link to any libraries in
+# cgnutools.
+
+# Since binutils will be replaced with LLVM's binary tools [for llvmtools],
+# There are still packages that are hard coded for GNU's binutils. Symlinks
+# will be made to force those packages to use the LLVM counterparts.
+
+# Chroot environment needs:
+# o Compiler = clang
+# o Binary utilities = LLVM or elftoolchain
+# o Shell = Dash or chimerautils
+# o core utilities (i.e. ls): coreutils or chimerautils
+# o Utilities to unpack sources:
+#    - *.tar = tar
+#    - *.xz = xz-utils
+#    - *.gz = pigz or chimerautils
+#    - *.bz2 = bzip2
+# o make = GNU Make. Required for compiling the linux kernel
+# o patching = GNU patch or chimerautils
+# o Utils for finding diffs = chimerautils
+# o Search utils = chimerautils
+# o Utility to search contents of file = GNU's grep or chimerautils
+# o macro processor = GNU's M4 or chimerautils
+# o Manipulate files = Gawk (chimerautils has no awk)
+# o Stream editor = sed (chimerautils' sed is not a 1:1 drop in replacement)
+# o test utilities (optional) = tcl, expect, dejagnu
+# o text editor (optional) = vim or nano
