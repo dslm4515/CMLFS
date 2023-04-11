@@ -2,11 +2,12 @@
 cd $CMLFS/sources
 git clone https://github.com/firasuke/mussel
 
-# For this build, use commit 5f84e46942c4d0e2c9476365a6ba761878612961
-# as future clones of repos may have an newer gcc version
+# For this build, use commit 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
+# as future clones of repos may have an newer package versions not yet
+# validated to build for CMLFS.
+# This is also the last commit before mussel switch to b3sum
 cd mussel
-#git checkout 5f84e46942c4d0e2c9476365a6ba761878612961
-git checkout 91016e84237299e2028aa923c169c2c3b213b3a0 
+git checkout 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
 
 # Make sure host has all requirements:
 ./check.sh
@@ -25,7 +26,7 @@ patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
 
 # Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
-sudo ./mussel.sh x86_64 -l -o -p
+sudo ./mussel.sh x86_64 -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
 sudo chown -vR cmlfs $CMLFS/cgnutools
