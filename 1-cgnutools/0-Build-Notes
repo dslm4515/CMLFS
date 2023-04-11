@@ -36,3 +36,19 @@ make install
 # unpacked source directory unless instructed:
 cd ..
 rm -rf foo-1.2.3
+
+################################################################################
+# cgnutools is now bootsrapped with Mussel (https://github.com/firasuke/mussel)
+# This will quickly build a GCC-toolchain targeted for musl libc.
+################################################################################
+
+# Cross-gcc will stay in cgnutools, but cross-compile a clang toolchain in llvmtools. It will
+# also build the required packages [in llvmtools] to build stage0 clang
+# o kernel headers
+# o musl libc
+# o zlib-ng
+# o libatomic-chimera
+# o fortify-headers
+# o CMake (if host doesn't have it?)
+# o Python3 (if host doesn't have it?)
+
