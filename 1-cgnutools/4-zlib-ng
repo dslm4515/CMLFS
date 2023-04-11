@@ -1,0 +1,14 @@
+# llvmtools: zlib-ng
+# Build and install as cmlfs
+
+CC=${TARGET_TUPLE}-gcc \
+CXX=${TARGET_TUPLE}-g++ \
+./configure --prefix=/llvmtools \
+            --libdir=/llvmtools/lib \
+            --zlib-compat
+
+make
+
+make install
+
+ln -sv libz.so.1.2.11.zlib-ng /llvmtools/lib/libz.so.1.2.11 
