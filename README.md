@@ -50,7 +50,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [ ] Build on aarch64</li>
 </ul>
 
-## Host System Requirements 
+## Host System Requirements
 
 <ul>
  <li>CMake</li>
@@ -68,7 +68,7 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
  <li>diffutils 2.8.1 </li>
  <li>findutils 4.2.31 </li>
  <li>gawk 4.0.1 (/usr/bin/awk should be a link to gawk) </li>
- <li>GCC 6.2 *including the C++ compiler, g++ </li>
+ <li>GCC 6.2 (including the C++ compiler, g++) </li>
  <li>Glibc 2.11 / Musl Libc 1.20 </li>
  <li>Grep 2.5.1a </li>
  <li>gzip 1.3.12 </li>
@@ -106,7 +106,7 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 ## Change log
 
 <ul>
-<li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li> 
+<li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li>
 <li>1.2.0: Incomplete: LLVM=11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
 <li>1.1.0: Sucessfully merged cross-tools and cgnutools to include GCC & binutils.</li>
 <li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu </li>
