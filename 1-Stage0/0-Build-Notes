@@ -1,6 +1,6 @@
-# General Build Notes for cgnutools
+# General Build Notes for stage 0 LLVM/Clang
 
-# Builds for cgnutools assume the following:
+# Builds for stage 0 assume the following:
 # o bash is the shell in use
 # o sh is a symbolic link to bash
 # o /usr/bin/awk is a symbolic link to gawk
@@ -20,7 +20,7 @@ whoami
 # Make sure PATH is set correctly:
 export PATH=/cgnutools/bin:/llvmtools/bin:/usr/bin:/bin
 
-# Each package should be unpacked in /mnt/cmlfs/source and change 
+# Each package should be unpacked in /mnt/cmlfs/source and change
 # to the unpacked source directory. For example:
 cd /mnt/cmlfs/sources
 tar xf pkgs/foo-1.2.3.tar.gz
@@ -29,7 +29,7 @@ cd foo-1.2.3
 # Then patch and compile per instruction
 patch -Np1 -i ../patches/foo-mlfs/fix-it.patch
 ./configure --prefix=/cgnutools
-make 
+make
 make install
 
 # After the package is installed, change directories and remove
@@ -48,7 +48,5 @@ rm -rf foo-1.2.3
 # o musl libc
 # o zlib-ng
 # o libatomic-chimera
-# o fortify-headers
 # o CMake (if host doesn't have it?)
 # o Python3 (if host doesn't have it?)
-
