@@ -1,0 +1,11 @@
+--- llvm-project-15.0.5.src.orig/clang/test/Driver/linux-ld.c	2022-11-16 00:28:29.000000000 -0600
++++ llvm-project-15.0.5.src/clang/test/Driver/linux-ld.c	2023-01-02 00:40:29.236933312 -0600
+@@ -1757,7 +1757,7 @@
+ // RUN:     --target=aarch64_be-pc-linux-musleabi \
+ // RUN:   | FileCheck --check-prefix=CHECK-MUSL-AARCH64_BE %s
+ // CHECK-MUSL-X86:        "-dynamic-linker" "/lib/ld-musl-i386.so.1"
+-// CHECK-MUSL-X86_64:     "-dynamic-linker" "/lib/ld-musl-x86_64.so.1"
++// CHECK-MUSL-X86_64:     "-dynamic-linker" "/llvmtools/lib/ld-musl-x86_64.so.1"
+ // CHECK-MUSL-MIPS:       "-dynamic-linker" "/lib/ld-musl-mips.so.1"
+ // CHECK-MUSL-MIPSEL:     "-dynamic-linker" "/lib/ld-musl-mipsel.so.1"
+ // CHECK-MUSL-MIPS64:     "-dynamic-linker" "/lib/ld-musl-mips64.so.1"
