@@ -1,0 +1,28 @@
+# llvmtools: Musl libc
+# Build as cmlfs
+
+# Configure with freshly built GCC
+./configure \
+  CROSS_COMPILE=${TARGET_TUPLE}- \
+  --prefix=/ \
+  --target=${TARGET_TUPLE}
+
+# Buid and install
+make && make DESTDIR=/llvmtools install
+
+# Fix a symlink
+rm -v /llvmtools/lib/ld-musl-$(uname -m).so.1
+ln -sv libc.so /llvmtools/lib/ld-musl-$(uname -m).so.1
+
+# Create a symlink that can be used to print
+# the required shared objects of a program or
+# shared object
+mkdir /llvmtools/{etc,bin}
+ln -sv ../lib/libc.so /llvmtools/bin/ldd
+
+# Configure the dynamic linker
+cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
+/llvmtools/lib
+/llvmtools/${TARGET_TUPLE}/lib
+/llvmtools/lib/${TARGET_TUPLE}
+EOF
