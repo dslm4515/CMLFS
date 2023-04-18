@@ -1,10 +1,8 @@
-# Llvmtools toolchain: Gzip 1.11
-# Source: https://ftp.gnu.org/gnu/gzip/gzip-1.11.tar.xz
+# Stage1: Gzip
 # Build and install as cmlfs
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
