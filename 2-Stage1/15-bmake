@@ -1,0 +1,30 @@
+# Stage1: bmake
+# Build as cmlfs
+# Required [to compile] elftoolchain
+
+
+# Apply patches for Chimera-Linux
+patch -Np1 -i ../patches/bmake-chimeralinux/build.patch
+patch -Np1 -i ../patches/bmake-chimeralinux/tests.patch
+
+# Build out of source tree
+mkdir ../bmake-build
+cd ../bmake-build
+
+# Configure source & compile
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+../bmake/boot-strap --prefix=/llvmtools op=build
+
+# Install to llvmtools
+CC=clang CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+../bmake/boot-strap --prefix=/llvmtools op=install
