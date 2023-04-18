@@ -1,10 +1,9 @@
-# Toolchain: Make 4.3
-# Source: http://ftp.gnu.org/gnu/make/make-4.3.tar.gz 
+# Stage1: make
 # Build and install as cmlfs
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
