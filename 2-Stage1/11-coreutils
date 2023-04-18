@@ -1,5 +1,4 @@
-# Toolchain: Coreutils 9.0
-# Source: https://ftp.gnu.org/gnu/coreutils/coreutils-9.0.tar.xz
+# Stage1: Coreutils
 # Build and install as cmlfs
 
 # Re-create configure script
@@ -20,8 +19,8 @@ EOF
 sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
