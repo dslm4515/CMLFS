@@ -1,0 +1,31 @@
+# Stage1: LSB script
+# Build by cmlfs
+
+# NOTE: Required by elftoolchain to configure
+# NOTE: No Python required
+
+# install script to llvmtools
+install -v -m755 files/lsb_release /llvmtools/bin/
+
+# Make sure it is executable:
+chmod -v +x /llvmtools/bin/lsb_release
+
+# The following is optional:
+
+# Create the status of the new system with respect to the Linux Standards
+# Base (LSB)
+cat > /llvmtools/etc/lsb-release << "EOF"
+DISTRIB_ID="llvmtools"
+DISTRIB_RELEASE="3.0.0_amd64"
+DISTRIB_CODENAME="15-elftool-tools"
+DISTRIB_DESCRIPTION="Clang-built Musl Toolchain for CMLFS, AMD64"
+EOF
+
+# The same information but used by some graphical desktop environments:
+cat > /llvmtools/etc/os-release << "EOF"
+NAME="llvmtools"
+VERSION="3.0.0_amd64"
+ID=llvmtools
+PRETTY_NAME="Clang-built Musl Toolchain for CMLFS, AMD64"
+VERSION_CODENAME="15-elftool-tools"
+EOF
