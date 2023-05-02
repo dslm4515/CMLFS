@@ -12,6 +12,8 @@ export  CC=clang
 CC=$CC CXX=$CXX ./configure --prefix=/ 
 
 # Build and install to llvmtools
+# Headers will not be installed, as it was already
+# installed before building stage0 clang
 make && make DESTDIR=/llvmtools install
 
 # fix a symlink
@@ -21,8 +23,8 @@ ln -sv libc.so /llvmtools/lib/ld-musl-x86_64.so.1
 # Create a symlink to make a tool that can print the 
 # shared objects (shared libraries) required by each 
 # program or shared object (i.e. library)
-mkdir /llvmtools/{bin,etc}
-ln -sv ../lib/libc.so /llvmtools/bin/ldd
+# mkdir /llvmtools/{bin,etc}
+# ln -sv ../lib/libc.so /llvmtools/bin/ldd
 
 # Configure dynamic linker
 cat > /llvmtools/etc/ld-musl-x86_64.path << "EOF"
