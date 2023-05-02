@@ -195,7 +195,6 @@ grep -B2 -A2 '^ /llvmtools' atomics-test.log
 # It should output this order:
 # #include <...> search starts here:
 #  /mnt/cmlfs/llvmtools/bin/../include/c++/v1
-#  /llvmtools/usr/include/fortify
 #  /llvmtools/usr/include
 #  /mnt/cmlfs/llvmtools/lib/clang/15.0.6/include
 # End of search list.
