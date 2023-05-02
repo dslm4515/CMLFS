@@ -18,5 +18,5 @@ case $(uname -m) in
 esac
 
 # Use the configured clang until Musl is built
-export CC=${TUPLE}-clang CXX=${TUPLE}-clang++
+export CC=clang CXX=clang++
 
