@@ -151,7 +151,6 @@ grep  'crt[1in]' dummy.log | grep ld.lld:
 grep -B1 -A2 '^ /llvmtools' dummy.log
 # It should output:
 # #include <...> search starts here:
-#  /llvmtools/usr/include/fortify
 #  /llvmtools/usr/include
 #  /mnt/cmlfs/llvmtools/lib/clang/15.0.6/include
 # End of search list.
