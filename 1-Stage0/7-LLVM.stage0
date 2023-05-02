@@ -122,6 +122,7 @@ ninja -C build # 576 ............................................... PASS
 cmake --install build --strip
 
 # Make LLD the default linker
+rm -v      /cgnutools/bin/ld
 ln -sv lld /cgnutools/bin/ld
 
 # Disable cross-gcc ... will use stage0 clang instead
