@@ -5,17 +5,32 @@
 # which do not exist yet. In order to satisfy 
 # these programs, create a number of symbolic 
 # links which will be replaced by real files 
-# throughout the course of this chapter after 
+# throughout the course of this stage after 
 # the software has been installed: 
-ln -sv /llvmtools/bin/{bash,cat,dd,echo,ln,pwd,rm,stty} /bin
-ln -sv /llvmtools/bin/{install,perl}    /usr/bin
-ln -sv /llvmtools/lib/libc++.so{,.1}    /usr/lib
-ln -sv /llvmtools/lib/libc++abi.so{,.1} /usr/lib
-ln -sv /llvmtools/lib/libunwind.so{,.1} /usr/lib
-ln -sv /llvmtools/lib/libunwind.a       /usr/lib
-ln -sv /llvmtools/lib/libgcc_s.so{,.1}  /usr/lib
-ln -sv /llvmtools/lib/libstdc++.{a,so{,.6}} /usr/lib
-ln -sv bash /bin/sh 
+for b in bash cat dd env echo install ln pwd rm stty
+do
+  ln -sv /llvmtools/bin/$b /usr/bin/$b
+done
+
+# Some packages have hard-wired paths to libraries
+# which do not exist yet. In order to satisfy these
+# packages, create a number of symbolic links which
+# will be replaced by real files throughout the
+# of this stage after the software has been installed:
+for e in so so.1
+do
+  ln -sv /llvmtools/lib/libc++.$e    /usr/lib
+  ln -sv /llvmtools/lib/libc++abi.$e /usr/lib
+  ln -sv /llvmtools/lib/libunwind.$e /usr/lib
+  ln -sv /llvmtools/lib/libatomic.$e /usr/lib
+done
+ln -sv /llvmtools/lib/libunwind.a  /usr/lib
+ln -sv /llvmtools/lib/libncursesw.so /usr/lib/libncursesw.so
+ln -sv libncursesw.so /llvmtools/lib/libtinfow.so
+
+# Some packages will look for sh. Create a compatibility
+# link as bash can subsitutte for sh
+ln -sv bash /bin/sh
 
 # Historically, Linux maintains a list of the 
 # mounted file systems in the file /etc/mtab. 
@@ -32,7 +47,6 @@ ln -sv /proc/self/mounts /etc/mtab
 # /etc/passwd and /etc/group files.
 cat > /etc/passwd << "EOF"
 root:x:0:0:root:/root:/bin/bash
-bin:x:1:1:bin:/dev/null:/bin/false
 daemon:x:6:6:Daemon User:/dev/null:/bin/false
 messagebus:x:18:18:D-Bus Message Daemon User:/var/run/dbus:/bin/false
 nobody:x:99:99:Unprivileged User:/dev/null:/bin/false
@@ -40,7 +54,6 @@ EOF
 
 cat > /etc/group << "EOF"
 root:x:0:
-bin:x:1:daemon
 sys:x:2:
 kmem:x:3:
 tape:x:4:
@@ -74,8 +87,18 @@ exec /llvmtools/bin/bash --login +h
 # log files if they do not already exist. 
 # Initialize the log files and give them proper 
 # permissions: 
-touch /var/log/{btmp,lastlog,faillog,wtmp}
+for l in btmp lastlog faillog wtmp
+do
+ touch /var/log/$l
+done
 chgrp -v utmp /var/log/lastlog
 chmod -v 664  /var/log/lastlog
 chmod -v 600  /var/log/btmp
 
+# Create a basic /etc/hosts file to be referenced
+# # in some test suites, and in one of Perl's
+# # configuration files as well:
+cat > /etc/hosts << EOF
+127.0.0.1  localhost $(hostname)
+::1        localhost
+EOF
