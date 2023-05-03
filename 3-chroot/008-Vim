@@ -1,6 +1,5 @@
-# Llvmtools toolchain: Vim
-# Source: https://anduin.linuxfromscratch.org/LFS/vim-8.2.3458.tar.gz
-# Build and install as cmlfs
+# Stage1: Vim
+# Build under chroot
 # Optional package: Text editor for convenience or trouble shooting
 
 # Modify source for vim's configuration
@@ -8,15 +7,15 @@ echo '#define SYS_VIMRC_FILE "/llvmtools/etc/vimrc"' >> src/feature.h
 sed -i '/call/{s/split/xsplit/;s/303/492/}' src/testdir/test_recover.vim
 
 # Configure with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
+./configure --build=${TUPLE} \
+            --host=${TUPLE} \
             --prefix=/llvmtools  \
             --disable-gui \
             --without-x
