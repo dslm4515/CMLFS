@@ -1,0 +1,25 @@
+# Stage1: Nano 
+# Build under chroot
+# Optional package: Text editor for convenience or trouble shooting
+
+# Set flags, so curses headers can be found in /llvmtools/include
+export LDFLAGS="-L/llvmtools/lib -lncursesw "
+export CPPFLAGS="-I/llvmtools/include"
+
+# Configure source with clang
+CC=clang \
+CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --build=${TUPLE} \
+            --host=${TTUPLE} \
+            --prefix=/llvmtools \
+            --enable-tiny
+
+# Build and install to toolchain
+make && make install
+
+unset LDFLAGS CPPFLAGS
