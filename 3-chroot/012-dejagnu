@@ -1,0 +1,19 @@
+# Stage1: DejaGNU
+# Build and install under chroot
+# Can be optional: Package used for testing final system packages
+
+# Configure source with LLVM/clang
+CC=clang \
+CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --build=${TUPLE} \
+            --host=${TUPLE} \
+            --prefix=/llvmtools
+
+# Build and install to toolchain
+make && make install
+
