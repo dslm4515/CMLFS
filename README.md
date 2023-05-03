@@ -1,6 +1,6 @@
 # CMLFS - Clang Musl Linux From Scratch
 
-CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on Linux From Scratch (www.linuxfromscratch.org) and my previous work MLFS (https://github.com/dslm4515/Musl-LFS).
+CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on [Linux From Scratch](www.linuxfromscratch.org) and my previous work [MLFS](https://github.com/dslm4515/Musl-LFS). Big thanks to [Chimera-Linux](https://chimera-linux.org) that had patches that fixed a lot of issues.
 
 ## Specification
 <ul>
@@ -8,10 +8,10 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li>Default C Compiler: clang (LLVM)</li>
 <li>Default C++ compiler: clang++ (LLVM)</li>
 <li>Default linker: lld (LLVM)</li>
-<li>Default binary tools: (LLVM)</li>
+<li>Default binary tools: elftoolchain</li>
 <li>Secondary C Compiler: GCC</li>
 <li>Secondary C++ compiler: GCC</li>
-<li>Secondary binary tools: GNU Binutils</li>
+<li>Secondary binary tools: GNU Binutils & LLVM</li>
 <li>Secondary linker(s): bfd, gold</li>
 <li>C++ standard library: libcxx (LLVM)</li>
 <li>C++ ABI library: libcxxabi (LLVM)</li>
@@ -46,7 +46,9 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li> [x] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 <li> [x] Merge cross-tools build with cgnutools </li>
 <li> [x] Build successfully on a Glibc host </li>
-<li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools
+<li> [x] Build find system without GCC </li>
+<li> [x] Replace binutils with elftoolchain </li>
+<li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools </li>
 <li> [ ] Build on aarch64</li>
 </ul>
 
@@ -86,28 +88,31 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 
 ## Current Method
 
-Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS) to cross-compile stage0 clang. This stage0 clang will still link to `libgcc_s` but will later be used to build a stage1 clang free of `libbgcc_s`. The goal is to build clang+friends with clang and not GCC.
+Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-compile a stage0 LLVM+clang. This stage0 clang will still link to `libgcc_s` [in cgnutools] but will later be used to build a stage1 clang free of `libbgcc_s`. The goal is to build clang+friends with clang and not GCC.
+
+* Some packages can be built once to be used by the toolchain [llvmtools] and the final system, but will be built twice to make it easy to implement a package managment system [which is outside the scope of this project]. 
+
 <ol>
-<li>Build `cgnutools` with host's GCC</li>
-<li>Build a stage0 clang with GCC libraries with `cgnutools`: build clang via llvm source with clang+lld unpacked in `llvm/tools` and libunwind, libcxxabi & libcxx in `lvm/projects`.</li>
-<li>Build individually in LLVM source tree libunwind, libcxxabi and libcxx with stage0 clang and install in `llvmtools`. </li>
-<li>Build a new stage1 clang with stage0 clang. This new stage1 clang will not have GCC libraries. This will install in `llvmtools`.</li>
-<li>Using stage1 clang, build toolchain (llvmtools) for use in chroot</li>
-<li>Build final root filesystem in chroot with stage1 clang and toolchain (llvmtools)</li>
+<li>Bootstrap build of cgnutools with mussel</li>
+<li>Use mussel-built toolchain (cgnutools) to build stage0 LLVM+clang</li>
+<li>Use cgnutools to build stage1 LLVM+clang with sysroot at llvmtools with stage0 LVVM+clang</li>
+<li>Build enough of llvmtools to enter a chroot with stage1 LLVM+clang</li>
+<li>Build the rest of llvmtools under chroot </li>
+<li>Build final system with llvmtools </li>
 </ol>
 
 ## Issues
 <ul>
-<li>Clang requires `execinfo.h` - Added libexecinfo to build</li>
-<li>Diskboot.img of grub is not correctly built with clang. Grub requires GCC and patching. </li>
-<li>Cannot build cgnutools with host's LLVM/Clang. Has to be complied with Host's GCC or previously built cross-tools toolchain.</li>
+<li>Investigating: Misplaced gcc libraries when building stage0 LLVM</li>
+<li>Python3 may need to be added to llvmtools</li>
 </ul>
 
 ## Change log
 
 <ul>
+<li>3.0.0: Upgraded to LLVM-15.0.6. cgnutools is now bootstrapped with mussel. Replaced binutils with elftoolchain. Most of llvmtools will be build under chroot to avoid contamination from host. </li>
 <li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li>
-<li>1.2.0: Incomplete: LLVM=11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
+<li>1.2.0: Incomplete: LLVM-11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
 <li>1.1.0: Sucessfully merged cross-tools and cgnutools to include GCC & binutils.</li>
 <li>1.0.0: Sucessfully built on x86_64. GCC built as secondary compiler in /opt/gnu </li>
 <li>0.1.3: Configure Stage1 clang correctly with x86_64-pc-linux-musl.cfg.</li>
@@ -119,6 +124,7 @@ Build or use 'cross-tools' from [Musl-LFS](https://github.com/dslm4515/Musl-LFS)
 
 ## Projects of Interest
 <ul>
+<li> [Mussel](https://github.com/firasuke/mussel)</li>
 <li> [Musl Linux From Scratch](https://github.com/dslm4515/Musl-LFS) - Based on LFS, but uses Musl instead of Glibc </li>
 <li> [Beyond MLFS](https://github.com/dslm4515/BMLFS) - The Musl version of LFS's BLFS </li>
 <li> [MLFS-S6-Bootscripts](https://github.com/dslm4515/MLFS-S6-Bootscripts) - Boot scripts for CMLFS/MLFS/LFS using skarnet's S6+S6-rc init system </li>
