@@ -1,6 +1,5 @@
-# Toolchain: Expect-5.45.3
-# Source: https://sourceforge.net/projects/expect/files/Expect/5.45.3/expect5.45.3.tar.gz
-# Build and install as mlfs
+# stage1: Expect-5.45.3
+# Build and install under chroot
 # Can be optional: Package used for testing final system packages
 # *No need to use latest version, so far. If so, patches need updating.*
 
@@ -16,15 +15,15 @@ cp -v configure{,.orig}
 sed 's:/usr/local/bin:/bin:' configure.orig > configure
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
+./configure --build=${TUPLE} \
+            --host=${TUPLE} \
             --prefix=/llvmtools \
             --with-tcl=/llvmtools/lib \
             --with-tclinclude=/llvmtools/include
