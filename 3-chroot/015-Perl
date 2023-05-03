@@ -21,31 +21,21 @@ sed -i '/\(bzip2\|zzz\)-src/d' MANIFEST
 # Configure source to use clang, llvm-{ar,nm}, and 
 # set libc at /llvmtools/lib/libc.so
 sh Configure -des -Dprefix=/llvmtools \
-   -Dcc=clang \
-   -Dar="/llvmtools/bin/llvm-ar"   \
-   -Dnm="/llvmtools/bin/llvm-nm"   \
-   -Dlibc="/llvmtools/lib/libc.so" \
-   -Dvendorprefix=/llvmtools \
-   -Dprivlib=/llvmtools/lib/perl5/5.36/core_perl  \
-   -Darchlib=/llvmtools/lib/perl5/5.36/core_perl  \
-   -Dsitelib=/llvmtools/lib/perl5/5.36/site_perl  \
-   -Dsitearch=/llvmtools/lib/perl5/5.36/site_perl \
-   -Dvendorlib=/llvmtools/lib/perl5/5.34/vendor_perl \
-   -Dvendorarch=/llvmtools/lib/perl5/5.34/vendor_perl \ 
-   -Dman1dir=/llvmtools/share/man/man1 \
-   -Dman3dir=/llvmtools/share/man/man3 \
-   -Dpager="/llvmtools/bin/less -isR"  \
-   -Duseshrplib \
-   -Dusethreads \
-   -Dcccdlflags='-fPIC' -Dccdlflags='-rdynamic' 
+    -Dlibs=-lm -Uloclibpth -Ulocincpth \
+    -Dcc=clang \
+    -Dar="/llvmtools/bin/llvm-ar" \
+    -Dnm="/llvmtools/bin/llvm-nm"  \
+    -Dlibc="/llvmtools/lib/libc.so" \
+    -Dcccdlflags='-fPIC' -Dccdlflags='-rdynamic'
 
-# Build
+# compile
 make
-
-unset BUILD_ZLIB BUILD_BZIP2 CFLAGS
 
 # Only a few of the utilities and libraries need to be installed to toolchain
 cp -v perl cpan/podlators/scripts/pod2man /llvmtools/bin
-mkdir -pv /llvmtools/lib/perl5/5.36.1
+mkdir -pv    /llvmtools/lib/perl5/5.36.1
 cp -Rv lib/* /llvmtools/lib/perl5/5.36.1
+
+unset BUILD_ZLIB BUILD_BZIP2 CFLAGS
+
 
