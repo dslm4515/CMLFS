@@ -7,7 +7,7 @@ https://www.iana.org/time-zones/repository/releases/tzcode2021a.tar.gz
 https://dev.alpinelinux.org/archive/posixtz/posixtz-0.5.tar.xz
 http://www.lysator.liu.se/~nisse/misc/argp-standalone-1.3.tar.gz
 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.7.tar.gz
-ftp://ftp.astron.com/pub/file/file-5.40.tar.gz
+https://astron.com/pub/file/file-5.44.tar.gz
 http://ftp.gnu.org/gnu/readline/readline-8.1.tar.gz
 https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
 https://github.com/gavinhoward/bc/releases/download/4.0.2/bc-4.0.2.tar.xz

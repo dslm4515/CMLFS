@@ -1,0 +1,20 @@
+# Stage1: file
+# Build and install under chroot
+# Must use same version for llvmtools 
+# and final system. 
+
+# Configure source
+CC=clang \
+CXX=clang++ \
+AR=llvm-ar \
+AS=llvm-as \
+RANLIB=llvm-ranlib \
+LD=ld.lld \
+STRIP=llvm-strip \
+./configure --build=${TUPLE} \
+            --host=${TUPLE}  \
+            --prefix=/llvmtools      \
+            --disable-libseccomp
+
+# Build and install to toolchain
+make && make install
