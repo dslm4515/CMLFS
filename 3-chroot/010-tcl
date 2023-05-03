@@ -1,13 +1,22 @@
-# Tool Chain: TCL
-# Source: https://downloads.sourceforge.net/tcl/tcl8.6.10-src.tar.gz 
-# Build and install as cmlfs
+# Stage1: TCL
+# Build and install under chroot
 # Can be optional: Package used for testing final system packages
 
+# This build insists on executing "cr" instead og "llvm-ar cr"
+# Create a wrapper script.
+cat > /llvmtools/bin/cr << "EOF"
+#!/bin/bash 
+llvm-ar cr $@
+EOF
+
+chmod -v a+x /llvmtools/bin/cr
+
+# Change directories:
 cd unix
 
 # Configure source with LLVM
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
@@ -15,8 +24,8 @@ LD=ld.lld \
 STRIP=llvm-strip \
 ac_cv_func_strtod=yes \
 tcl_cv_strtod_buggy=1 \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE} \
+./configure --build=${TUPLE} \
+            --host=${TUPLE} \
             --prefix=/llvmtools
 
 # Build and install to toolchain
@@ -27,4 +36,6 @@ chmod -v u+w /llvmtools/lib/libtcl8.6.so
 make install-private-headers
 ln -sv tclsh8.6 /llvmtools/bin/tclsh
 
+# Remove wrapper script:
+rm -v /llvmtools/bin/cr
 
