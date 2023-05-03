@@ -2,6 +2,8 @@
 
 # As before, everything should be built by cmlfs user
 
+# llvmtools will be built enough to enter chroot.
+
 # Cross-gcc has built the following for llvmtools:
 # o kernel headers
 # o musl libc [headers+libraries]
@@ -33,20 +35,20 @@
 # Chroot environment needs:
 # o Compiler = clang
 # o Binary utilities = LLVM or elftoolchain
-# o Shell = Dash or chimerautils
-# o core utilities (i.e. ls): coreutils or chimerautils
+# o Shell = Dash or bash
+# o core utilities (i.e. ls): coreutils
 # o Utilities to unpack sources:
 #    - *.tar = tar
 #    - *.xz = xz-utils
-#    - *.gz = pigz or chimerautils
+#    - *.gz = gzip
 #    - *.bz2 = bzip2
 # o make = GNU Make. Required for compiling the linux kernel
-# o patching = GNU patch or chimerautils
-# o Utils for finding diffs = chimerautils
-# o Search utils = chimerautils
-# o Utility to search contents of file = GNU's grep or chimerautils
-# o macro processor = GNU's M4 or chimerautils
-# o Manipulate files = Gawk (chimerautils has no awk)
-# o Stream editor = sed (chimerautils' sed is not a 1:1 drop in replacement)
+# o patching = GNU patch
+# o Utils for finding diffs = diffutils
+# o Search utils = findutils
+# o Utility to search contents of file = GNU's grep
+# o macro processor = GNU's M4 
+# o Manipulate files = Gawk 
+# o Stream editor = sed
 # o test utilities (optional) = tcl, expect, dejagnu
 # o text editor (optional) = vim or nano
