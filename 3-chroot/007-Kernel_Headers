@@ -1,0 +1,22 @@
+# Stage1: Kernel Headers
+# Use latest kernel version when possible
+# This section is done in Chroot environment
+
+# Clean source tree
+LLVM=1 LLVM_IAS=1 make CC=clang mrproper
+
+# Extract Headers:
+LLVM=1 LLVM_IAS=1 \
+make CC=clang HOSTCC=clang headers
+
+# Install the header to toolchain
+cp -rv usr/include/* /llvmtools/include
+
+# There are also some hidden files used by the kernel 
+# developers and not needed by CMLFS that are removed 
+# from the intermediate directory.
+find /llvmtools/include \( -name '.*' -o -name '.*.cmd' \) -exec rm -vf {} \;
+
+# Remove unneeded makefile
+rm -v /llvmtools/include/Makefile
+
