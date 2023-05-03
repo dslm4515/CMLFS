@@ -1,12 +1,10 @@
-# Llvmtools Toolchain: CMake 
-# Build and install as cmlfs
-
-sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
+# Chroot: CMake 
+# Build and install under chroot
 
 # Set build flags
 export  CARGS="--prefix=/llvmtools "
 export CARGS+="--mandir=/share/man "
-export CARGS+="--docdir=/share/doc/cmake-3.21.3 "
+export CARGS+="--docdir=/share/doc/cmake-3.26.3 "
 
 # Do not use host's libraries. use built-in
 export CARGS+="--no-system-jsoncpp "
@@ -23,7 +21,7 @@ export CARGS+="--no-system-libuv "
 export  CMARGS="-DCMAKE_USE_OPENSSL=OFF "
 export CMARGS+="-DBUILD_CursesDialog=ON "
 
-# Force build to use ncurses built in llvmtools
+# Force build to use netbsd-curses built in llvmtools
 export CMARGS+="-DCURSES_CURSES_LIBRARY=/llvmtools/lib/libcursesw.so "
 export CMARGS+="-DCURSES_EXTRA_LIBRARY=/llvmtools/lib/libtinfow.so "
 export CMARGS+="-DCURSES_FORM_LIBRARY=/llvmtools/lib/libformw.so "
@@ -31,8 +29,8 @@ export CMARGS+="-DCURSES_INCLUDE_PATH=/llvmtools/include "
 export CMARGS+="-DCURSES_NCURSES_LIBRARY=/llvmtools/lib/libncursesw.so "
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
@@ -42,3 +40,6 @@ STRIP=llvm-strip \
 
 # Build and install to toolchain
 make && make install
+
+# Clear environment variables used in this build:
+unset CARGS CMARGS

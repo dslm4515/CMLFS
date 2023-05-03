@@ -24,7 +24,7 @@ http://ftp.barfooze.de/pub/sabotage/tarballs/netbsd-curses-0.3.2.tar.xz
 https://download.savannah.gnu.org/releases/attr/attr-2.5.1.tar.gz
 https://download.savannah.gnu.org/releases/acl/acl-2.3.1.tar.xz
 https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.50.tar.xz
-http://ftp.gnu.org/gnu/sed/sed-4.8.tar.xz
+http://ftp.gnu.org/gnu/sed/sed-4.9.tar.xz
 https://sourceforge.net/projects/psmisc/files/psmisc/psmisc-23.4.tar.xz
 https://github.com/Mic92/iana-etc/releases/download/20210526/iana-etc-20210526.tar.gz
 https://invisible-island.net/archives/byacc/byacc-20230219.tgz
@@ -91,7 +91,7 @@ http://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.2.tar.gz
 https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
 http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/llvm-project-15.0.6.src.tar.xz
-https://cmake.org/files/v3.20/cmake-3.20.4.tar.gz
+https://cmake.org/files/v3.26/cmake-3.26.3.tar.gz
 https://dist.libuv.org/dist/v1.41.0/libuv-v1.41.0.tar.gz
 https://github.com/chimera-linux/libatomic-chimera/archive/refs/tags/v0.90.0.tar.gz
 https://github.com/libarchive/libarchive/releases/download/v3.6.2/libarchive-3.6.2.tar.xz
