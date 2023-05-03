@@ -51,7 +51,7 @@ https://github.com/facebook/zstd/releases/download/v1.5.0/zstd-1.5.0.tar.gz
 https://sourceware.org/ftp/elfutils/0.185/elfutils-0.185.tar.bz2
 ftp://sourceware.org/pub/libffi/libffi-3.3.tar.gz
 http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.3.3.tar.gz
-https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tar.xz
+https://www.python.org/ftp/python/3.11.3/Python-3.11.3.tar.xz
 https://github.com/ninja-build/ninja/archive/v1.10.2/ninja-1.10.2.tar.gz
 https://github.com/mesonbuild/meson/releases/download/0.58.0/meson-0.58.0.tar.gz
 https://sourceforge.net/projects/procps-ng/files/Production/procps-ng-3.3.17.tar.xz

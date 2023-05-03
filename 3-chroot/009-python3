@@ -1,6 +1,5 @@
-# Toolchain: Python3
-# Source: https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tar.xz
-# Build and install as cmlfs
+# Stage1: Python3
+# Build under chroot
 
 # Apply fixes to build under musl
 patch -Np0 -i ../patches/python3-void/musl-find_library.patch &&
@@ -15,20 +14,20 @@ rm -r Modules/_ctypes/darwin
 sed -i '/def add_multiarch_paths/a \        return' setup.py
 
 # Configure source with clang
-CC=x86_64-pc-linux-musl-clang \
-CXX=x86_64-pc-linux-musl-clang++ \
+CC=clang \
+CXX=clang++ \
 AR=llvm-ar \
 AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
-./configure --build=${TARGET_TUPLE} \
-            --host=${TARGET_TUPLE}  \
+./configure --build=${TUPLE} \
+            --host=${TUPLE}  \
             --prefix=/llvmtools      \
             --enable-shared          \
             --without-ensurepip 
 
 # Build and install to toolchain
 make && make install
-chmod -v 755 /llvmtools/lib/libpython3.9.so &&
+chmod -v 755 /llvmtools/lib/libpython3.11.so &&
 chmod -v 755 /llvmtools/lib/libpython3.so  
