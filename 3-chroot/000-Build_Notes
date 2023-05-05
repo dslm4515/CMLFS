@@ -1,0 +1,25 @@
+# Stage1 - Chroot
+
+# To avoid contamination from host system, the rest of llvmtools
+# will be built under chroot.
+
+# The following will be built in this order:
+
+# 1  - Patch - Required if any package source needs patching
+# 2  - Findutils - Required when cleaning kernel source
+# 3  - diffutils
+# 4  - Kernel Headers
+# 5  - Perl
+# 6  - Texinfo - Requires Perl
+# 7  - Python3
+# 8  - Choose samurai or ninja - Ninja requires Python
+# 9  - CMake - Required to configure LLVM source. Has optional
+#              Dependancy on Python and samurai/ninja
+# 10 - File - Handy tool for ascertaining file type of a given file
+# 11 - bmake - Required to build elftoolchain
+# 12 - Optional: tcl, expect, & dejagnu - Used for testing built packages.
+# 13 - Optional: Vim & Nano - Handy tool(s) for editing text files
+
+# * elftoolchain was not built as requires another package: libarchive.
+# The binary tools (i.e. llvm-ar) will be sufficient until the final
+# system musl libc is built and libarchive & elftoolchain are built.
