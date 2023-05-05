@@ -1,0 +1,21 @@
+# Final System: netbsd-curses
+# Build and install under chroot
+
+# Build
+CC=$CC CXX=$CXX \
+AR=llvm-ar \
+RANLIB=llvm-ranlib \
+make PREFIX="/usr" all
+
+# Install
+make PREFIX="/usr" install
+
+# Some packages may not configure with the curses library.
+# Create a compatibility link:
+ln -sv  libcurses.so  /usr/lib/libtinfo.so
+
+# Set the dynamic loader for each executable
+for b in infocmp tabs tic tput tset
+do
+  setDL /usr/bin/$b
+done
