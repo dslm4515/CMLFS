@@ -1,50 +1,48 @@
-# Final System - Adjust Tool Chain
+# Final System - Adjust Clang
 # This section is done in Chroot environment
 
-# Re-configure clang to use new sysroot (/usr) with newly built musl Libc
-echo " --sysroot=/usr -Wl,-dynamic-linker /lib/ld-musl-$(uname -m).so.1" > \
-     /llvmtools/bin/$(uname -m)-cmlfs-linux-musl.cfg
+# Create a new configuration for stage1 clang:
+touch /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
+ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang
+ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
 
-ln -sv clang-12 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang
-ln -sv clang-12 /llvmtools/bin/$(uname -m)-cmlfs-linux-musl-clang++
+# Re-configure clang to use new sysroot (/usr) with newly built musl Libc
+echo "--sysroot=/usr " > \
+     /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
+
+# With the sysroot changed, disable the stage1 clang's defaults. Then
+# manually set the order of header paths, library paths and default shared
+# objects that are linked:
+cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
+-nostdinc++
+-nostdinc
+-isystem/usr/include/c++/v1
+-L/usr/lib
+-lc -lc++ -lunwind -latomic
+-I/llvmtools/include/c++/v1
+-I/usr/include
+-I/llvmtools/include
+-I/llvmtools/lib/clang/15.0.6/include
+EOF
 
 # Update the build environment
-export CC=$(uname -m)-cmlfs-linux-musl-clang
-export CXX=$(uname -m)-cmlfs-linux-musl-clang++
+export CC=$(uname -m)-pc-linux-musl-clang
+export CXX=$(uname -m)-pc-linux-musl-clang++
 
-# Create links to make sure clang is used and not GCC
-#mv /llvmtools/bin/cc  /llvmtools/bin/cc.gnu
-#mv /llvmtools/bin/g++ /llvmtools/bin/g++.gnu
-#ln -sv $(uname -m)-cmlfs-linux-musl-clang   /llvmtools/bin/cc
-#ln -sv $(uname -m)-cmlfs-linux-musl-clang++ /llvmtools/bin/g++
-
-# Use script (from when buillding llvmtools) to make sure clang is
-# the default compiler and LLVM as default binary tools
-set-llvm-mode 
-set-llvm-bin-mode
-
-# Adjust binutils linker of llvmtools:
-mv -v  /llvmtools/bin/{ld.bfd,ld.bfd-old}
-mv -v  /llvmtools/x86_64-cmlfs-linux-musl/bin/{ld.bfd,ld-old}
-mv -v  /llvmtools/bin/{ld.bfd-new,ld.bfd}
-rm -v /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
-ln -sv /llvmtools/bin/ld.bfd /llvmtools/x86_64-cmlfs-linux-musl/bin/ld
-
-# Modify the specs file so that gcc of llvmtools builds
-# binaries with /lib/ld-musl-x86_64.so.1 as dynamic linker:
-export SPECFILE=`dirname $(/llvmtools/bin/gcc.gnu -print-libgcc-file-name)`/specs
-gcc.gnu -dumpspecs | sed -e 's@/llvmtools@@g' \
-                        -e '/\*startfile_prefix_spec:/{n;s@.*@/usr/lib/ @}' \
-                        -e '/\*cpp:/{n;s@$@ -isystem /usr/include@}' >  tempspecfile
-mv -vf tempspecfile $SPECFILE
-unset SPECFILE
-
+# Adjust the library search path for the dynamic loader in llvmtools:
+cp -v /llvmtools/etc/ld-musl-$(uname -m).path{,.orig}
+cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
+/lib
+/usr/lib
+/llvmtools/lib
+EOF
 
 # Check the basic functions (compiling and linking) of 
 # the adjusted toolchain (clang) are working as expected. To do 
 # this, perform the following sanity checks:
 echo 'int main(){}' > dummy.c
 $CC dummy.c -v -Wl,--verbose &> dummy.log
+setDL a.out
 llvm-readelf -l a.out | grep ': /lib'
 # Should output:
 # [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
@@ -66,6 +64,7 @@ grep 'ld.lld:' dummy.log | grep 'crt[1in]'
 grep -B1 '^ /usr/include' dummy.log
 # Should output:
 # #include <...> search starts here:
+# /llvmtools/include/c++/v1
 # /usr/include
 
 # Verify that the new linker is being used with the 
@@ -77,43 +76,3 @@ grep -o -- -L/usr/lib dummy.log && grep -o -- -L/lib dummy.log
 # the test files:
 rm -v a.out dummy.log
 
-# Now test GCC of llvmtools
-gcc.gnu dummy.c -v -Wl,--verbose &> dummy.log
-readelf -l a.out | grep ': /lib'
-
-# Should output:
-# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-i386.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-arm.so.1]
-# or
-# [Requesting program interpreter: /lib/ld-musl-arch64.so.1]
-
-# Make sure that we're setup to use the correct start files: 
-grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
-# Should output:
-# /usr/lib/crt1.o succeeded
-# /usr/lib/crti.o succeeded
-# /usr/lib/crtn.o succeeded
-
-# Verify that the compiler is searching for the correct 
-# header files: 
-grep -B1 '^ /usr/include' dummy.log
-# Should output:
-# #include <...> search starts here:
-# /usr/include
-
-# Verify that the new linker is being used with the 
-# correct search paths: 
-grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
-# Should output:
-# SEARCH_DIR("=/llvmtools/x86_64-mlfs-linux-musl/lib64")
-# SEARCH_DIR("/usr/lib")
-# SEARCH_DIR("/lib")
-# SEARCH_DIR("=/llvmtools/x86_64-mlfs-linux-musl/lib")
-# ^ first and last line can be ignored
-
-# Once everything is working correctly, clean up 
-# the test files:
-rm -v dummy.c a.out dummy.log
