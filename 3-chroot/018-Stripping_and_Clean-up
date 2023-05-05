@@ -1,0 +1,24 @@
+# Stage1: Stripping & clean up
+
+# This step is optional, but if the CMLFS partition
+# is rather small, it is beneficial to learn that
+# unnecessary items can be removed. The executables
+# and libraries built so far contain about 70 MB
+# of unneeded debugging symbols.
+
+# Exit chroot to avoid stripping an binaries in use:
+exit
+
+# As root, strip the binaries in llvmtools
+export TUPLE="$(uname -m)-pc-linux-musl"
+/usr/bin/find /llvmtools/bin/ -maxdepth 1 -type f -exec \
+     /cgnutools/${TUPLE}/bin/strip --strip-debug {} \;
+/usr/bin/find /llvmtools/lib/ -maxdepth 1 -type f -exec \
+     /cgnutools/${TUPLE}/bin/strip --strip-debug {} \;
+uset TUPLE
+
+# Remove the documentation:
+rm -rf /llvmtools/{,share}/{info,man,doc}
+
+# Remove unneeded files:
+find /llvmtools/{lib,libexec} -name \*.la -delete
