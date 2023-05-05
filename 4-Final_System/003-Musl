@@ -1,0 +1,90 @@
+# Final System: Musl Libc
+# This section is done in Chroot environment
+
+# For i686(32 bit), there is a rounding error that
+# causes fonts to not display for SeaMonkey and 
+# Palemoon browsers:
+case $(uname -m) in
+   i686) patch -Np1 -i ../patches/musl-mlfs/i686-fix-rounding.patch ;;
+esac
+
+# Fix the paths for utmp and wtmp:
+patch -Np1 -i ../patches/musl-mlfs/fix-utmp-wtmp-paths.patch
+
+# Harden musl libc with scudo from compiler-rt
+# o Extract compiler-rt
+cd .. && tar xf pkgs/compiler-rt-15.0.6.src.tar.xz
+
+# o Copy over scudo from compiler-rt
+cd -  && mkdir -pv src/malloc/scudo/scudo
+for t in cpp h inc
+do
+  cp -rv ../compiler-rt-15.0.6.src/lib/scudo/standalone/*.$t src/malloc/scudo/
+done
+cp -rv ../compiler-rt-15.0.6.src/lib/scudo/standalone/include/scudo/interface.h \
+       src/malloc/scudo/scudo/
+# o Remove wrappers ...
+rm -v src/malloc/scudo/wrappers_c*
+
+# o ...to add wrappers from Chimera Linux
+cp -v ../files/musl-chimera/wrappers.cpp src/malloc/scudo/
+
+# o Apply patches from Chimera Linux
+patch -Np1 -i ../patches/musl-chimera/0001-scudo-add-necessary-plumbing.patch
+patch -Np1 -i ../patches/musl-chimera/0002-scudo-clean-up-lingering-weak-symbols-we-don-t-want.patch
+patch -Np1 -i ../patches/musl-chimera/0003-do-not-rely-on-system-headers-for-cpu-info.patch
+patch -Np1 -i ../patches/musl-chimera/libcc-compiler-rt.patch
+patch -Np1 -i ../patches/musl-chimera/lto.patch
+patch -Np1 -i ../patches/musl-chimera/mo_lookup.patch
+patch -Np1 -i ../patches/musl-chimera/musl-overflow.patch
+patch -Np1 -i ../patches/musl-chimera/plt.patch
+
+# Set the CPU architechture
+case $(uname -m) in
+     i686) export CARCH="i386"    ;;
+   x86_64) export CARCH="x86_64"  ;;
+     arm*) export CARCH="arm"     ;;
+  aarch64) export CARCH="aarch64" ;;
+esac
+
+# Configure
+CC=clang CXX=clang++  \
+LD=ld.lld             \
+AR=llvm-ar            \
+RANLIB=llvm-ranlib    \ 
+AS=llvm-as            \
+./configure --prefix=/usr         \
+            --sysconfdir=/etc     \
+            --localstatedir=/var  \
+            --disable-gcc-wrapper \
+             -enable-debug
+
+# Build and install 
+make && make  install
+
+# Provide minimal libssp_nonshared.a so we don't need libssp from gcc
+clang -fpie -c ../files/musl-alpine/__stack_chk_fail_local.c -o __stack_chk_fail_local.o
+llvm-ar r libssp_nonshared.a __stack_chk_fail_local.o
+cp -v libssp_nonshared.a /usr/lib/
+
+# Create link for ldd:
+ln -sv ../lib/libc.so /usr/bin/ldd
+
+# Create config for dynamic library loading:
+cat > /etc/ld-musl-$CARCH.path <<EOF
+/lib
+/usr/lib
+EOF
+
+# Create compatibility link for i686, as some software, like SMPlayer
+# expect i686 instead of i386
+case $(uname -m) in
+     i686) ln -sv ../usr/lib/libc.so  /lib/ld-musl-i686.so.1 ;;
+esac
+unset CARCH 
+
+# Create  ldconfig
+install -v -D -m755 ../files/musl-alpine/ldconfig /usr/bin/
+
+# Remove, as skarnet's utmps will provide it
+rm -v /usr/include/utmpx.h
