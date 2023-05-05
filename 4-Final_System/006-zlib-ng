@@ -1,0 +1,18 @@
+# Final System: Zlib-ng 
+# This section is done in Chroot environment
+
+# Configure buld with CMake
+cmake -B BUILD \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DZLIB_COMPAT=ON -UBUILD_SHARED_LIBS \
+      -G Ninja
+
+# Compile
+ninja -C BUILD
+
+# Install
+cmake --install BUILD --strip
+
+# Create compatibility link
+ln -sv libz.so.1.2.11.zlib-ng /usr/lib/libz.so.1.2.11
