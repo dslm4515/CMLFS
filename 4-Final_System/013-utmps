@@ -3,22 +3,24 @@
 
 # Set version for pkgconfig file
 cp -v ../files/utmps-alpine/*.pc /tmp/
-sed -i -e "s/@@VERSION@@/0.1.0.2/g" -- /tmp/*.pc 
+sed -i -e "s/@@VERSION@@/0.1.2.1/g" -- /tmp/*.pc 
 
-# utmps segfaults if built with clang.
-# Configure source with GCC
-set-gcc-mode && set-gnu-bin-mode
+# Source is hard-coded for binutils.
+# Create links to work around
+for l in ar ranlib strip
+do
+  ln -sv llvm-$l /usr/bin/$l
+done
 
-CC=gcc CXX=g++ \
-LD=ld.bfd \
+CC=clang CXX=clang++ \
 ./configure --enable-shared      \
             --enable-static      \
             --disable-allstatic  \
             --enable-static-libc \
             --libdir=/usr/lib    \
-            --with-dynlib=/lib   \
-            --libexecdir="/lib/utmps" \
-            --with-dynlib=/lib \
+            --with-dynlib=/usr/lib   \
+            --libexecdir="/usr/lib/utmps" \
+            --with-dynlib=/usr/lib \
             --build=${TUPLE}
 # Build and Install
 make
@@ -27,8 +29,11 @@ make install
 # Some packages look for utmpx.h in /usr/include
 ln -sv utmps/utmpx.h /usr/include/utmpx.h
 
-# Install pkgconfig
+# Install pkgconfig file
 install -v -D -m644 /tmp/utmps.pc /usr/lib/pkgconfig
 
-# Switch back to using LLVM
-set-llvm-mode && set-llvm-bin-mode
+# Remove links
+for l in ar ranlib strip
+do
+  rm -v /usr/bin/$l
+done
