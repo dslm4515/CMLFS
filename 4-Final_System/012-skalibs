@@ -1,8 +1,15 @@
 # Final System: Skalibs
-# Source: http://skarnet.org/software/skalibs/skalibs-2.9.3.0.tar.gz
 # This section is done in Chroot environment
 
+# Source is hard-coded for binutils.
+# Create links to work around
+for l in ar ranlib strip
+do
+ ln -sv llvm-$l /usr/bin/$l
+done 
+
 # Configure source
+CC=clang CXX=clang \
 ./configure --prefix=/usr       \
             --build=${TUPLE}   \
             --enable-static     \
@@ -12,3 +19,9 @@
 # Build and Install
 make
 make install
+
+# Remove links
+for l in ar ranlib strip
+do
+  rm -v /usr/bin/$l
+done
