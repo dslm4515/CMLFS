@@ -1,0 +1,20 @@
+# Final System: Zstd
+# This section is done in Chroot environment
+
+# Source is hard coded for ar. Create a link
+ln -sv llvm-ar /llvmtools/bin/ar
+
+CC=$CC CXX=$CXX make 
+CC=$CC CXX=$CXX make -C contrib/pzstd
+
+make prefix=/usr install
+make PREFIX=/usr -C contrib/pzstd install
+
+# Set the dynamic loader for each executable
+for b in pzstd zstd
+do
+  setDL /usr/bin/$b
+done
+
+# Remove temporary link
+rm -v /llvmtools/bin/ar
