@@ -1,8 +1,11 @@
 # Final System: Expat
 # This section is done in Chroot environment
 
+# Configure with clang
 CC=clang CXX=clang++         \
 ./configure --prefix=/usr    \
             --disable-static \
-            --docdir=/usr/share/doc/expat-2.4.1
+            --docdir=/usr/share/doc/expat-2.5.0
+
+# Compile & install
 make && make install
