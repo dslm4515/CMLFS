@@ -1,0 +1,10 @@
+# Final System: Libtool 
+# This section is done in Chroot environment
+
+# Configure with clang
+CC=clang CXX=clang++ \
+./configure --prefix=/usr 
+
+# Compile & install
+make && make install
+
