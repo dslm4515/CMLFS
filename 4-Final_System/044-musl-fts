@@ -1,0 +1,12 @@
+# Final System: Musl-FTS 
+# This section is done in Chroot environment
+
+# Compile
+CC=clang   \
+PREFIX=/usr \
+make
+
+# Install
+CC=clang   \
+PREFIX=/usr \
+make install
