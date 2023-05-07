@@ -1,0 +1,14 @@
+# Final System: M4 1.4.18
+# This section is done in Chroot environment
+
+# Apply patches from Alpine Linux to fix tests
+patch -Np1 -i ../patches/m4-alpine/0001-test-execute-main.c-set-default-handler-for-SIGPIPE-.patch
+patch -Np1 -i ../patches/m4-alpine/fix-sysval-test.patch 
+patch -Np1 -i ../patches/m4-alpine/musl-realpath.patch 
+patch -Np1 -i ../patches/m4-alpine/test-posix_spawn_file_actions_addclose.patch 
+
+# Configure
+./configure --prefix=/usr
+
+# Build and install
+make && make install
