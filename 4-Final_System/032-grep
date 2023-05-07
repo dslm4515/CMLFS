@@ -1,0 +1,13 @@
+# Final System: Grep 
+# This section is done in Chroot environment
+
+# Configure with clang
+# * ac_cv_header_sys_cdefs_h=no ignores the installed
+# BSD comptibility  headers
+CC=clang && CXX=clang++ \
+ac_cv_header_sys_cdefs_h=no \
+./configure --prefix=/usr \
+            --bindir=/usr/bin \
+            --sysconfdir=/etc
+
+ make && make install
