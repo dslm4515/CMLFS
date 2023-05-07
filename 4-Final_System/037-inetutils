@@ -1,12 +1,10 @@
-# Final System: Inetutils 2.0
+# Final System: Inetutils 
 # This section is done in Chroot environment
 
 # Apply patch for utmpx support
 patch -Np1 -i ../patches/inetutils-mlfs/logwtmp.patch &&
-sed -i 's|_GL_WARN_ON_USE (gets|//_GL_WARN_ON_USE (gets|' lib/stdio.in.h
-echo '#define PATH_PROCNET_DEV "/proc/net/dev"' >> ifconfig/system/linux.h
-sed -i 's|port : "whois"|port : "nicname"|' whois/whois.c
 
+# Configure source with clang
 CC=clang CXX=clang++             \
 ./configure --prefix=/usr        \
             --localstatedir=/var \
@@ -16,6 +14,8 @@ CC=clang CXX=clang++             \
             --disable-rexec      \
             --disable-rlogin     \
             --disable-rsh        \
-            --disable-servers
+            --disable-servers    \
+            ac_cv_header_sys_cdefs_h=no
 
+# Compile & install
 make && make install
