@@ -1,0 +1,16 @@
+# Final System: Byacc
+# Build & install under chroot
+
+# Configure with clang
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+# Compile
+make
+
+# Install to llvmtools
+make install
+
+# Some packages will not find byacc.
+# Create a link:
+ln -sv yacc /usr/bin/byacc
