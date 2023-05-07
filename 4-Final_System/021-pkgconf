@@ -1,13 +1,13 @@
 # Final System: PkgConf
-# Source: https://distfiles.dereferenced.org/pkgconf/pkgconf-1.7.3.tar.xz
 # This section is done in Chroot environment
 
 # Configure source
+NM=llvm-nm AR=llvm-ar \
 ./configure --prefix=/usr              \
-            --docdir=/usr/share/doc/pkgconf-1.7.3 \
+            --docdir=/usr/share/doc/pkgconf-1.9.5 \
             --sysconfdir=/etc          \
             --localstatedir=/var       \
-            --with-pkg-config-dir=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/opt/qt5/lib/pkgconfig
+            --with-pkg-config-dir=/usr/lib/pkgconfig:/usr/share/pkgconfig:/opt/qt5/lib/pkgconfig
 
 # Build and Install
 make && make install
