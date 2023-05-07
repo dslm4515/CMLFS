@@ -1,0 +1,7 @@
+# Final System: Musl Legacy Compatibility Headers
+# Build & install under chroot
+
+for h in cdefs queue tree
+do
+  install -v -D -m644 src/$h.h /usr/include/sys
+done

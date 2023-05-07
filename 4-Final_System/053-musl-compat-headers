@@ -1,7 +1,0 @@
-# Final System: Musl Legacy Compatibility Headers
-# Source: https://github.com/void-linux/void-packages/tree/master/srcpkgs/musl-legacy-compat
-
-for h in cdefs queue tree
-do
-    install -v -D -m644 files/musl-legacy-compat-void/$h.h /usr/include/sys
-done
