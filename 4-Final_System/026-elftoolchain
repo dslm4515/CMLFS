@@ -1,0 +1,33 @@
+# Final System: elftools
+# Build under chroot
+#
+# NOTE: Replaced binutils and libelf(elfutils)
+# NOTE: Requires bmake, lsb-tools, libarchive, musl-compat-headers
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/elftoolchain-chimera/0001-disable-ld-build.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/allow-empty-elf-data.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/cxxfilt.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/use-symlinks.patch
+patch -Np1 -i ../patches/elftoolchain-chimera/werror.patch
+
+# Source is hard-coded for ar, ranlib, and strip (either binutils or 
+# elftoolchain).
+for t in ar as ranlib strip
+do
+  ln -sv llvm-$t /llvmtools/bin/$t
+done 
+
+# Compile
+bmake WITH_ADDITIONAL_DOCUMENTATION=no \
+      WITH_TESTS=no \
+      MANTARGET=man 
+
+# Install
+bmake WITH_ADDITIONAL_DOCUMENTATION=no \
+      WITH_TESTS=no \
+      MANTARGET=man \
+      install
+
+# Install musl-compatible elfdefinitions.h
+cp -v ../files/elftoolchain-chimera/elfdefinitions.h /usr/include/sys/
