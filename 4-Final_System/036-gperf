@@ -1,0 +1,10 @@
+# Final System: Gperf 
+# This section is done in Chroot environment
+
+# Configure with clang
+CC=clang CXX=clang++ \
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/gperf-3.1
+
+# Compile & install
+make && make install
