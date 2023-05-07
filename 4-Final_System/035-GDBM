@@ -1,11 +1,11 @@
-# Final System: GDBM 1.19
-# Source: http://ftp.gnu.org/gnu/gdbm/gdbm-1.19.tar.gz
+# Final System: GDBM 
 # This section is done in Chroot environment
 
-sed -r -i '/^char.*parseopt_program_(doc|args)/d' src/parseopt.c
-
+# Configure with clang
 CXX=clang++ CC=clang \
 ./configure --prefix=/usr \
             --disable-static \
             --enable-libgdbm-compat
+
+# Compile and install
 make && make install
