@@ -1,0 +1,13 @@
+# Final System: Intltool 
+# This section is done in Chroot environment
+
+# Fix a warning that is caused by perl-5.22 and later:
+sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+
+# Configure source with clang
+CC=clang CXX=clang++ \
+./configure --prefix=/usr 
+
+# Compile & install
+make && make install
+
