@@ -1,0 +1,22 @@
+# Final System: libarchive
+# Build & install under chroot
+# 
+# NOTE: Required by elftoolchain
+
+# Apply patch to enable xz multithreaded compression by default.
+patch -Np1 -i ../patches/libarchive-chimera/filter-xz-enable-threads.patch
+
+# Configure source
+CC=$CC CXX=$CXX \
+AR=llvm-ar NM=llvm-nm \
+./configure --prefix=/usr \
+            --disable-static \
+            --without-xml2 \
+            --without-nettle \
+            --without-expat 
+
+# Compile
+make
+
+# Install
+make install
