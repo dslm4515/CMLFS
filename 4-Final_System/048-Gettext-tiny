@@ -1,0 +1,17 @@
+# Final System: Gettext-Tiny
+# This section is done in Chroot environment
+
+# Apply patch from Chimera Linux
+patch -Np1 -i ../patches/gettext-tiny-chimera/portable-autopoint.patch
+
+# Compile with clang
+CC=clang CXX=clang++ \
+make LIBINTL=MUSL prefix=/usr
+
+# Install
+make LIBINTL=MUSL DESTDIR=/ prefix=/usr install
+
+# Create a shared library
+clang -O0 -fPIC -c -o libintl-musl.o libintl/libintl-musl.c
+clang -shared -o libintl.so libintl-musl.o
+cp -v libintl.so /usr/lib/
