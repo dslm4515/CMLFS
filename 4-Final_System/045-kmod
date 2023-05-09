@@ -1,0 +1,28 @@
+# Final System: Kmod
+# This section is done in Chroot environment
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/kmod-chimera/stdout.patch
+patch -Np1 -i ../patches/kmod-chimera/strndupa.patch
+
+# Configure with clang
+CC=clang CXX=clang++               \
+./configure --prefix=/usr          \
+            --bindir=/usr/bin      \
+            --sbindir=/usr/sbin    \
+            --sysconfdir=/etc      \
+            --with-rootlibdir=/usr/lib \
+            --with-xz              \
+            --with-zlib \
+            --with-zstd 
+
+# Compile & install
+make && make install
+
+# Create symlinks for compatibility with Module-Init-Tools (
+# the package that previously handled Linux kernel modules)
+for target in depmod insmod lsmod modinfo modprobe rmmod; do
+  ln -sfv ../bin/kmod /usr/sbin/$target
+done
+
+ln -sfv kmod /usr/bin/lsmod
