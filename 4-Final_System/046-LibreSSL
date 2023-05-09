@@ -1,0 +1,31 @@
+# Final System: LibreSSL 
+# Build and install under chroot
+
+# Run autoreconf
+autoreconf -vif
+
+# Set a few variables ...
+case $(uname -m) in
+ x86_64)  export EXTRACONFIG=""
+         ;;
+ i686)    export EXTRACONFIG="--disable-hardening"
+         ;;
+esac
+
+# Configure with clang
+CC=clang CXX=clang++       \
+CFLAGS="-L/usr/lib " \
+./configure \
+           --build=$TUPLE \
+           --host=$TUPLE \
+           --prefix=/usr \
+           --sysconfdir=/etc \
+           --mandir=/usr/share/man \
+           --localstatedir=/var $EXTRACONFIG
+
+
+unset EXTRACONFIG 
+
+# Build and install
+make && make install
+
