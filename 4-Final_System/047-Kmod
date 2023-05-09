@@ -14,7 +14,8 @@ CC=clang CXX=clang++               \
             --with-rootlibdir=/usr/lib \
             --with-xz              \
             --with-zlib \
-            --with-zstd 
+            --with-zstd \
+            --with-openssl 
 
 # Compile & install
 make && make install
