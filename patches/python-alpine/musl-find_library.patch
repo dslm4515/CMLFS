@@ -1,5 +1,6 @@
---- Lib/ctypes/util.py.orig
-+++ Lib/ctypes/util.py
+diff -ru Python-2.7.12.orig/Lib/ctypes/util.py Python-2.7.12/Lib/ctypes/util.py
+--- Python-2.7.12.orig/Lib/ctypes/util.py	2016-06-26 00:49:30.000000000 +0300
++++ Python-2.7.12/Lib/ctypes/util.py	2016-11-03 16:05:46.954665040 +0200
 @@ -204,6 +204,41 @@
          def find_library(name, is64 = False):
              return _get_soname(_findLib_crle(name, is64) or _findLib_gcc(name))
