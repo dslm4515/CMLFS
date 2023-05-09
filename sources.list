@@ -5,7 +5,6 @@ https://skarnet.org/software/utmps/utmps-0.1.2.1.tar.gz
 https://data.iana.org/time-zones/releases/tzdata2023c.tar.gz
 https://data.iana.org/time-zones/releases/tzcode2023c.tar.gz
 https://dev.alpinelinux.org/archive/posixtz/posixtz-0.5.tar.xz
-http://www.lysator.liu.se/~nisse/misc/argp-standalone-1.3.tar.gz
 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.7.tar.gz
 https://astron.com/pub/file/file-5.44.tar.gz
 https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz
@@ -41,8 +40,6 @@ https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz
 http://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.xz
 https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz
 https://github.com/chimera-linux/musl-fts/archive/refs/tags/v1.2.7-mk2.tar.gz
-https://github.com/pullmoll/musl-obstack/archive/v1.1.tar.gz
-https://github.com/pullmoll/musl-rpmatch/archive/v1.0.tar.gz
 https://tukaani.org/xz/xz-5.4.2.tar.xz
 https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-30.tar.xz
 http://ftp.barfooze.de/pub/sabotage/tarballs/gettext-tiny-0.3.2.tar.xz
