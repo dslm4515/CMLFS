@@ -1,0 +1,20 @@
+# Final System: OpenSSL
+# Build & install under chroot
+
+# NOTE: Python 3.10+ no longer supports libreSSL.
+# Build OpenSSL as an auxillary package to build Python3
+
+# Configure source to install in /opt/openssl
+./config --prefix=/opt/openssl \
+         --openssldir=/opt/openssl/etc/ssl \
+         --libdir=lib          \
+         shared                \
+         zlib-dynamic no-ssl3-method -Wa,--noexecstack
+
+# Compile
+make
+
+# Install to /opt
+sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
+make MANSUFFIX=ssl install
+
