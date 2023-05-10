@@ -1,0 +1,27 @@
+# Final System: Coreutils
+# This section is done in Chroot environment
+
+# Recreate configure script
+autoreconf -vf
+
+# Suppress a test which on some machines can loop forever
+sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
+
+# Configure
+CC=clang CXX=clang++     \
+ac_cv_func_syncfs=no     \
+FORCE_UNSAFE_CONFIGURE=1 \
+LIBS="-lutmps -lskarnet" \
+ac_cv_header_sys_cdefs_h=no \
+./configure --prefix=/usr                           \
+            --enable-no-install-program=kill,uptime \
+            --disable-rpath                         \
+            --enable-install-program=arch,hostname
+
+# Build and install
+FORCE_UNSAFE_CONFIGURE=1 make && make install
+
+# Move programs to the locations specified by the FHS:
+mv -v /usr/bin/chroot /usr/sbin
+mv -v /usr/share/man/man1/chroot.1 /usr/share/man/man8/chroot.8
+sed -i 's/"1"/"8"/' /usr/share/man/man8/chroot.8
