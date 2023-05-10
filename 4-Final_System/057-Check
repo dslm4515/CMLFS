@@ -1,5 +1,4 @@
-# Final System: Check 0.15.2
-# Source: https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz
+# Final System: Check 
 # This section is done in Chroot environment
 
 CC=clang CXX=clang++ \
