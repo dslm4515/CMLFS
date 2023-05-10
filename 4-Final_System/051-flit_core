@@ -1,0 +1,8 @@
+# Final System: Flit-Core (python module)
+# Build and install under chroot
+
+# Compile with pip
+pip3 wheel -w dist --no-build-isolation --no-deps $PWD
+
+# Install
+pip3 install --no-index --no-user --find-links dist flit_core
