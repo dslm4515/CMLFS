@@ -1,8 +1,9 @@
 # Final System: Less
-# Source: http://www.greenwoodsoftware.com/less/less-551.tar.gz
 # This section is done in Chroot environment
 
+# Configure wih clang
 CC=clang CXX=clang++ \
 ./configure --prefix=/usr --sysconfdir=/etc &&
 
+# Compile & install
 make && make install
