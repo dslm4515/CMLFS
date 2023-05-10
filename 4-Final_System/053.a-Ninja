@@ -1,6 +1,7 @@
 # Final System: Ninja
-# Source: https://github.com/ninja-build/ninja/archive/v1.10.0/ninja-1.10.2.tar.gz
 # This section is done in Chroot environment
+#
+# NOTE: Ninja can be replaced with Samurai
 
 # If desired, add the capability to use the 
 # environment variable NINJAJOBS
@@ -12,9 +13,13 @@ sed -i '/int Guess/a \
 ' src/ninja.cc
 
 
-# Now configure and build
-#python3 configure.py --bootstrap
-cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=MinSizeRel
+# Now configure and build.
+
+# Can be done with python 
+# python3 configure.py --bootstrap
+
+# OR CMake & make:
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
 make -C build
 
 # Install
