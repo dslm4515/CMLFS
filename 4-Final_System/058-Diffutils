@@ -1,7 +1,10 @@
 # Final System: Diffutils
-# Source: http://ftp.gnu.org/gnu/diffutils/diffutils-3.7.tar.xz
 # This section is done in Chroot environment
 
+# Configure with clang but no BSD headers
 CC=clang CXX=clang++ \
+ac_cv_header_sys_cdefs_h=no \
 ./configure --prefix=/usr
+
+# Compile & install
 make && make install
