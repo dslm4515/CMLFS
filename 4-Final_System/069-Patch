@@ -1,0 +1,10 @@
+# Final System: Patch
+# This section is done in Chroot environment
+
+# Configure with clang 
+CC=clang CXX=clang++ \
+ac_cv_header_sys_cdefs_h=no \
+./configure --prefix=/usr 
+
+# Compile & install
+make && make install
