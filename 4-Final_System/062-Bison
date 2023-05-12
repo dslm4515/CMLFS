@@ -1,0 +1,14 @@
+# Final System: Bison
+# Build under chroot
+
+# NOTE: GRUB requires bison. Install it in /opt/gnu
+# in case other packages arent compatible with byacc
+
+# Configure with clang, but ignore BSD headers
+CC=clang CXX=clang++ \
+ac_cv_header_sys_cdefs_h=no \
+./configure --prefix=/opt/gnu \
+            --docdir=/opt/gnu/share/doc/bison-3.8.2
+
+# Compile & install
+make && make install
