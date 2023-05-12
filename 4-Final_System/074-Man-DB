@@ -1,18 +1,14 @@
 # Final system: Man-DB
-# Source: http://download.savannah.gnu.org/releases/man-db/man-db-2.9.4.tar.xz
 # This section is done in Chroot environment
 
-# Apply patches from void
-patch -Np0 -i ../patches/man-db-void/guard-glibc-iconv-ext.patch
-patch -Np0 -i ../patches/man-db-void/add-missing-stdlib_h-include.patch 
+# Apply patches from Alpine Linux
+patch -Np1 -i ../patches/man-db-alpine/ignore.patch 
 
-# No need, as using gettext-tiny now
-#export CFLAGS+=" -I/usr/include/gettext" 
-#export LDFLAGS+=" -lintl"
-
+# Configure with clang but not with BSD headers
 CC=clang CXX=clang++ \
+ac_cv_header_sys_cdefs_h=no \
 ./configure --prefix=/usr                        \
-            --docdir=/usr/share/doc/man-db-2.9.4 \
+            --docdir=/usr/share/doc/man-db-2.11.2 \
             --sysconfdir=/etc                    \
             --disable-setuid                     \
             --enable-cache-owner=bin             \
@@ -27,6 +23,5 @@ CC=clang CXX=clang++ \
             --without-included-regex             \
             --enable-automatic-create 
 
+# Compile & install
 make && make install
-
-unset CFLAGS LDFLAGS
