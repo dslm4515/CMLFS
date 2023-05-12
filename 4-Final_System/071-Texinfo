@@ -1,8 +1,10 @@
 # Final System: Texinfo
-# Source: http://ftp.gnu.org/gnu/texinfo/texinfo-6.7.tar.xz
 # This section is done in Chroot environment
 
+# Configure with clang and without BSD headers
 CC=clang CXx=clang++ \
+ac_cv_header_sys_cdefs_h=no \
 ./configure --prefix=/usr --disable-static
 
+# Compile & install
 make && make install
