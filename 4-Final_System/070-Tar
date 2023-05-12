@@ -1,0 +1,13 @@
+# Final System: Tar
+# This section is done in Chroot environment
+
+# Configue with clang
+CC=clang CXX=clang++          \
+FORCE_UNSAFE_CONFIGURE=1      \
+ac_cv_header_sys_cdefs_h=no   \
+gl_cv_struct_dirent_d_ino=yes \
+./configure --prefix=/usr     \
+            --bindir=/usr/bin
+
+# Compile & install
+make && make install
