@@ -1,0 +1,17 @@
+# Final System: IProute2 
+# This section is done in Chroot environment
+
+# Per LFS, The arpd program included in this package will not be 
+# built since it depends on Berkeley DB, which is not installed in 
+# CMLFS. However, a directory and a man page for arpd will still 
+# be installed. Prevent this by running the commands shown below. 
+sed -i /ARPD/d Makefile
+rm -fv man/man8/arpd.8
+sed -i 's/.m_ipt.o//' tc/Makefile
+
+# Build
+make CC=clang NETNS_RUN_DIR=/run/netns
+
+# Install
+make DOCDIR=/usr/share/doc/iproute2-6.3.0 \
+     SBINDIR=/usr/sbin install
