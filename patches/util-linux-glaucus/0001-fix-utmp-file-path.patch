@@ -1,0 +1,306 @@
+--- Documentation/poeigl.txt
++++ Documentation/poeigl.txt
+@@ -127,7 +127,7 @@
+ 	jlaiho@ichaos.nullnet.fi (Juha Laiho) for agetty.c, used
+ 	to return a pointer to an automatic variable in get_logname().
+ 	Many patches from or via Rickard Faith <faith@cs.unc.edu>, fixing
+-	man-pages etc, now defaults to using /var/log/wtmp and /var/run/utmp
++	man-pages etc, now defaults to using /var/log/wtmp and /run/utmps/utmp
+ 	according to the new FSSTND.
+ 
+ 	Fix in login.c for CPU eating bug when a remote telnet client dies
+--- login-utils/login.1
++++ login-utils/login.1
+@@ -178,7 +178,7 @@
+ .RE
+ .SH "FILES"
+ .sp
+-\fI/var/run/utmp\fP,
++\fI/run/utmps/utmp\fP,
+ \fI/var/log/wtmp\fP,
+ \fI/var/log/lastlog\fP,
+ \fI/var/spool/mail/*\fP,
+@@ -220,4 +220,4 @@
+ .SH "AVAILABILITY"
+ .sp
+ The \fBlogin\fP command is part of the util\-linux package which can be downloaded from \c
+-.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" "."
+\ No newline at end of file
++.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" "."
+--- login-utils/login.1.adoc
++++ login-utils/login.1.adoc
+@@ -136,7 +136,7 @@
+ 
+ == FILES
+ 
+-_/var/run/utmp_,
++_/run/utmps/utmp_,
+ _/var/log/wtmp_,
+ _/var/log/lastlog_,
+ _/var/spool/mail/*_,
+--- login-utils/login.c
++++ login-utils/login.c
+@@ -736,7 +736,7 @@
+ 
+ 	/* Find pid in utmp.
+ 	 *
+-	 * login sometimes overwrites the runlevel entry in /var/run/utmp,
++	 * login sometimes overwrites the runlevel entry in /run/utmps/utmp,
+ 	 * confusing sysvinit. I added a test for the entry type, and the
+ 	 * problem was gone. (In a runlevel entry, st_pid is not really a pid
+ 	 * but some number calculated from the previous and current runlevel.)
+--- NEWS
++++ NEWS
+@@ -1619,7 +1619,7 @@
+ 
+         /var/log/wtmp       /var/adm/wtmp
+         /var/log/lastlog    /var/adm/lastlog
+-        /var/run/utmp       /var/adm/utmp
++        /run/utmps/utmp     /var/adm/utmp
+ 
+ HIGHLIGHTS for version 2.2:
+ 1) This is primarily a quick bug-fix release for version 2.1
+--- po-man/cs.po
++++ po-man/cs.po
+@@ -7763,7 +7763,7 @@
+ 
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+-msgid "_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
++msgid "_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+ 
+ #. type: Plain text
+@@ -31751,7 +31751,7 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
+ msgstr ""
+ 
+ #. type: Plain text
+--- po-man/de.po
++++ po-man/de.po
+@@ -10605,11 +10605,11 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ 
+@@ -45772,8 +45772,8 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
+-msgstr "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
++msgstr "_/run/utmps/utmp_"
+ 
+ #. type: Plain text
+ #: ../term-utils/agetty.8.adoc:300
+--- po-man/es.po
++++ po-man/es.po
+@@ -9520,11 +9520,11 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ 
+@@ -40068,8 +40068,8 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
+-msgstr "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
++msgstr "_/run/utmps/utmp_"
+ 
+ #. type: Plain text
+ #: ../term-utils/agetty.8.adoc:300
+@@ -48269,7 +48269,7 @@
+ #~ "utmp y wtmp. Solo el superusuario podrá usar esta opción."
+ 
+ #~ msgid ""
+-#~ "I</var/run/utmp>\n"
++#~ "I</run/utmps/utmp>\n"
+ #~ "I</var/log/wtmp>\n"
+ #~ "I</var/log/lastlog>\n"
+ #~ "I</var/spool/mail/*>\n"
+@@ -48281,7 +48281,7 @@
+ #~ "I</etc/hushlogins>\n"
+ #~ "I<.hushlogin>\n"
+ #~ msgstr ""
+-#~ "I</var/run/utmp>\n"
++#~ "I</run/utmps/utmp>\n"
+ #~ "I</var/log/wtmp>\n"
+ #~ "I</var/log/lastlog>\n"
+ #~ "I</var/spool/mail/*>\n"
+--- po-man/fr.po
++++ po-man/fr.po
+@@ -10554,11 +10554,11 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ 
+@@ -45550,8 +45550,8 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
+-msgstr "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
++msgstr "_/run/utmps/utmp_"
+ 
+ #. type: Plain text
+ #: ../term-utils/agetty.8.adoc:300
+--- po-man/pt_BR.po
++++ po-man/pt_BR.po
+@@ -10170,7 +10170,7 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+@@ -39825,8 +39825,8 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
+-msgstr "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
++msgstr "_/run/utmps/utmp_"
+ 
+ #. type: Plain text
+ #: ../term-utils/agetty.8.adoc:300
+--- po-man/sr.po
++++ po-man/sr.po
+@@ -10552,11 +10552,11 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ 
+@@ -45405,8 +45405,8 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
+-msgstr "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
++msgstr "_/run/utmps/utmp_"
+ 
+ #. type: Plain text
+ #: ../term-utils/agetty.8.adoc:300
+--- po-man/uk.po
++++ po-man/uk.po
+@@ -9964,11 +9964,11 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, _/"
+ "etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, _/etc/pam.d/"
+ "remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ 
+@@ -42528,8 +42528,8 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
+-msgstr "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
++msgstr "_/run/utmps/utmp_"
+ 
+ #. type: Plain text
+ #: ../term-utils/agetty.8.adoc:300
+--- po-man/util-linux-man.pot
++++ po-man/util-linux-man.pot
+@@ -9005,7 +9005,7 @@
+ #. type: Plain text
+ #: ../login-utils/login.1.adoc:150
+ msgid ""
+-"_/var/run/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, "
++"_/run/utmps/utmp_, _/var/log/wtmp_, _/var/log/lastlog_, _/var/spool/mail/*_, "
+ "_/etc/motd_, _/etc/passwd_, _/etc/nologin_, _/etc/pam.d/login_, "
+ "_/etc/pam.d/remote_, _/etc/hushlogins_, _$HOME/.hushlogin_"
+ msgstr ""
+@@ -37943,7 +37943,7 @@
+ #. type: Labeled list
+ #: ../term-utils/agetty.8.adoc:298
+ #, no-wrap
+-msgid "_/var/run/utmp_"
++msgid "_/run/utmps/utmp_"
+ msgstr ""
+ 
+ #. type: Plain text
+--- term-utils/agetty.8
++++ term-utils/agetty.8
+@@ -540,7 +540,7 @@
+ .if n .RE
+ .SH "FILES"
+ .sp
+-\fI/var/run/utmp\fP
++\fI/run/utmps/utmp\fP
+ .RS 4
+ the system status file.
+ .RE
+@@ -590,4 +590,4 @@
+ .SH "AVAILABILITY"
+ .sp
+ The \fBagetty\fP command is part of the util\-linux package which can be downloaded from \c
+-.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" "."
+\ No newline at end of file
++.URL "https://www.kernel.org/pub/linux/utils/util\-linux/" "Linux Kernel Archive" "."
+--- term-utils/agetty.8.adoc
++++ term-utils/agetty.8.adoc
+@@ -295,7 +295,7 @@
+ 
+ == FILES
+ 
+-_/var/run/utmp_::
++_/run/utmps/utmp_::
+ the system status file.
+ 
+ _/etc/issue_::

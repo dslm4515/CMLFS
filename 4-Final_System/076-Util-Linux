@@ -1,0 +1,29 @@
+# Final System: Util-Linux
+# This section is done in Chroot environment
+
+# Apply patch from Glucus to fix utmp paths
+patch -Np0 -i ../patches/util-linux-glaucus/0001-fix-utmp-file-path.patch
+
+# Configure source. Disable more, as it does not support netbsd-curses
+CC=clang CXX=clang++    \
+LIBS="-lutmps -lskarnet" \
+./configure ADJTIME_PATH=/var/lib/hwclock/adjtime     \
+            --docdir=/usr/share/doc/util-linux-2.38.1 \
+            --disable-chfn-chsh  \
+            --disable-login      \
+            --disable-nologin    \
+            --disable-su         \
+            --disable-setpriv    \
+            --disable-runuser    \
+            --disable-pylibmount \
+            --disable-static     \
+            --without-python     \
+            --without-systemd    \
+            --without-systemdsystemunitdir \
+            --disable-more \
+            --bindir=/usr/bin \
+            --sbindir=/usr/sbin \
+            --libdir=/usr/lib
+
+# Compile & install
+make && make install
