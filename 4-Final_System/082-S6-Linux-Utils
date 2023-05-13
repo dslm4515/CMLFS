@@ -1,0 +1,12 @@
+# Final System: S6-Linux-Utils 
+# This section is done in Chroot environment
+
+# Configure with clang
+CC=clang CXX=clang++ \
+./configure --disable-allstatic  \
+            --prefix=/usr        \
+            --exec-prefix=/usr   \
+            --with=dynlib=/usr/lib
+
+# Compile & install
+make && make install
