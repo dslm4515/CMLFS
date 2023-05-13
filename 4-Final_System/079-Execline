@@ -1,0 +1,18 @@
+# Final System: Execline 
+# This section is done in Chroot environment
+
+# Configure with clang and 
+CC=clang CXX=clang++ \
+./configure --enable-shared         \
+            --enable-static         \
+            --enable-allstatic      \
+            --enable-static-libc    \
+            --libdir=/usr/lib       \
+            --with-dynlib=/usr/li   \
+            --prefix=/usr           \
+            --exec-prefix=/usr      \
+            --enable-pedantic-posix \
+            --enable-nsss
+
+# Compile & install
+make && make install
