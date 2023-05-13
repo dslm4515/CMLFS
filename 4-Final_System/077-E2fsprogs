@@ -1,16 +1,16 @@
 # Final System: E2fsprogs
-# Source: https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.46.1/e2fsprogs-1.46.1.tar.gz
 # This section is done in Chroot environment
 
-patch -Np1 -i ../patches/e2fsprogs-adelie/header-fix.patch
-patch -Np1 -i ../patches/e2fsprogs-adelie/time64.patch
-
+# Compile in a dedicated directory
 mkdir -v build && cd build
 
+# Configure with clang
 CC=clang CXX=clang++                 \
 e2fsprogs_cv_struct_st_flags=no      \
 ../configure --prefix=/usr           \
-             --bindir=/bin           \
+             --bindir=/usr/bin       \
+             --sbindir=/usr/sbin     \
+             --libdir=/usr/lib      \
              --with-root-prefix=""   \
              --enable-elf-shlibs     \
              --disable-libblkid      \
@@ -20,10 +20,18 @@ e2fsprogs_cv_struct_st_flags=no      \
              --enable-e2initrd-helper \
              --disable-rpath 
 
+# Compile
 make
 
+# Install
 make install && make install-libs
-chmod -v u+w /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+
+# Remove useless static libraries
+rm -fv /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+
+# Package installs a gzipped .info file but doesn't update the system-wide 
+# dir file. Unzip this file and then update the system dir file using the 
+# following commands:
 gunzip -v /usr/share/info/libext2fs.info.gz
 install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info
 
