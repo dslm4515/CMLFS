@@ -1,0 +1,43 @@
+diff -uNr procps-ng-4.0.2.orig/src/watch.c procps-ng-4.0.2/src/watch.c
+--- procps-ng-4.0.2.orig/src/watch.c	2022-10-04 06:34:22.046479350 -0500
++++ procps-ng-4.0.2/src/watch.c	2023-02-03 19:46:36.078221275 -0600
+@@ -52,7 +52,7 @@
+ # define _XOPEN_SOURCE_EXTENDED 1
+ # include <wchar.h>
+ # include <wctype.h>
+-# include <ncursesw/ncurses.h>
++# include <ncurses.h>
+ #else
+ # include <ncurses.h>
+ #endif	/* WITH_WATCH8BIT */
+@@ -703,7 +703,7 @@
+ #ifdef WITH_WATCH8BIT
+ 				cchar_t oldc;
+ 				in_wch(&oldc);
+-				exit_early = (wchar_t) c != oldc.chars[0];
++				exit_early = (wchar_t) c != oldc.vals[0];
+ #else
+ 				chtype oldch = inch();
+ 				unsigned char oldc = oldch & A_CHARTEXT;
+@@ -715,7 +715,7 @@
+ #ifdef WITH_WATCH8BIT
+ 				cchar_t oldc;
+ 				in_wch(&oldc);
+-				if ((wchar_t) c == oldc.chars[0])
++				if ((wchar_t) c == oldc.vals[0])
+ 					unchanged_buffer++;
+ #else
+ 				chtype oldch = inch();
+@@ -729,10 +729,10 @@
+ 				cchar_t oldc;
+ 				in_wch(&oldc);
+ 				attr = !first_screen
+-				    && ((wchar_t) c != oldc.chars[0]
++				    && ((wchar_t) c != oldc.vals[0]
+ 					||
+ 					((flags & WATCH_CUMUL)
+-					 && (oldc.attr & A_ATTRIBUTES)));
++					 && (oldc.attributes & A_ATTRIBUTES)));
+ #else
+ 				chtype oldch = inch();
+ 				unsigned char oldc = oldch & A_CHARTEXT;

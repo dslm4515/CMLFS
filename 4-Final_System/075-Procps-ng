@@ -1,28 +1,30 @@
 # Final System: Procps-ng 
 # This section is done in Chroot environment
 
-# Update configure script
-autoreconf -fiv
-
 # Apply patch for utmpx support
 patch -Np1 -i ../patches/procps-mlfs/use_utmpx.patch
 
-# Fix a file
-sed -i '1i#include <langinfo.h>' proc/escape.c 
+# Apply patch for netbsd-curses compatibility:
+patch -Np1 -i ../patches/procps-mlfs/netbsd-curses-compat.patch
 
+# Update configure script
+autoreconf -fiv
+
+# Configure with clang, utmps and skalibs
 LIBS="$LIBS -lutmps -lskarnet"   \
 ac_cv_func_malloc_0_nonnull=yes  \
 ac_cv_func_realloc_0_nonnull=yes \
 ./configure --prefix=/usr                            \
+            --bindir=/usr/bin                        \
+            --sbindir=/usr/sbin                      \
             --exec-prefix=                           \
             --libdir=/usr/lib                        \
-            --docdir=/usr/share/doc/procps-ng-3.3.17 \
+            --docdir=/usr/share/doc/procps-ng-4.0.3  \
             --disable-static                         \
             --disable-kill                           \
             --enable-watch8bit                       \
             --without-systemd --disable-modern-top
 
+# Compile & install
 make && make install
-mv -v /usr/lib/libprocps.so.* /lib
-ln -sfv ../../lib/$(readlink /usr/lib/libprocps.so) /usr/lib/libprocps.so
 
