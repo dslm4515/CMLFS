@@ -84,11 +84,11 @@ make
 make install
 
 # Create a symlink required by the FHS for 'historical' reasons
-ln -sv ../bin/cpp.gnu /opt/gnu/lib/cpp
+ln -sv ../bin/cpp /opt/gnu/lib/cpp
 
 # Many packages use the name cc to call the C compiler. Satisfy
 # those pacakges with a symlink:
-ln -sv gcc /opt/opt/bin/cc
+ln -sv gcc /opt/gnu/bin/cc
 
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)
