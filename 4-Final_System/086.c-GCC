@@ -1,0 +1,103 @@
+# Final System: GCC (optional)
+# This section is done in Chroot environment
+
+# NOTE: Installing GCC is optional as most packages can be built with clang.
+# NOTE: GCC requires as (assembler) from binutils as LLVM's llvm-as isn't a
+#       100% drop-in replacement for binutils' (unsupported arguments)
+
+# Set CPU flags related to target system
+case $(uname -m) in
+  x86_64)  export EXTRA_CONFIG=" --with-arch=x86-64"
+          ;;
+  i686)    export EXTRA_CONFIG=" --with-arch=pentium3 --with-tune=pentium-m"
+          ;;
+  armv7l)  export  EXTRA_CONFIG=" --with-arch=armv7-a --with-tune=generic-armv7-a "
+           export EXTRA_CONFIG+="--with-fpu=vfpv3-d16 --with-float=hard "
+           export EXTRA_CONFIG+="--with-abi=aapcs-linux --with-mode=thumb"
+          ;;
+  armv6l)  export  EXTRA_CONFIG=" --with-arch=armv6zk --with-tune=arm1176jzf-s "
+           export EXTRA_CONFIG+="--with-fpu=vfp --with-float=hard --with-abi=aapcs-linux"
+          ;;
+  aarch64) export  EXTRA_CONFIG=" --with-arch=armv8-a --with-abi=lp64 "
+           export EXTRA_CONFIG+="--enable-fix-cortex-a53-835769 --enable-fix-cortex-a53-843419"
+           sed -i '/m64=/s/lib64/lib/' gcc/config/aarch64/t-aarch64-linux
+          ;;
+esac &&
+
+# For ARM, disable libitm because of texrels
+case $(uname -m) in
+     arm*) export LIBITM=false ;;
+esac &&
+
+#tar -xf ../pkgs/isl-0.25.tar.xz &&
+#mv -v isl-0.25 isl         &&
+
+# Apply patches from glaucus
+case $(uname -m) in
+   x86_64)  patch -Np0 -i ../patches/gcc-glaucus/0001-pure64-for-x86-64.patch 
+            ;;
+   aarch64) patch -Np0 -i ../patches/gcc-glaucus/0001-pure64-for-aarch64.patch
+            ;;
+esac
+
+# Set paths for GNU libraries and headers for GCC:
+export PKG_CONFIG_PATH=/opt/gnu/lib/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
+export       LIBRARY_PATH=/usr/lib:/opt/gnu/lib
+export     C_INCLUDE_PATH=/opt/gnu/include
+export CPLUS_INCLUDE_PATH=/opt/gnu/include
+export PATH=/opt/gnu/bin:/bin:/usr/bin:/sbin:/usr/sbin
+
+# Build in a dedicated directory
+mkdir build && cd build
+
+# Enable useful features
+export  CARGS="--enable-__cxa_atexit --with-linker-hash-style=gnu  "
+export CARGS+="--with-ppl=yes --with-cloog=yes --enable-cloog-backend "
+export CARGS+="--enable-threads=posix --enable-clocale=generic --enable-tls "
+export CARGS+="--enable-libstdcxx-time --enable-fully-dynamic-string "
+export CARGS+="--enable-linker-build-id --enable-checking=release "
+
+# Turn off features not needed
+export  COFF="--disable-libstdcxx-pch --disable-nls --disable-multilib "
+export COFF+="--disable-bootstrap --disable-symvers --disable-libsanitizer "
+export COFF+="--disable-libssp --disable-libmpx --disable-libmudflap "
+export COFF+="--disable-fixed-point --disable-sjlj-exceptions --disable-werror "
+
+# Configure source
+CC=clang CXX=clang++ \
+LDFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+SED=sed  libat_cv_have_ifunc=no \
+../configure --prefix=/opt/gnu \
+             --build=x86_64-pc-linux-musl \
+             --enable-languages=c,c++,lto \
+             --enable-lto \
+             --with-pkgversion='CMLFS 3.0.0' \
+             --enable-default-pie \
+             --enable-default-ssp \
+             --enable-plugins \
+             --with-system-zlib $CARGS $COFF
+
+# Compile
+make 
+
+# Install!
+make install
+
+# Create a symlink required by the FHS for 'historical' reasons
+ln -sv ../bin/cpp.gnu /opt/gnu/lib/cpp
+
+# Many packages use the name cc to call the C compiler. Satisfy
+# those pacakges with a symlink:
+ln -sv gcc /opt/opt/bin/cc
+
+# Create a compatibility symlink to enable building programs with
+# LTO (Link Time Optimization)
+install -v -dm755 /opt/gnu/lib/bfd-plugins
+ln -sv  ../../libexec/gcc/${TUPLE}/13.1.0/liblto_plugin.so \
+        /opt/gnu/lib/bfd-plugins/
+mkdir -pv /opt/gnu/share/gdb/auto-load/usr/lib
+mv -v /opt/gnu/lib/*gdb.py /opt/gnu/share/gdb/auto-load/usr/lib
+
+# Clean up variables used in this build
+unset PKG_CONFIG_PATH LIBRARY_PATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin
