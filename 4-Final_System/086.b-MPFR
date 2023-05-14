@@ -1,0 +1,16 @@
+# Final System: MPFR 
+# This section is done in Chroot environment
+
+# This is optional but required if building GCC
+
+# Configure source to install in /opt/gnu
+./configure --prefix=/opt/gnu        \
+            --disable-static     \
+            --enable-thread-safe \
+            --docdir=/opt/gnu/share/doc/mpfr-4.2.0
+
+# Build
+make
+
+# Install
+make install

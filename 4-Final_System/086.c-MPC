@@ -1,0 +1,17 @@
+# Final System: MPC 
+# This section is done in Chroot environment
+
+# This is optional but required if building GCC
+
+# Configure source
+LDFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+./configure --prefix=/opt/gnu         \
+            --disable-static      \
+            --docdir=/opt/gnu/share/doc/mpc-1.3.1 \
+            --with-mpfr=/opt/gnu
+
+# Build
+make
+
+# Install
+make install
