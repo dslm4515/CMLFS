@@ -1,0 +1,63 @@
+# Final System: Binutils (optional)
+# This section is done in Chroot environment
+
+# NOTE: GCC requires binutils' as[sembler] as LLVM's
+#       does not support ALL arguments supported by
+#       binutils'
+#
+# NOTE: Bison required for gprofng
+
+# Apply patches from Alpine Linux
+patch -Np1 -i ../patches/binutils-alpine/0001-Revert-PR25882-.gnu.attributes-are-not-checked-for-s.patch 
+patch -Np1 -i ../patches/binutils-alpine/binutils-ld-fix-static-linking.patch 
+
+# Create build directory
+mkdir -v build && cd build
+
+# Set additional flags based on CPU arch:
+case $(uname -m) in
+  x86_64)  export EXTRA_CONFIG=" --enable-targets=x86_64-pep --enable-64-bit-bfd"
+           ;;
+  i686)    export EXTRA_CONFIG=" --disable-separate-code --enable-64-bit-bfd "
+           ;;
+esac
+
+# Enable useful features
+export  CARGS="--enable-relro "
+export CARGS+="--enable-deterministic-archives "
+export CARGS+="--enable-default-hash-style=gnu "
+export CARGS+="--enable-initfini-array "
+export CARGS+="--with-mmap "
+export CARGS+="--enable-threads "
+
+# Disable features not needed
+export  COFF="--disable-werror --disable-nls "
+export COFF+="--disable-multilib --disable-compressed-debug-sections "
+export COFF+="--disable-isl-version-check --enable-generate-build-notes=no "
+export COFF+="--enable-gprofng=no "
+
+# Add /opt/gnu/bin to path for bison
+export PATH=/opt/gnu/bin:/bin:/usr/bin:/sbin:/usr/sbin
+
+# Configure source with clang
+CC=clang CXX=clang++ \
+CFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+CXXFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+../configure --prefix=/opt/gnu   \
+             --enable-gold       \
+             --enable-ld=default \
+             --enable-plugins    \
+             --enable-shared     \
+             --with-system-zlib  \
+             --with-pic \
+             --enable-lto \
+             $EXTRA_CONFIG $CARGS $COFF 
+
+# Compile
+make tooldir=/opt/gnu
+
+# Install
+make tooldir=/opt/gnu install
+
+# Clean up variables used in this build
+unset EXTRA_CONFIG CARGS COFF 
