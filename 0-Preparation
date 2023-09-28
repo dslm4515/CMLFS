@@ -44,6 +44,9 @@ ln -sv   $CMLFS/llvmtools /
 # and build area:
 mkdir -pv $CMLFS/sources/{patches,files,pkgs}
 
+# Change permissions so that sources can be downloaded. As root:
+chmod -vR a+wt  $CMLFS/sources
+
 # Download sources. Provided list can be used with wget:
 #wget --input-file=sources.list --continue --directory-prefix=$CMLFS/sources/pkgs
 # or use the download_sources.sh script if you have only cURL ;^]
@@ -58,7 +61,6 @@ passwd cmlfs
 chown -v  cmlfs $CMLFS/cgnutools
 chown -v  cmlfs $CMLFS/llvmtools
 chown -vR cmlfs $CMLFS/sources
-chmod -v  a+wt  $CMLFS/sources
 
 # Now run as cmlfs user. All toolchain software should be built 
 # as this user, unless specified.
