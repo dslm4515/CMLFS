@@ -15,7 +15,7 @@ https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.0.tar.xz
 https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz
 https://github.com/shadow-maint/shadow/releases/download/4.13/shadow-4.13.tar.xz
 https://ftp.gnu.org/gnu/gcc/gcc-13.1.0/gcc-13.1.0.tar.xz
-http://isl.gforge.inria.fr/isl-0.23.tar.bz2
+https://sourceforge.net/projects/libisl/files/isl-0.25.tar.xz
 https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
 https://distfiles.dereferenced.org/pkgconf/pkgconf-1.9.5.tar.xz
 http://ftp.barfooze.de/pub/sabotage/tarballs/netbsd-curses-0.3.2.tar.xz
