@@ -9,6 +9,10 @@ git clone https://github.com/firasuke/mussel
 cd mussel
 git checkout 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
 
+# BMLFS now has b3sum. Can use a newer mussel. The following
+# commit was tested to work:
+git checkout : 593559a117e8b4b86348e8da1e72b5d5c61580df
+
 # Make sure host has all requirements:
 ./check.sh
 
@@ -24,12 +28,17 @@ sed -i '71 i MSYSROOT="/cgnutools"' mussel.sh
 # Set vendor as 'pc'. If omitted, clang defaults to 'unknown'
 patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
 
+# If host uses clang instead of GCC,
+# Apply patch to add compatibility links for cross AR and RANLIB
+# and not compile ISL (ISL fails to configure with clang)
+patch -Np1 -i ../patches/mussel-dont-compile-isl.patch 
+
 # Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
 sudo ./mussel.sh x86_64 -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
-sudo chown -vR cmlfs $CMLFS/cgnutools
+sudo chown -vR cmlfs:cmlfs $CMLFS/cgnutools
 
 # Move misplaced headers and files:
 mv -v /cgnutools/usr/lib/*     /cgnutools/lib/
@@ -48,7 +57,8 @@ rm -rf  /cgnutools/share/man
 # cgnutools.
 # This will be reached by creating a modified  specs  file in the
 # proper location:
-/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/12.2.0/specs
+export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
 
 # Test the _tools toolchain:
 cd $CMLFS/sources

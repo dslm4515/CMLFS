@@ -1,0 +1,58 @@
+--- mussel/mussel.sh	2023-09-28 18:28:11.314284801 -0500
++++ mussel.new/mussel.sh	2023-09-28 18:31:51.823275578 -0500
+@@ -32,7 +32,7 @@
+ binutils_ver=2.41
+ gcc_ver=13.2.0
+ gmp_ver=6.3.0
+-isl_ver=0.26
++#isl_ver=0.26
+ linux_ver=6.5.3
+ mpc_ver=1.3.1
+ mpfr_ver=4.2.1
+@@ -43,7 +43,7 @@
+ binutils_url=https://ftpmirror.gnu.org/binutils/binutils-$binutils_ver.tar.lz
+ gcc_url=https://ftpmirror.gnu.org/gcc/gcc-$gcc_ver/gcc-$gcc_ver.tar.xz
+ gmp_url=https://ftpmirror.gnu.org/gmp/gmp-$gmp_ver.tar.zst
+-isl_url=https://libisl.sourceforge.io/isl-$isl_ver.tar.xz
++#isl_url=https://libisl.sourceforge.io/isl-$isl_ver.tar.xz
+ linux_url=https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-$linux_ver.tar.xz
+ mpc_url=https://ftpmirror.gnu.org/mpc/mpc-$mpc_ver.tar.gz
+ mpfr_url=https://www.mpfr.org/mpfr-current/mpfr-$mpfr_ver.tar.xz
+@@ -54,7 +54,7 @@
+ binutils_sum=eb805b9793618268faec58bf70831988922c8d943b81fa2a3f804ed4fe85e90d
+ gcc_sum=875af4d704560973ada577955392735ded87e6fd304bd0cbaf8ac795390501c7
+ gmp_sum=4cc9bd2542df97e8f3c31c8c4354bd5193e3c4b0f7a7a73a0bcc185d74daadb5
+-isl_sum=a27da5d097f4e105d3a63c5e81d26c2b00cc35a4a3bf62dd2a49335a0f20ce7f
++#isl_sum=a27da5d097f4e105d3a63c5e81d26c2b00cc35a4a3bf62dd2a49335a0f20ce7f
+ linux_sum=b063c7ca0986358f22e9019617cbadb3404da6eb44133bee789f9c7565b1c121
+ mpc_sum=86d083c43c08e98d4470c006a01e0df727c8ff56ddd2956b170566ba8c9a46de
+ mpfr_sum=f428023b8f7569fc1178faf63265ecb6cab4505fc3fce5d8c46af70db848a334
+@@ -425,7 +425,7 @@
+ mpackage binutils "$binutils_url" $binutils_sum $binutils_ver
+ mpackage gcc "$gcc_url" $gcc_sum $gcc_ver
+ mpackage gmp "$gmp_url" $gmp_sum $gmp_ver
+-mpackage isl "$isl_url" $isl_sum $isl_ver
++#mpackage isl "$isl_url" $isl_sum $isl_ver
+ 
+ [ $LINUX_HEADERS_SUPPORT = yes ] && mpackage linux "$linux_url" $linux_sum $linux_ver
+ 
+@@ -502,7 +502,7 @@
+ cp -ar $SRCDIR/gmp/gmp-$gmp_ver $SRCDIR/gcc/gcc-$gcc_ver/gmp
+ cp -ar $SRCDIR/mpfr/mpfr-$mpfr_ver $SRCDIR/gcc/gcc-$gcc_ver/mpfr
+ cp -ar $SRCDIR/mpc/mpc-$mpc_ver $SRCDIR/gcc/gcc-$gcc_ver/mpc
+-cp -ar $SRCDIR/isl/isl-$isl_ver $SRCDIR/gcc/gcc-$gcc_ver/isl
++#cp -ar $SRCDIR/isl/isl-$isl_ver $SRCDIR/gcc/gcc-$gcc_ver/isl
+ 
+ cd $BLDDIR
+ mkdir cross-gcc
+@@ -558,6 +558,10 @@
+   --host=$XTARGET \
+   --prefix=/usr >> $MLOG 2>&1
+ 
++printf -- "${BLUEC}..${NORMALC} Adding assembler link ...\n"
++ln -sv $XTARGET-gcc-ar $MPREFIX/bin/$XTARGET-ar >> $MLOG 2>&1
++ln -sv $XTARGET-gcc-ranlib $MPREFIX/bin/$XTARGET-ranlib >> $MLOG 2>&1
++
+ printf -- "${BLUEC}..${NORMALC} Building musl...\n"
+ $MAKE \
+   AR=$XTARGET-ar \
