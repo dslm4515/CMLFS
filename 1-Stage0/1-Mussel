@@ -52,13 +52,13 @@ rm -rf  /cgnutools/share/man
 
 # The new cross compiler has built-in specs which refer to the musl
 # dynamic loader  /lib/ld-musl-x86_64.so.1... which will not exist on
-# glibc hosts. We have to adjust this to build up the llvmtools with
-# /llvmtools/lib/ld-musl-x86_64.so.1, but keep the cross-gcc in
-# cgnutools.
+# glibc hosts. We have to adjust this until musl libc is built in
+# llvmtools. 
+#
 # This will be reached by creating a modified  specs  file in the
 # proper location:
 export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
-/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/cgnutools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
 
 # Test the _tools toolchain:
 cd $CMLFS/sources
@@ -67,7 +67,7 @@ ${TARGET_TUPLE}-gcc dummy.c
 readelf -l a.out | grep ld
 
 # Should output:
-# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1]
+# [Requesting program interpreter: /cgnutools/lib/ld-musl-x86_64.so.1]
 # If matching, clean up:
 rm -rf a.out dummy.c
 
