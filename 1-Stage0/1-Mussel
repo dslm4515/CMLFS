@@ -30,9 +30,12 @@ sed -i '71 i MSYSROOT="/cgnutools"' mussel.sh
 patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
 
 # If host uses clang instead of GCC,
-# Apply patch to add compatibility links for cross AR and RANLIB
-# and not compile ISL (ISL fails to configure with clang)
-patch -Np1 -i ../patches/mussel-dont-compile-isl.patch 
+# Do not build ISL.
+sed -i '35d'  mussel.sh && \
+sed -i '45d'  mussel.sh && \
+sed -i '55d'  mussel.sh && \
+sed -i '425d' mussel.sh && \
+sed -i '501d' mussel.sh
 
 # Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
