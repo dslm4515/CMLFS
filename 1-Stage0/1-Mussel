@@ -37,6 +37,9 @@ sed -i '55d'  mussel.sh && \
 sed -i '425d' mussel.sh && \
 sed -i '501d' mussel.sh
 
+# Apply patch to add compatibility links for cross AR and RANLIB
+patch -Np1 -i ../patches/mussel-add-missing-symlinks.patch
+
 # Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
 sudo ./mussel.sh x86_64 -l -o -k -p
