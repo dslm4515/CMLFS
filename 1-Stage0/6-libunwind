@@ -38,6 +38,11 @@ patch -Np1 -i ../patches/llvm1506-cmlfs/libcxx-use-strtoll_strtoul.patch
 # Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
 patch -Np1 -i ../patches/llvm1506-cmlfs/remove-locale-inlines.patch
 
+# Since, libunwind is for cgnutools, modify the cross-gcc specs to set the dynamic
+# loader as  /cgnutools/lib/ld-musl-$(uname -m).so.1
+export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/cgnutools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
+
 export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
 
@@ -82,3 +87,7 @@ ninja -C build install-unwind-stripped
 # Do not remove source tree as it will be used later
 rm -rf build
 unset CXXFLAGS CFLAGS CT
+
+# Set the cross-gcc spec to set the dynamic loader as 
+# /llvmtools/lib/ld-musl-$(uname -m).so.1
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
