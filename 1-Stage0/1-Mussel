@@ -10,6 +10,10 @@ git clone https://github.com/firasuke/mussel
 cd mussel
 git checkout 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
 
+# Update mpfr source URL
+sed -i '49d' mussel.sh && \
+sed -i '49 i mpfr_url=https://ftp.gnu.org/gnu/mpfr/mpfr-$mpfr_ver.tar.xz' mussel.sh
+
 # Make sure host has all requirements:
 ./check.sh
 
