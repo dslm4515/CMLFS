@@ -42,7 +42,8 @@ export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
-export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
+#export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
+export LINKERFLAGS="-Wl,-rpath=/cgnutools/lib "
 export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
 export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
 export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
@@ -57,10 +58,22 @@ cmake -G Ninja -B build -S libunwind -Wno-dev \
       -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
       -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
       -DLIBUNWIND_INSTALL_HEADERS=ON \
-      -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON $CT
+      -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
+      -DLIBUNWIND_ENABLE_STATIC=OFF \
+      -DLIBUNWIND_HIDE_SYMBOLS=ON $CT
 
 # compile
-ninja -C build unwind
+ninja -C build
+
+# For some reason, built libunwind.so has unresolved symbols:
+# $ ldd build/lib/libunwind.so.1.0
+# 	ldd (0x7fa2a96fb000)
+# 	libc.so => ldd (0x7fa2a96fb000)
+# 	libgcc_s.so.1 => /cgnutools/lib/libgcc_s.so.1 (0x7fa2a96bf000)
+# Error relocating build/lib/libunwind.so.1.0: __unw_getcontext: symbol not found
+# Error relocating build/lib/libunwind.so.1.0: __libunwind_Registers_x86_64_jumpto: symbol not found
+#
+# Hopefully this is not an issue.
 
 # install to cgnutools
 ninja -C build install-unwind-stripped
