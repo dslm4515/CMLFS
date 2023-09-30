@@ -12,7 +12,7 @@
 
 # cgnutools contains the following:
 # o cross-gcc [built by mussel, disabled in favor for clang]
-# o stage 2 clang
+# o stage 0 clang
 #    - libunwind
 #    - libc++abi
 #    - libc++
