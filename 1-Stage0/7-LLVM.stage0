@@ -12,12 +12,10 @@ patch -Np1 -i ../patches/llvm1506-cmlfs/modify-test-dynamic-loader.llvmtools.pat
 
 # Built llvm-tblgen will need libstdc++.so.6 & libgcc_s.so.1.
 # Set the rpath
-export  CFLAGS='-fPIC -I/cgnutools/include -Wl,-rpath,"/cgnutools/x86_64-pc-linux-musl/lib" '
-export CFLAGS+='-Wl,-rpath-link "/cgnutools/x86_64-pc-linux-musl/lib"'
+export  CFLAGS='-fPIC -I/cgnutools/include -Wl,-rpath=/cgnutools/lib '
 export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
-export LINKERFLAGS="-Wl,-dynamic-linker /llvmtools/lib/ld-musl-x86_64.so.1"
 export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
 export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
 export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
@@ -96,8 +94,6 @@ export COFF+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
 
 cmake -B build -G Ninja -Wno-dev -S llvm \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
-      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
       -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
       -DCLANG_VENDOR="cgnutools 3.0.0" -DLLD_VENDOR="cgnutools 3.0.0" \
       $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
