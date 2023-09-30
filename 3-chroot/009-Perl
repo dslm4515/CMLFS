@@ -10,7 +10,6 @@ export BUILD_ZLIB=True
 export BUILD_BZIP2=0
 
 # Set additional flags
-export CF_OLD=$CFLAGS
 export CFLAGS+=" -DNO_POSIX_2008_LOCALE"
 export CFLAGS+=" -D_GNU_SOURCE"
 
