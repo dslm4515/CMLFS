@@ -47,7 +47,6 @@ export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
-#export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
 export LINKERFLAGS="-Wl,-rpath=/cgnutools/lib "
 export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
 export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
@@ -60,8 +59,6 @@ cmake -G Ninja -B build -S libunwind -Wno-dev \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=/cgnutools \
       -DCMAKE_INSTALL_OLDINCLUDEDIR=/cgnutools/include \
-      -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
-      -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
       -DLIBUNWIND_INSTALL_HEADERS=ON \
       -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
       -DLIBUNWIND_ENABLE_STATIC=OFF \
