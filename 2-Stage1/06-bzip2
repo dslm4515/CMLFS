@@ -14,7 +14,7 @@ make -f Makefile-libbz2_so CC="clang" AR="llvm-ar" RANLIB="llvm-ranlib"
 make clean
 
 # Build with clang
-make CC="clang" AR="llvm-ar" RANLIB="llvm-ranlib"
+make CFLAGS="-fPIC" CC="clang" AR="llvm-ar" RANLIB="llvm-ranlib"
 
 # Install to tool chain
 make PREFIX=/llvmtools install
