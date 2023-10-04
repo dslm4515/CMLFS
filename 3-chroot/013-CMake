@@ -10,10 +10,11 @@ export CARGS+="--docdir=/share/doc/cmake-3.26.3 "
 export CARGS+="--no-system-jsoncpp "
 export CARGS+="--no-system-librhash "
 export CARGS+="--no-system-curl "
-export CARGS+="--no-system-libarchive "
+#
+#export CARGS+="--no-system-libarchive "
 export CARGS+="--no-system-nghttp2 "
 export CARGS+="--no-system-expat "
-export CARGS+="--no-system-zlib "
+#export CARGS+="--no-system-zlib "
 export CARGS+="--no-system-zstd "
 export CARGS+="--no-system-libuv "
 
