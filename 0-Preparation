@@ -114,7 +114,7 @@ case $(uname -m) in
               export  TARGET_TUPLE="aarch64-pc-linux-musl"
               export    CMLFS_ARCH="arm64"
               export     CMLFS_CPU="armv8-a"
-              export           MCA="aarch64""
+              export           MCA="aarch64"
            ;;
     arm7*)    export  CMLFS_TARGET="armv7l-cmlfs-linux-musleabihf"
               export  TARGET_TUPLE="armv7l-pc-linux-musleabihf"
@@ -128,8 +128,7 @@ case $(uname -m) in
               export    CMLFS_ARCH="arm"
               export     CMLFS_CPU="armv6zk"
                export           MCA="arm"
-           ;; 
-
+           ;;
 esac
 
 export  CMLFS_HOST="$(echo $MACHTYPE | \
