@@ -22,12 +22,12 @@ export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
 export CT+="-DCMAKE_NM=/cgnutools/bin/${TARGET_TUPLE}-nm "
 export CT+="-DCMAKE_RANLIB=/cgnutools/bin/${TARGET_TUPLE}-ranlib "
 export CT+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
-export CT+="-DGNU_LD_EXECUTABLE=/cgnutools/bin/x86_64-cmlfs-linux-musl-ld.bfd "
+export CT+="-DGNU_LD_EXECUTABLE=/cgnutools/bin/${CMLFS_TARGET}-ld.bfd "
 
 # Set the tuples & build target ...
-export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
+export CTG+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
 export CTG+="-DLLVM_TARGET_ARCH=host "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
@@ -137,7 +137,7 @@ ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang++
 
 # Binaries built by stage0 clang will look for libc++ .
 # Add a search path for the dynamic linker/loader in llvmtools:
-echo "/cgnutools/lib" >> /llvmtools/etc/ld-musl-$(uname -m).path
+echo "/cgnutools/lib" >> /llvmtools/etc/ld-musl-${MCA}.path
 
 # Test stage0 Clang
 echo "int main(){}" > dummy.c

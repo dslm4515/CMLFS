@@ -96,11 +96,43 @@ cat >> ~/.bashrc << EOF
 export LLVMSRC="/mnt/cmlfs/sources/llvm"
 EOF
 
-export CMLFS_TARGET="x86_64-cmlfs-linux-musl" \
-TARGET_TUPLE="x86_64-pc-linux-musl" \
-	CMLFS_ARCH="x86" \
-	CMLFS_CPU="x86-64" \
-	CMLFS_HOST="$(echo $MACHTYPE | \
+# Set the tuples
+case $(uname -m) in
+   x86_64)    export CMLFS_TARGET="x86_64-cmlfs-linux-musl" 
+              export TARGET_TUPLE="x86_64-pc-linux-musl"
+              export   CMLFS_ARCH="x86"
+              export    CMLFS_CPU="x86-64"
+              export          MCA="x86_64"
+          ;;
+    i686)     export CMLFS_TARGET="i686-cmlfs-linux-musl"
+              export TARGET_TUPLE="i686-pc-linux-musl"
+              export   CMLFS_ARCH="x86"
+              export    CMLFS_CPU="x86"
+              export          MCA="i386"
+           ;;
+    aarch64 ) export  CMLFS_TARGET="aarch64-cmlfs-linux-musl"
+              export  TARGET_TUPLE="aarch64-pc-linux-musl"
+              export    CMLFS_ARCH="arm64"
+              export     CMLFS_CPU="armv8-a"
+              export           MCA="aarch64""
+           ;;
+    arm7*)    export  CMLFS_TARGET="armv7l-cmlfs-linux-musleabihf"
+              export  TARGET_TUPLE="armv7l-pc-linux-musleabihf"
+              export    CMLFS_ARCH="arm"
+              export     CMLFS_CPU="armv7-a"
+              export           MCA="arm"    
+
+           ;;
+    arm6*)    export  CMLFS_TARGET="armv6l-cmlfs-linux-musleabihf"
+              export  TARGET_TUPLE="armv6l-pc-linux-musleabihf"
+              export    CMLFS_ARCH="arm"
+              export     CMLFS_CPU="armv6zk"
+               export           MCA="arm"
+           ;; 
+
+esac
+
+export  CMLFS_HOST="$(echo $MACHTYPE | \
 	    sed "s/$(echo $MACHTYPE | cut -d- -f2)/cross/")"
 
 cat >> ~/.bashrc << EOF
@@ -109,6 +141,7 @@ export CMLFS_HOST="${CMLFS_HOST}" \
 	CMLFS_ARCH="${CMLFS_ARCH}" \
 	CMLFS_CPU="${CMLFS_CPU}" \
 	TARGET_TUPLE="${TARGET_TUPLE}"
+        MCA="${MCA}"
 EOF
 source ~/.bashrc
 

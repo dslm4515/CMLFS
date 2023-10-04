@@ -42,7 +42,7 @@ patch -Np1 -i ../patches/mussel-add-missing-symlinks.patch
 
 # Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
-sudo ./mussel.sh x86_64 -l -o -k -p
+sudo ./mussel.sh $(uname -m) -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
 sudo chown -vR cmlfs:cmlfs $CMLFS/cgnutools

@@ -39,14 +39,6 @@ patch -Np1 -i ../patches/musl-chimera/mo_lookup.patch
 patch -Np1 -i ../patches/musl-chimera/musl-overflow.patch
 patch -Np1 -i ../patches/musl-chimera/plt.patch
 
-# Set the CPU architechture
-case $(uname -m) in
-     i686) export CARCH="i386"    ;;
-   x86_64) export CARCH="x86_64"  ;;
-     arm*) export CARCH="arm"     ;;
-  aarch64) export CARCH="aarch64" ;;
-esac
-
 # Configure
 CC=clang CXX=clang++  \
 LD=ld.lld             \
@@ -71,7 +63,7 @@ cp -v libssp_nonshared.a /usr/lib/
 ln -sv ../lib/libc.so /usr/bin/ldd
 
 # Create config for dynamic library loading:
-cat > /etc/ld-musl-$CARCH.path <<EOF
+cat > /etc/ld-musl-${MCA}.path <<EOF
 /lib
 /usr/lib
 EOF

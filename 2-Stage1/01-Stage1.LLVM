@@ -16,9 +16,9 @@ export CT+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
 export CT+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
 
 # Set the tuples & build target ...
-export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
+export CTG+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
 export CTG+="-DLLVM_TARGET_ARCH=host "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
