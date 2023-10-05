@@ -71,12 +71,18 @@ EOF
 # Create compatibility link for i686, as some software, like SMPlayer
 # expect i686 instead of i386
 case $(uname -m) in
-     i686) ln -sv ../usr/lib/libc.so  /lib/ld-musl-i686.so.1 ;;
+     i686) ln -sv libc.so  /usr/lib/ld-musl-i686.so.1 ;;
 esac
-unset CARCH 
 
-# Create  ldconfig
-install -v -D -m755 ../files/musl-alpine/ldconfig /usr/bin/
+# Install a ldconfig script.
+# This is handy for package managers to add/remove library paths
+# without directly modifying the ld-musl-$ARCH.path file.
+# If not using package managers, simply create ldconfig as a link
+# to true.
+install -v -D -m755 ../files/ldconfig /usr/bin/
+chmod -v +x /usr/sbin/ldconfig
+mkdir -pv /etc/ld-musl-${MCA}.d
+echo "/lib:/usr/lib" > /etc/ld-musl-${MCA}.d/default
 
 # Remove, as skarnet's utmps will provide it
 rm -v /usr/include/utmpx.h
