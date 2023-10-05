@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# "ld-musl-config" from Debian.
+# This script reads all config files found under /etc/ld-musl-$ARCH.d and
+# creates a concatenated liner path config file in /etc/ld-musl-$ARCH.path.
+
+for DIR in $(find /etc -maxdepth 1 -type d -name "ld-musl-*.d")
+  do
+    ARCH=$(echo $DIR | sed 's@/etc/ld-musl-@@g' | sed 's@.d@@g')
+    VALID_ARCH=0
+    case ${ARCH} in
+      aarch64|arm|armhf|amd64|i386|mips|mipsel|mips64el|powerpc64le|riscv64|s390x|sh)
+        VALID_ARCH=1
+        ;;
+    esac
+    if [ $VALID_ARCH==1 ]
+    then
+      grep -s -v '^#\|^$' /etc/ld-musl-$ARCH.d/* | sort -u > /etc/ld-musl-$ARCH.path
+    fi
+done
