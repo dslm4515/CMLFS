@@ -30,8 +30,8 @@ export CC=$(uname -m)-pc-linux-musl-clang
 export CXX=$(uname -m)-pc-linux-musl-clang++
 
 # Adjust the library search path for the dynamic loader in llvmtools:
-cp -v /llvmtools/etc/ld-musl-$(uname -m).path{,.orig}
-cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
+cp -v /llvmtools/etc/ld-musl-${MCA}.path{,.orig}
+cat > /llvmtools/etc/ld-musl-${MCA}.path <<EOF
 /lib
 /usr/lib
 /llvmtools/lib

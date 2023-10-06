@@ -30,6 +30,17 @@ cat > /llvmtools/bin/setDL << "EOF"
 # Set the dynamic loader/linker/interpreter of a binary
 # USAGE: setDL a.out
 
+case $(uname -m) in
+        i686)    export MCARCH="i386"
+                 ;;
+        x86_64)  export MCARCH="x86_64"
+                 ;;
+        aarch64) export MCARCH="arch64"
+                 ;;
+        arm*)    export MCARCH="arm"
+                 ;;
+esac
+
 export PROOT=" "
 patchelf --set-interpreter ${PROOT}/lib/ld-musl-$(uname -m).so.1 $1
 EOF
