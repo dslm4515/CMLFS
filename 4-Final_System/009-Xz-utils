@@ -9,7 +9,7 @@ CC=$CC CXX=$CXX \
 make && make install
 
 # Set the dynamic loader for each executable
-for b in lzmadec lzmainfo xz xzdec
+for b in lzcat lzmadec lzmainfo xz xzdec
 do
    setDL /usr/bin/$b
 done
