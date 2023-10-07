@@ -20,9 +20,9 @@ export CT+="-DCMAKE_RANLIB=/llvmtools/bin/llvm-ranlib "
 export CT+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
 
 # Set the tuples & build target ...
-export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TUPLE} "
+export CTG+="-DLLVM_HOST_TRIPLE=${TUPLE} "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TUPLE} "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
 export CTG+="-DLLVM_TARGET_ARCH=host "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host;AMDGPU "
@@ -43,7 +43,7 @@ export  CRT="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
 export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
 export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
 # + Set compiler_rt to use libcxx
-export CRT+="-D-DCOMPILER_RT_CXX_LIBRARY=libcxx "
+export CRT+="-DCOMPILER_RT_CXX_LIBRARY=libcxx "
 
 # Set options for clang
 # + Set the standard C++ library that clang will use to LLVM's libc++
@@ -146,12 +146,22 @@ do
   setDL /usr/bin/llvm-$b
 done
 
+# Add a compaitbility link for 32-bit x86 builtins
+case $(uname -m) in
+     i686) ln -sv i386-pc-linux-musl \
+              /usr/lib/clang/15.0.6/lib/i686-pc-linux-musl
+     ;;
+esac
+
 # Test stage2 Clang
 echo "int main(){}" > dummy.c
 /usr/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
 llvm-readelf -l a.out | grep ': /lib'
 # Shoud output:
 # [Requesting program interpreter: /lib/ld-musl-x86_64.so.1
+# or
+# [Requesting program interpreter: /lib/ld-musl-i386.so.1
+# * Will differ slightly depending on CPU architecture
 
 # Check if the correct start files are used
 grep  'crt[1in]' dummy.log | grep ld.lld:
@@ -171,6 +181,7 @@ grep -B1 -A1 '^ /usr' dummy.log
 # End of search list.
 
 # Make sure no libraries are loaded from llvmtools
+# *Will differ slightly depending on CPU architecture
 grep ld.lld:  dummy.log
 # ld.lld: /lib/Scrt1.o
 # ld.lld: /lib/crti.o
