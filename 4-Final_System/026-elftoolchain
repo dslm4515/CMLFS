@@ -4,6 +4,10 @@
 # NOTE: Replaced binutils and libelf(elfutils)
 # NOTE: Requires bmake, lsb-tools, libarchive, musl-compat-headers
 
+# Apply patch such that the tools can report a more descriptive 
+# version number
+patch -Np1 -i ../patches/elftoolchain-cmlfs/fix-version.patch 
+
 # Apply patches from Chimera Linux
 patch -Np1 -i ../patches/elftoolchain-chimera/0001-disable-ld-build.patch
 patch -Np1 -i ../patches/elftoolchain-chimera/allow-empty-elf-data.patch
