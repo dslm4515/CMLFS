@@ -2,7 +2,7 @@
 # This section is done in Chroot environment
 
 # Configure source with clang
-CC=clang CXX=calng++ \
+CC=clang CXX=clang++ \
 ./configure --prefix=/usr \
             --docdir=/usr/share/doc/automake-1.16.5
 
