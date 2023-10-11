@@ -12,6 +12,12 @@ rm -r Modules/_ctypes/darwin
 # directories. Prevent this:
 sed -i '/def add_multiarch_paths/a \        return' setup.py
 
+# If adding optional python-based tools to toolchain, like
+# meson, make sure pip3 is built
+export PI="--with-ensurepip=yes "
+# Otherwise:
+export PI="--without-ensurepip "
+
 # Configure source with clang
 CC=clang \
 CXX=clang++ \
@@ -23,10 +29,11 @@ STRIP=llvm-strip \
 ./configure --build=${TUPLE} \
             --host=${TUPLE}  \
             --prefix=/llvmtools      \
-            --enable-shared          \
-            --without-ensurepip 
+            --enable-shared $PI
 
 # Build and install to toolchain
 make && make install
 chmod -v 755 /llvmtools/lib/libpython3.11.so &&
 chmod -v 755 /llvmtools/lib/libpython3.so  
+
+unset PI
