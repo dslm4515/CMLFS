@@ -62,12 +62,6 @@ cp -v libssp_nonshared.a /usr/lib/
 # Create link for ldd:
 ln -sv ../lib/libc.so /usr/bin/ldd
 
-# Create config for dynamic library loading:
-cat > /etc/ld-musl-${MCA}.path <<EOF
-/lib
-/usr/lib
-EOF
-
 # Create compatibility link for i686, as some software, like SMPlayer
 # expect i686 instead of i386
 case $(uname -m) in
@@ -79,10 +73,13 @@ esac
 # without directly modifying the ld-musl-$ARCH.path file.
 # If not using package managers, simply create ldconfig as a link
 # to true.
-install -v -D -m755 ../files/ldconfig /usr/bin/
+install -v -D -m755 ../files/ldconfig /usr/sbin/
 chmod -v +x /usr/sbin/ldconfig
 mkdir -pv /etc/ld-musl-${MCA}.d
 echo "/lib:/usr/lib" > /etc/ld-musl-${MCA}.d/default
+
+# run ldconfig to create the dynamic loading config path file
+ldconfig
 
 # Remove, as skarnet's utmps will provide it
 rm -v /usr/include/utmpx.h
