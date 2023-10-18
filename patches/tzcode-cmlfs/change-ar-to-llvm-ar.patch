@@ -1,15 +1,15 @@
---- tzdb.orig/Makefile  2023-03-13 03:13:21.000000000 -0500
-+++ tzdb/Makefile       2023-10-07 14:03:38.928932105 -0500
+--- tzdb.orig/Makefile	2023-10-18 09:09:36.124456757 -0500
++++ tzdb/Makefile	2023-10-18 09:09:54.579457149 -0500
 @@ -507,10 +507,10 @@
  
- #MAKE=         make
+ #MAKE=		make
  
--cc=            cc
-+cc=            clang
- CC=            $(cc) -DTZDIR='"$(TZDIR)"'
+-cc=		cc
++cc=		clang
+ CC=		$(cc) -DTZDIR='"$(TZDIR)"'
  
--AR=            ar
-+AR=            llvm-ar
+-AR=		ar
++AR=		llvm-ar
  
  # ':' on typical hosts; 'ranlib' on the ancient hosts that still need ranlib.
- RANLIB=                :
+ RANLIB=		:
