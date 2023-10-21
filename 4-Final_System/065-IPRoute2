@@ -9,7 +9,8 @@ sed -i /ARPD/d Makefile
 rm -fv man/man8/arpd.8
 sed -i 's/.m_ipt.o//' tc/Makefile
 
-# Build
+# Build.  Requires bison
+PATH=/opt/gnu/bin:$PATH \
 make CC=clang NETNS_RUN_DIR=/run/netns
 
 # Install
