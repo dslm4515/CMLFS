@@ -53,7 +53,7 @@ export MARGS+="-Dsmack=false -Dsysusers=false -Dtimedated=false "
 export MARGS+="-Dtpm=false -Dtimesyncd=false -Dqrencode=false "
 export MARGS+="-Dquotacheck=false -Dutmp=false -Duserdb=false "
 export MARGS+="-Dvconsole=false -Dwheel-group=false -Dxkbcommon=false "
-export MARGS+="-Dxz=false -Dzlib=false -Dhwdb=true -Dzstd=false -Dman=true "
+export MARGS+="-Dxz=false -Dzlib=false -Dhwdb=true -Dzstd=false -Dman=false "
 export MARGS+="-Dtests=false -Dlink-journalctl-shared=false "
 export MARGS+="-Dlink-boot-shared=false -Dlink-networkd-shared=false "
 export MARGS+="-Dlink-systemctl-shared=false -Dlink-udev-shared=false "
@@ -67,35 +67,33 @@ meson setup --prefix=/usr --buildtype=release \
       -Dstatic-libudev=true OUT
 
 # Compile just the library and tools
-ninja udevadm udev-hwdb libudev
+cd OUT
+ninja udevadm udev-hwdb \
+      $(grep -o -E "^build (src/libudev|src/udev|rules.d|hwdb.d)[^:]*" \
+        build.ninja | awk '{ print $2 }')                              \
+      $(realpath libudev.so --relative-to .)
+
 for t in ata_id cdrom_id dmi_memory_id fido_id mtd_probe scsi_id v4l_id
 do
   ninja src/udev/$t
 done
+cd ..
 
 # Install
-install -vm755 udevadm                     /usr/sbin/
-install -vm755 udev-hwdb                   /usr/sbin/
-ln      -sv    udevadm                     /usr/sbin/udevd
-cp      -av    libudev.so{,*[0-9]}         /usr/lib/
-install -vm644 ../src/libudev/libudev.h    /usr/include/
-install -vm644 src/libudev/*.pc            /usr/lib/pkgconfig/
-install -vm644 src/udev/*.pc               /usr/share/pkgconfig/
-install -vm644 ../src/udev/udev.conf       /etc/udev/
-install -vm644 hwdb.d/*  ../hwdb.d/{*.hwdb,README}   /etc/udev/hwdb.d/
-install -vm644 rules.d/* ../rules.d/{*.rules,README} /usr/lib/udev/rules.d/
+install -vm755 OUT/udevadm                     /usr/sbin/
+install -vm755 OUT/udev-hwdb                   /usr/sbin/
+ln      -sv    udevadm                         /usr/sbin/udevd
+cp      -av    OUT/libudev.so{,*[0-9]}         /usr/lib/
+install -vm644 src/libudev/libudev.h           /usr/include/
+install -vm644 OUT/src/libudev/*.pc            /usr/lib/pkgconfig/
+install -vm644 OUT/src/udev/*.pc               /usr/share/pkgconfig/
+install -vm644 src/udev/udev.conf              /etc/udev/
+install -vm644 OUT/hwdb.d/*  ../hwdb.d/{*.hwdb,README}   /etc/udev/hwdb.d/
+install -vm644 OUT/rules.d/* ../rules.d/{*.rules,README} /usr/lib/udev/rules.d/
 for t in ata_id cdrom_id dmi_memory_id fido_id mtd_probe scsi_id v4l_id
 do
-  install -vm755 src/udev/$t /usr/lib/udev/
+  install -vm755 OUT/src/udev/$t /usr/lib/udev/
 done
-
-
-# The default udev rule installed by Eudev would allow all users to access 
-# /dev/kvm. The editors consider it dangerous. Create a configuration file 
-# to override it:
-cat > /etc/udev/rules.d/65-kvm.rules << "EOF"
-KERNEL=="kvm", GROUP="kvm", MODE="0660", TAG+="uaccess"
-EOF
 
 # Information about hardware devices is maintained in the /etc/udev/hwdb.d and 
 # /usr/lib/udev/hwdb.d directories. Eudev needs that information to be compiled 
