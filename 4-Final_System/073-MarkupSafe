@@ -1,0 +1,10 @@
+# Final System: MarkupSafe
+# This section is done in Chroot environment
+#
+# Required by Jinja2
+
+# Build
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+
+# Install
+pip3 install --no-index --no-user --find-links dist Markupsafe
