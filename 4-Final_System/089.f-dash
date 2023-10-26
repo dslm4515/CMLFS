@@ -1,0 +1,20 @@
+# Final System: dash 
+# This section is done in Chroot environment
+
+# NOTE: This is optional, but dash is faster.
+
+# Generate the configure script
+autoreconf -vfi
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/usr   
+
+# Build
+make
+
+# Install
+make install
+
+# Create a link as dash will be used for sh
+ln -sv dash /usr/bin/sh
