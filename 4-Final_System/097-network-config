@@ -42,7 +42,7 @@ cat > /etc/resolv.conf << "EOF"
 EOF
 
 # Set the hostname
-# in this eample, 'mlfs':
+# in this eample, 'cmlfs':
 echo "cmlfs" > /etc/hostname
 
 # Create the /etc/hosts file
