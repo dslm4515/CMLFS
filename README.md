@@ -108,8 +108,10 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 </ul>
 
 ## Change log
-
 <ul>
+<li>3.0.1: Added dash as it is a faster shell than bash.</li>
+<li>3.0.1: Dropped eudev for lack of updates. Building udev from systemd source.</li>
+<li>3.0.1: Added patch for mussel to compile under clang</li>
 <li>3.0.0: Upgraded to LLVM-15.0.6. cgnutools is now bootstrapped with mussel. Replaced binutils with elftoolchain. Most of llvmtools will be build under chroot to avoid contamination from host. </li>
 <li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li>
 <li>1.2.0: Incomplete: LLVM-11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
