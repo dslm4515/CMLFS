@@ -6,43 +6,45 @@
 # o Use the monorepo source, i.e llvm-project-x.x.x.tar.xz
 
 # Source tree will be reused later. Apply patches from Chimera Linux
-# For now, just patching for x86_64
-patch -Np1 -i ../patches/llvm1506-chimera/0001-llvm-always-set-a-larger-stack-size-explicitly.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0003-llvm-musl-workarounds.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0005-clang-disable-multiarch-layout-on-musl.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0006-clang-drop-incorrect-warning-about-vector-equality-r.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0008-compiler-rt-default-to-libc-for-sanitizers.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0009-compiler-rt-build-crt-in-runtimes-build.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0010-compiler-rt-HACK-hwasan-build-on-x86_64.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0012-compiler-rt-HACK-force-fno-lto-for-builtins.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0013-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0014-libc-libc-abi-libunwind-disable-multiarch-locations.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0018-lldb-cross-compiling-workarounds-for-python.patch
-patch -Np1 -i ../patches/llvm1506-chimera/0019-lldb-musl-fixes.patch
-patch -Np1 -i ../patches/llvm1506-chimera/clang-001-fortify-include.patch
-patch -Np1 -i ../patches/llvm1506-chimera/clang-002-fortify-enable.patch
-patch -Np1 -i ../patches/llvm1506-chimera/clang-003-as-needed.patch
-patch -Np1 -i ../patches/llvm1506-chimera/clang-004-relro-hash.patch
-patch -Np1 -i ../patches/llvm1506-chimera/clang-default-libatomic.patch
-patch -Np1 -i ../patches/llvm1506-chimera/clang-default-strong-ssp.patch
-patch -Np1 -i ../patches/llvm1506-chimera/llvm-endbr-cfi.patch
-patch -Np1 -i ../patches/llvm1506-chimera/lsan-dtp-offset.patch
-patch -Np1 -i ../patches/llvm1506-chimera/no-execinfo.patch
-patch -Np1 -i ../patches/llvm1506-chimera/unsupport-print-multiarch.patch
-patch -Np1 -i ../patches/llvm1506-chimera/unwind-chain-inclusion.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0001-llvm-always-set-a-larger-stack-size-explicitly.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0002-llvm-musl-workarounds.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0005-compiler-rt-ppc-sanitizer-fixes.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0006-compiler-rt-default-to-libc-for-sanitizers.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0007-compiler-rt-build-crt-in-runtimes-build.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0013-libc-musl-locale-workarounds.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0014-clang-disable-multiarch-layout-on-musl.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0015-clang-drop-incorrect-warning-about-vector-equality-r.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0017-clang-use-as-needed-by-default.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0018-clang-switch-on-default-now-relro.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0019-clang-default-to-fno-semantic-interposition.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0020-clang-implicitly-link-to-libatomic-on-linux-targets.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0021-clang-use-strong-stack-protector-by-default.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0022-clang-fix-unwind-chain-inclusion.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0023-Add-accessors-for-MCSubtargetInfo-CPU-and-Feature-ta.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0024-clang-link-libcxxabi-on-linux-when-using-libc.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch 
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/ifunc-fail-if-not-supported.patch 
 
 # Musl doesn't support strtoll_l(), so replace it with a simple strtoll() call.
 # Apply patches to allow localization of libc++:
-patch -Np1 -i ../patches/llvm1506-cmlfs/libcxx-use-strtoll_strtoul.patch
+#patch -Np1 -i ../patches/llvm1506-cmlfs/libcxx-use-strtoll_strtoul.patch
 
 # Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
-patch -Np1 -i ../patches/llvm1506-cmlfs/remove-locale-inlines.patch
+#patch -Np1 -i ../patches/llvm1506-cmlfs/remove-locale-inlines.patch
 
 export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
-export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-x86_64.so.1"
+export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-${MCA}.so.1"
 export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
 export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
 export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
