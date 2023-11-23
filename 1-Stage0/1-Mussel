@@ -52,7 +52,7 @@ rm -rf  /cgnutools/share/man
 # cgnutools.
 # This will be reached by creating a modified  specs  file in the
 # proper location:
-/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/12.2.0/specs
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/13.2.0/specs
 
 # Test the _tools toolchain:
 cd $CMLFS/sources
