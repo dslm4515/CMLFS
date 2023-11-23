@@ -1,20 +1,17 @@
-From 25278988666d5c31cad1fc1f8de2afecaa731700 Mon Sep 17 00:00:00 2001
-From: Daniel Kolesa <daniel@octaforge.org>
-Date: Wed, 6 Apr 2022 00:52:23 +0200
-Subject: [PATCH 05/19] clang: disable multiarch layout on musl
+From 5e92a667485dfcce37567d3d2cc948723cfa0866 Mon Sep 17 00:00:00 2001
+From: q66 <q66@chimera-linux.org>
+Date: Sat, 4 Nov 2023 09:08:54 +0100
+Subject: [PATCH 14/25] clang: disable multiarch layout on musl
 
-We don't use a multiarch layout and we don't really care for
-debianisms, so emulate whatever a non-multiarch gcc toolchain
-would do and use an empty thing.
 ---
  clang/lib/Driver/ToolChains/Linux.cpp | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/clang/lib/Driver/ToolChains/Linux.cpp b/clang/lib/Driver/ToolChains/Linux.cpp
-index ceb1a982c..7fcdcf125 100644
+index 1ba222bf8..139d99a6a 100644
 --- a/clang/lib/Driver/ToolChains/Linux.cpp
 +++ b/clang/lib/Driver/ToolChains/Linux.cpp
-@@ -46,6 +46,11 @@ std::string Linux::getMultiarchTriple(const Driver &D,
+@@ -47,6 +47,11 @@ std::string Linux::getMultiarchTriple(const Driver &D,
    bool IsMipsR6 = TargetTriple.getSubArch() == llvm::Triple::MipsSubArch_r6;
    bool IsMipsN32Abi = TargetTriple.getEnvironment() == llvm::Triple::GNUABIN32;
  
@@ -27,5 +24,5 @@ index ceb1a982c..7fcdcf125 100644
    // clever.
    switch (TargetTriple.getArch()) {
 -- 
-2.37.3
+2.42.0
 

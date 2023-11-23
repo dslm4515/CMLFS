@@ -1,14 +1,14 @@
-From 502d3b28012b8557c86ec61a1996c722182b3417 Mon Sep 17 00:00:00 2001
+From 16aaa56556b886fe0adb8524579eda6ccafaeff0 Mon Sep 17 00:00:00 2001
 From: Daniel Kolesa <daniel@octaforge.org>
 Date: Wed, 6 Apr 2022 00:58:39 +0200
-Subject: [PATCH 10/19] compiler-rt: HACK: hwasan build on x86_64
+Subject: [PATCH 09/25] compiler-rt: HACK: hwasan build on x86_64
 
 ---
  compiler-rt/lib/hwasan/hwasan_exceptions.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/compiler-rt/lib/hwasan/hwasan_exceptions.cpp b/compiler-rt/lib/hwasan/hwasan_exceptions.cpp
-index 6ed1da335..2232a055e 100644
+index bf700bf56..2c1f1b173 100644
 --- a/compiler-rt/lib/hwasan/hwasan_exceptions.cpp
 +++ b/compiler-rt/lib/hwasan/hwasan_exceptions.cpp
 @@ -14,7 +14,7 @@
@@ -21,5 +21,5 @@ index 6ed1da335..2232a055e 100644
  using namespace __hwasan;
  using namespace __sanitizer;
 -- 
-2.37.3
+2.42.0
 

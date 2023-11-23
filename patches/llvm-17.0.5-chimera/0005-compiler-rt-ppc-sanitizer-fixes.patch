@@ -1,17 +1,35 @@
-From 95fa3d049e35b141f0c2c3b3b0abb6c1b3702e46 Mon Sep 17 00:00:00 2001
-From: Daniel Kolesa <daniel@octaforge.org>
-Date: Wed, 6 Apr 2022 00:54:03 +0200
-Subject: [PATCH 07/19] compiler-rt: ppc sanitizer fixes
+From 63c7ac184238074c92f120adbe831c72b90690a3 Mon Sep 17 00:00:00 2001
+From: q66 <q66@chimera-linux.org>
+Date: Sat, 4 Nov 2023 08:52:29 +0100
+Subject: [PATCH 05/25] compiler-rt: ppc sanitizer fixes
 
 ---
+ compiler-rt/cmake/base-config-ix.cmake        |  4 +-
  .../lib/sanitizer_common/sanitizer_linux.cpp  |  4 ++
  .../sanitizer_platform_limits_posix.cpp       |  2 +-
  .../sanitizer_stoptheworld_linux_libcdep.cpp  |  2 +-
  compiler-rt/lib/xray/xray_powerpc64.inc       | 37 ++++++++++++++++++-
- 4 files changed, 42 insertions(+), 3 deletions(-)
+ 5 files changed, 45 insertions(+), 4 deletions(-)
 
+diff --git a/compiler-rt/cmake/base-config-ix.cmake b/compiler-rt/cmake/base-config-ix.cmake
+index 9c62320c3..5e37d339d 100644
+--- a/compiler-rt/cmake/base-config-ix.cmake
++++ b/compiler-rt/cmake/base-config-ix.cmake
+@@ -217,9 +217,11 @@ macro(test_targets)
+       test_target_arch(loongarch64 "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc64le|ppc64le")
+       test_target_arch(powerpc64le "" "-m64")
+-    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc")
++    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc64")
+       test_target_arch(powerpc "" "-m32")
+       test_target_arch(powerpc64 "" "-m64")
++    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc")
++      test_target_arch(powerpc "" "-m32")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "s390x")
+       test_target_arch(s390x "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "sparc")
 diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
-index dc2ea933f..a470de763 100644
+index d2b3b63f3..7a3a0f000 100644
 --- a/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
 +++ b/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
 @@ -74,6 +74,10 @@
@@ -26,31 +44,31 @@ index dc2ea933f..a470de763 100644
  #include <sys/personality.h>
  #endif
 diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
-index c85cf1626..84f202eca 100644
+index 6d61d276d..9948eafd9 100644
 --- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
 +++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
-@@ -94,7 +94,7 @@
+@@ -95,7 +95,7 @@
  # include <utime.h>
  # include <sys/ptrace.h>
  #    if defined(__mips64) || defined(__aarch64__) || defined(__arm__) || \
--        defined(__hexagon__) || SANITIZER_RISCV64
-+        defined(__hexagon__) || defined(__powerpc__) || SANITIZER_RISCV64
+-        defined(__hexagon__) || defined(__loongarch__) ||SANITIZER_RISCV64
++        defined(__hexagon__) || defined(__loongarch__) || defined(__powerpc__) || SANITIZER_RISCV64
  #      include <asm/ptrace.h>
  #      ifdef __arm__
  typedef struct user_fpregs elf_fpregset_t;
 diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
-index 403bda117..b8f454e2f 100644
+index 13b90ce9b..f8702753e 100644
 --- a/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
 +++ b/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
 @@ -31,7 +31,7 @@
  #include <sys/types.h> // for pid_t
  #include <sys/uio.h> // for iovec
  #include <elf.h> // for NT_PRSTATUS
--#if (defined(__aarch64__) || SANITIZER_RISCV64) && !SANITIZER_ANDROID
-+#if (defined(__aarch64__) || defined(__powerpc__) || SANITIZER_RISCV64) && !SANITIZER_ANDROID
+-#if (defined(__aarch64__) || SANITIZER_RISCV64 || SANITIZER_LOONGARCH64) && \
++#if (defined(__aarch64__) || defined(__powerpc__) || SANITIZER_RISCV64 || SANITIZER_LOONGARCH64) && \
+      !SANITIZER_ANDROID
  // GLIBC 2.20+ sys/user does not include asm/ptrace.h
  # include <asm/ptrace.h>
- #endif
 diff --git a/compiler-rt/lib/xray/xray_powerpc64.inc b/compiler-rt/lib/xray/xray_powerpc64.inc
 index 7e872b5b4..9616a09d8 100644
 --- a/compiler-rt/lib/xray/xray_powerpc64.inc
@@ -115,5 +133,5 @@ index 7e872b5b4..9616a09d8 100644
  
  inline bool probeRequiredCPUFeatures() XRAY_NEVER_INSTRUMENT {
 -- 
-2.37.3
+2.42.0
 
