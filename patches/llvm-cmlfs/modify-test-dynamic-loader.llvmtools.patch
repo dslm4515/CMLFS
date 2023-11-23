@@ -1,0 +1,39 @@
+--- llvm-project-17.0.5.src.orig/clang/test/Driver/linux-ld.c	2023-11-23 14:26:00.814712120 -0600
++++ llvm-project-17.0.5.src/clang/test/Driver/linux-ld.c	2023-11-23 14:28:37.896718696 -0600
+@@ -1741,21 +1741,21 @@
+ // RUN: %clang -### %s -no-pie 2>&1 \
+ // RUN:     --target=aarch64_be-pc-linux-musleabi \
+ // RUN:   | FileCheck --check-prefix=CHECK-MUSL-AARCH64_BE %s
+-// CHECK-MUSL-X86:        "-dynamic-linker" "/lib/ld-musl-i386.so.1"
+-// CHECK-MUSL-X86_64:     "-dynamic-linker" "/lib/ld-musl-x86_64.so.1"
+-// CHECK-MUSL-MIPS:       "-dynamic-linker" "/lib/ld-musl-mips.so.1"
+-// CHECK-MUSL-MIPSEL:     "-dynamic-linker" "/lib/ld-musl-mipsel.so.1"
+-// CHECK-MUSL-MIPS64:     "-dynamic-linker" "/lib/ld-musl-mips64.so.1"
+-// CHECK-MUSL-MIPS64EL:   "-dynamic-linker" "/lib/ld-musl-mips64el.so.1"
+-// CHECK-MUSL-PPC:        "-dynamic-linker" "/lib/ld-musl-powerpc.so.1"
+-// CHECK-MUSL-PPC64:      "-dynamic-linker" "/lib/ld-musl-powerpc64.so.1"
+-// CHECK-MUSL-PPCSPE:     "-dynamic-linker" "/lib/ld-musl-powerpc-sf.so.1"
+-// CHECK-MUSL-ARM:        "-dynamic-linker" "/lib/ld-musl-arm.so.1"
+-// CHECK-MUSL-ARMHF:      "-dynamic-linker" "/lib/ld-musl-armhf.so.1"
+-// CHECK-MUSL-ARMEB:      "-dynamic-linker" "/lib/ld-musl-armeb.so.1"
+-// CHECK-MUSL-ARMEBHF:    "-dynamic-linker" "/lib/ld-musl-armebhf.so.1"
+-// CHECK-MUSL-AARCH64:    "-dynamic-linker" "/lib/ld-musl-aarch64.so.1"
+-// CHECK-MUSL-AARCH64_BE: "-dynamic-linker" "/lib/ld-musl-aarch64_be.so.1"
++// CHECK-MUSL-X86:        "-dynamic-linker" "/llvmtools/lib/ld-musl-i386.so.1"
++// CHECK-MUSL-X86_64:     "-dynamic-linker" "/llvmtools/lib/ld-musl-x86_64.so.1"
++// CHECK-MUSL-MIPS:       "-dynamic-linker" "/llvmtools/lib/ld-musl-mips.so.1"
++// CHECK-MUSL-MIPSEL:     "-dynamic-linker" "/llvmtools/lib/ld-musl-mipsel.so.1"
++// CHECK-MUSL-MIPS64:     "-dynamic-linker" "/llvmtools/lib/ld-musl-mips64.so.1"
++// CHECK-MUSL-MIPS64EL:   "-dynamic-linker" "/llvmtools/lib/ld-musl-mips64el.so.1"
++// CHECK-MUSL-PPC:        "-dynamic-linker" "/llvmtools/lib/ld-musl-powerpc.so.1"
++// CHECK-MUSL-PPC64:      "-dynamic-linker" "/llvmtools/lib/ld-musl-powerpc64.so.1"
++// CHECK-MUSL-PPCSPE:     "-dynamic-linker" "/llvmtools/lib/ld-musl-powerpc-sf.so.1"
++// CHECK-MUSL-ARM:        "-dynamic-linker" "/llvmtools/lib/ld-musl-arm.so.1"
++// CHECK-MUSL-ARMHF:      "-dynamic-linker" "/llvmtools/lib/ld-musl-armhf.so.1"
++// CHECK-MUSL-ARMEB:      "-dynamic-linker" "/llvmtools/lib/ld-musl-armeb.so.1"
++// CHECK-MUSL-ARMEBHF:    "-dynamic-linker" "/llvmtools/lib/ld-musl-armebhf.so.1"
++// CHECK-MUSL-AARCH64:    "-dynamic-linker" "/llvmtools/lib/ld-musl-aarch64.so.1"
++// CHECK-MUSL-AARCH64_BE: "-dynamic-linker" "/llvmtools/lib/ld-musl-aarch64_be.so.1"
+ 
+ // Check whether multilib gcc install works fine on Gentoo with gcc-config
+ // RUN: %clang -### %s -no-pie 2>&1 \
