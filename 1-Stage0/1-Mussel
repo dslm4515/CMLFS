@@ -24,6 +24,10 @@ patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
 # Do not build ISL:
 patch -Np1 -i ../patches/mussel-dont-build-isl.patch 
 
+# If host uses clang instead of GCC,
+# Apply patch to add compatibility links for cross AR and RANLIB
+patch -Np1 -i ../patches/mussel-add-missing-symlinks.patch
+
 # Build toolchain. Ommit -p in not building in parallel and using all
 # the host's CPU cores:
 sudo ./mussel.sh x86_64 -l -o -k -p

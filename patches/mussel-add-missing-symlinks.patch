@@ -1,0 +1,13 @@
+--- mussel/mussel.sh	2023-09-28 18:28:11.314284801 -0500
++++ mussel.new/mussel.sh	2023-09-28 18:31:51.823275578 -0500
+@@ -558,6 +558,10 @@
+   --host=$XTARGET \
+   --prefix=/usr >> $MLOG 2>&1
+ 
++printf -- "${BLUEC}..${NORMALC} Adding assembler link ...\n"
++ln -sv $XTARGET-gcc-ar $MPREFIX/bin/$XTARGET-ar >> $MLOG 2>&1
++ln -sv $XTARGET-gcc-ranlib $MPREFIX/bin/$XTARGET-ranlib >> $MLOG 2>&1
++
+ printf -- "${BLUEC}..${NORMALC} Building musl...\n"
+ $MAKE \
+   AR=$XTARGET-ar \
