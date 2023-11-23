@@ -2,10 +2,9 @@
 cd $CMLFS/sources
 git clone https://github.com/firasuke/mussel
 
-# For this build, use commit 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
-# as future clones of repos may have an newer package versions not yet
-# validated to build for CMLFS.
-# This is also the last commit before mussel switch to b3sum
+# Use commit 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
+# If b3sum is not installed. This is also the last 
+# commit before mussel switch to b3sum
 cd mussel
 git checkout 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
 
