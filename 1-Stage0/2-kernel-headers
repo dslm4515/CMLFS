@@ -1,6 +1,9 @@
 # llvmtools: Kernel Headers
 # Build as cmlfs user
 
+# If host uses clang instead of GCC, prefix each make 
+# command with LLVM=1 LLVM_IAS=1
+
 # Clean the source
 make mrproper
 
