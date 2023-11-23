@@ -40,11 +40,16 @@ patch -Np1 -i ../patches/llvm-17.0.5-chimera/ifunc-fail-if-not-supported.patch
 # Force 'abi' changes (glibc->musl) to source and disable xlocale.h (holds abi changes).
 #patch -Np1 -i ../patches/llvm1506-cmlfs/remove-locale-inlines.patch
 
+# Since, libunwind is for cgnutools, modify the cross-gcc specs to set the dynamic
+# loader as  /cgnutools/lib/ld-musl-${MCA}.so.1
+export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/cgnutools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
+
 export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
-export LINKERFLAGS="-Wl,-dynamic-linker /cgnutools/lib/ld-musl-${MCA}.so.1"
+export LINKERFLAGS="-Wl,-rpath=/cgnutools/lib "
 export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
 export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
 export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
@@ -59,7 +64,9 @@ cmake -G Ninja -B build -S libunwind -Wno-dev \
       -DCMAKE_EXE_LINKER_FLAGS="${LINKERFLAGS}" \
       -DCMAKE_SHARED_LINKER_FLAGS="${LINKERFLAGS}" \
       -DLIBUNWIND_INSTALL_HEADERS=ON \
-      -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON $CT
+      -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
+      -DLIBUNWIND_ENABLE_STATIC=OFF \
+      -DLIBUNWIND_HIDE_SYMBOLS=ON $CT
 
 # compile
 ninja -C build unwind
@@ -70,4 +77,8 @@ ninja -C build install-unwind-stripped
 # Remove build directory & clear flags
 # Do not remove source tree as it will be used later
 rm -rf build
-unset CXXFLAGS CFLAGS CT
+unset CXXFLAGS CFLAGS CT LINKERFLAGS
+
+# Set the cross-gcc spec to set the dynamic loader as
+# /llvmtools/lib/ld-musl-${MCA}.so.1
+/cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
