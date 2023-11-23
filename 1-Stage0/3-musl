@@ -21,7 +21,7 @@ mkdir /llvmtools/{etc,bin}
 ln -sv ../lib/libc.so /llvmtools/bin/ldd
 
 # Configure the dynamic linker
-cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
+cat > /llvmtools/etc/ld-musl-${MCA}.path <<EOF
 /llvmtools/lib
 /llvmtools/${TARGET_TUPLE}/lib
 /llvmtools/lib/${TARGET_TUPLE}
