@@ -1,0 +1,14 @@
+--- mussel.orig/mussel.sh	2023-11-23 01:49:53.733812887 -0600
++++ mussel/mussel.sh	2023-11-23 01:50:41.042814867 -0600
+@@ -174,8 +174,8 @@
+ BLDDIR="$CURDIR/builds"
+ PCHDIR="$CURDIR/patches"
+ 
+-MPREFIX="$CURDIR/toolchain"
+-MSYSROOT="$CURDIR/sysroot"
++MPREFIX="/cgnutools"
++MSYSROOT="/cgnutools"
+ 
+ # ----- mussel Log File ---- #
+ MLOG="$CURDIR/log.txt"
+cmlfs:/mnt/cmlfs/sources/mussel

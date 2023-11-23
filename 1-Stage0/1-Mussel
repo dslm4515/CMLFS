@@ -14,10 +14,7 @@ git checkout 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
 # Modify ./mussel.sh to change these:
 # MPREFIX="/cgnutools"
 # MSYSROOT="/cgnutools"
-sed -i '70d' mussel.sh && \
-sed -i '70 i MPREFIX="/cgnutools"' mussel.sh && \
-sed -i '71d' mussel.sh && \
-sed -i '71 i MSYSROOT="/cgnutools"' mussel.sh
+patch -Np1 -i ../patches/mussel-change-variables.patch
 
 # Modify ./mussel to add a vendor in target tuple
 # Set vendor as 'pc'. If omitted, clang defaults to 'unknown'
