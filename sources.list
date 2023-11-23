@@ -84,7 +84,7 @@ https://downloads.sourceforge.net/tcl/tcl8.6.13-src.tar.gz
 https://sourceforge.net/projects/expect/files/Expect/5.45.3/expect5.45.3.tar.gz
 http://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.2.tar.gz
 https://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.3.tar.gz
-https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.10.tar.xz
+https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.2.tar.xz
 http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/llvm-project-15.0.6.src.tar.xz
 https://cmake.org/files/v3.26/cmake-3.26.3.tar.gz
