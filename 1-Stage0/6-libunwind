@@ -74,6 +74,16 @@ ninja -C build unwind
 # install to cgnutools
 ninja -C build install-unwind-stripped
 
+# Built libunwind.so will have unresolved symbols:
+# $ ldd /cgnutools/lib/libunwind.so.1.0
+# 	ldd (0x7fa2a96fb000)
+# 	libc.so => ldd (0x7fa2a96fb000
+# 	libgcc_s.so.1 => /cgnutools/lib/libgcc_s.so.1 (0x7fa2a96bf000)
+# Error relocating build/lib/libunwind.so.1.0: __unw_getcontext: symbol not found
+# Error relocating build/lib/libunwind.so.1.0: __libunwind_Registers_x86_64_jumpto: symbol not found
+# 
+# This will not be a problem
+
 # Remove build directory & clear flags
 # Do not remove source tree as it will be used later
 rm -rf build
