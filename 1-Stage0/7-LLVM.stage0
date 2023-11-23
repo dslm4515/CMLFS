@@ -92,9 +92,11 @@ export  COFF="-DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
 export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
 export COFF+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
 
+# libunwind is now not considered as a project, but as a runtime
 cmake -B build -G Ninja -Wno-dev -S llvm \
       -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
       -DCLANG_VENDOR="cgnutools 4.0.0" -DLLD_VENDOR="cgnutools 4.0.0" \
       $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
 
@@ -102,17 +104,18 @@ cmake -B build -G Ninja -Wno-dev -S llvm \
 ninja -C build
 
 # For troubleshooting, this is the breakdown of build targets:
-ninja -C build unwind # 19 targets ................................. PASS
-ninja -C build builtins # 164 ...................................... PASS
-ninja -C build cxxabi # 829 ........................................ PASS
-ninja -C build cxx # 79 ............................................ PASS
-ninja -C build llvm-tblgen # 242 ................................... PASS
-ninja -C build compiler-rt # 14 .................................... PASS
-ninja -C build lld # 1652 .......................................... PASS
-ninja -C build libclang # 798 ...................................... PASS
-ninja -C build clang # 336 ......................................... PASS
-ninja -C build llvm-lib # 4 ........................................ PASS
-ninja -C build # 576 ............................................... PASS
+# Note: Order from least to most deps not acertained yet.
+ninja -C build lld # ............................................... PASS
+ninja -C build clang # ............................................. PASS
+ninja -C build llvm-tblgen # ....................................... PASS
+ninja -C build llvm-lib # 1868 targets ............................. PASS
+ninja -C build cxxabi # 1370 targets ............................... PASS
+ninja -C build cxx # 105 targets ................................... PASS
+ninja -C build libclang # 31 targets ............................... PASS
+ninja -C build compiler-rt # 5 targets ............................. PASS
+ninja -C build unwind # 5 targets .................................. PASS
+ninja -C build builtins # 3 targets ................................ PASS
+ninja -C build # 570 ............................................... PASS 
 
 # install to cgnutools
 cmake --install build --strip
@@ -132,12 +135,12 @@ cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
 -I/llvmtools/include
 EOF
 
-ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang
-ln -sv clang-15 /cgnutools/bin/${TARGET_TUPLE}-clang++
+ln -sv clang-17 /cgnutools/bin/${TARGET_TUPLE}-clang
+ln -sv clang-17 /cgnutools/bin/${TARGET_TUPLE}-clang++
 
 # Binaries built by stage0 clang will look for libc++ .
 # Add a search path for the dynamic linker/loader in llvmtools:
-echo "/cgnutools/lib" >> /llvmtools/etc/ld-musl-$(uname -m).path
+echo "/cgnutools/lib" >> /llvmtools/etc/ld-musl-${MCA}.path
 
 # Test stage0 Clang
 echo "int main(){}" > dummy.c
@@ -158,15 +161,15 @@ grep ld.lld:  dummy.log
 # Should output:
 # ld.lld: /llvmtools/lib/Scrt1.o
 # ld.lld: /llvmtools/lib/crti.o
-# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
 # ld.lld: /tmp/dummy-ffb57c.o
-# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 # ld.lld: /llvmtools/lib/libunwind.so
 # ld.lld: /llvmtools/lib/libatomic.so
 # ld.lld: /llvmtools/lib/libc.so
-# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 # ld.lld: /llvmtools/lib/libunwind.so
-# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 # ld.lld: /llvmtools/lib/crtn.o
 
 # Verify that stage0 clang is searching for the correct header files:
@@ -220,7 +223,7 @@ ${TARGET_TUPLE}-clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
 grep error: cxx11-test.log
 # Should return nothing if there are no errors.
 
-# Execute the binary. Should output "C++14"
+# Execute the binary. Should output "C++" ... which may be a problem later.
 ./a.out
 
 # If all is good, remove build directory. Sourc tree will be re-used later
