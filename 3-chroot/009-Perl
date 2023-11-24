@@ -10,8 +10,7 @@ export BUILD_ZLIB=True
 export BUILD_BZIP2=0
 
 # Set additional flags
-export CF_OLD=$CFLAGS
-export CFLAGS+=" -DNO_POSIX_2008_LOCALE"
+export  CFLAGS=" -DNO_POSIX_2008_LOCALE"
 export CFLAGS+=" -D_GNU_SOURCE"
 
 # Make sure the bundled bzip2 is not compiled
@@ -33,8 +32,8 @@ make
 
 # Only a few of the utilities and libraries need to be installed to toolchain
 cp -v perl cpan/podlators/scripts/pod2man /llvmtools/bin
-mkdir -pv    /llvmtools/lib/perl5/5.36.1
-cp -Rv lib/* /llvmtools/lib/perl5/5.36.1
+mkdir -pv    /llvmtools/lib/perl5/5.38.0
+cp -Rv lib/* /llvmtools/lib/perl5/5.38.0
 
 unset BUILD_ZLIB BUILD_BZIP2 CFLAGS
 
