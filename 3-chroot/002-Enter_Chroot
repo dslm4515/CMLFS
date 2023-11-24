@@ -4,19 +4,24 @@
 chroot "$CMLFS" /llvmtools/bin/env -i \
     HOME=/root                  \
     TERM="$TERM"                \
-    PS1='(cmlfs chroot) \u:\w\$ ' \
+    PS1='(cmlfs chroot) \u:\w\n\$ ' \
     PATH=/bin:/usr/bin:/sbin:/usr/sbin:/llvmtools/bin \
     /llvmtools/bin/bash --login +h
 
 # Establish variables for build
+
 case $(uname -m) in
-     i686)    export TUPLE="i686-pc-linux-musl"       ;;
-     x86_64)  export TUPLE="x86_64-pc-linux-musl"     ;;
-     aarch64) export TUPLE="aarch64-linux-musleabihf" ;;
-     armv7*)  export TUPLE="armv7l-linux-musleabihf"  ;;
-     armv6*)  export TUPLE="armv6l-linux-musleabihf"  ;;
+     i686)    export TUPLE="i686-pc-linux-musl"       
+              export   MCA="i386"   ;;
+     x86_64)  export TUPLE="x86_64-pc-linux-musl"     
+              export   MCA="x86_64" ;;
+     aarch64) export TUPLE="aarch64-pc-linux-musleabihf" 
+              export   MCA="aarch64" ;;
+     armv7*)  export TUPLE="armv7l-pc-linux-musleabihf"  
+              export   MCA="arm" ;;
+     armv6*)  export TUPLE="armv6l-pc-linux-musleabihf"  
+              export   MCA="arm" ;;
 esac
 
-# Use the configured clang until Musl is built
+# Set clang as the default C/C++ compiler
 export CC=clang CXX=clang++
-
