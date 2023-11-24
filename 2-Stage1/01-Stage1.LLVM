@@ -16,9 +16,9 @@ export CT+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
 export CT+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
 
 # Set the tuples & build target ...
-export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
+export CTG+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
 export CTG+="-DLLVM_TARGET_ARCH=host "
 export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
@@ -94,20 +94,30 @@ cmake -B build -G Ninja -Wno-dev -S llvm \
       -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0" \
       $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
 
+# libunwind is now not considered as a project, but as a runtime
+cmake -B build -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+      -DLLVM_ENABLE_PROJECTS="lld;clang" \
+      -DCLANG_VENDOR="llvmtools 4.0.0" -DLLD_VENDOR="llvmtools 4.0.0" \
+      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
+
 # compile
 ninja -C build
 
 # For troubleshooting, this is the breakdown of build targets:
-ninja -C build builtins # 166 targets ...................... PASS
-ninja -C build unwind # 19 ................................. PASS
-ninja -C build cxxabi # 828 ................................ PASS
-ninja -C build cxx # 89 .................................... PASS
-ninja -C build compiler-rt # 14 ............................ PASS
-ninja -C build llvm-tblgen # 242 ........................... PASS
-ninja -C build lld # 1652 .................................. PASS
-ninja -C build libclang # 798 .............................. PASS
-ninja -C build clang # 336 ................................. PASS
-ninja -C build # 558 ....................................... PASS
+ninja -C build llvm-headers # 202 targets .................. PASS
+ninja -C build llvm-tblgen  #  68 .......................... PASS 
+ninja -C build llvm-lib # .. 1598 .......................... PASS 
+ninja -C build unwind # .... 1370 .......................... PASS 
+ninja -C build compiler-rt # .. 5 .......................... PASS
+ninja -C build builtins # ..... 3 .......................... PASS 
+ninja -C build cxxabi # .... 1051 .......................... PASS 
+ninja -C build cxx # ........ 103 .......................... PASS
+ninja -C build lld # ....................................... PASS
+ninja -C build clang # ..................................... PASS 
+ninja -C build libclang # .... 31 .......................... PASS
+ninja -C build # ............ 508 .......................... PASS
 
 # install to llvmtools
 cmake --install build --strip
@@ -117,7 +127,7 @@ ln -sv lld /llvmtools/bin/ld
 
 # Many packages use the name cc to call the C compiler. To
 # satisfy those packages, create a symlink
-ln -sv clang-15 /llvmtools/bin/cc
+ln -sv clang-17 /llvmtools/bin/cc
 
 # Clear variables used in the CMake invocation:
 unset CFLAGS CXXFLAGS CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF
@@ -152,22 +162,22 @@ grep -B1 -A2 '^ /llvmtools' dummy.log
 # It should output:
 # #include <...> search starts here:
 #  /llvmtools/usr/include
-#  /mnt/cmlfs/llvmtools/lib/clang/15.0.6/include
+#  /mnt/cmlfs/llvmtools/lib/clang/17/include
 # End of search list.
 
 # Make sure no libraries are loaded from the host or cgnutools
 grep ld.lld:  dummy.log
 # ld.lld: /llvmtools/lib/Scrt1.o
 # ld.lld: /llvmtools/lib/crti.o
-# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
 # ld.lld: /tmp/dummy-35ed76.o
-# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 # ld.lld: /llvmtools/lib/libunwind.so
 # ld.lld: /llvmtools/lib/libatomic.so
 # ld.lld: /llvmtools/lib/libc.so
-# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 # ld.lld: /llvmtools/lib/libunwind.so
-# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 # ld.lld: /llvmtools/lib/crtn.o
 
 # Check if stage1 clang++ [in llvmtools] has atomics.
@@ -196,7 +206,7 @@ grep -B2 -A2 '^ /llvmtools' atomics-test.log
 # #include <...> search starts here:
 #  /mnt/cmlfs/llvmtools/bin/../include/c++/v1
 #  /llvmtools/usr/include
-#  /mnt/cmlfs/llvmtools/lib/clang/15.0.6/include
+#  /mnt/cmlfs/llvmtools/lib/clang/17/include
 # End of search list.
 # NOTE: /llvmtools/include/c++/v1 should be searched first.
 
@@ -223,7 +233,7 @@ EOF
 grep error: cxx11-test.log
 # Should return nothing if there are no errors.
 
-# Execute the binary. Should output "C++14"
+# Execute the binary. Should output "C++". Hopefully this is not a problem later
 ./a.out
 
 # Check that libunwind, libc++abi, libc++ and LLVM.so are GCC-free:
@@ -233,7 +243,7 @@ llvm-readelf -d /llvmtools/lib/libc++.so.1.0  | grep Shared | cut -b 37-
 # Shared library: [libc.so]
 llvm-readelf -d /llvmtools/lib/libc++abi.so.1.0  | grep Shared | cut -b 37-
 # Shared library: [libc.so]
-llvm-readelf -d /llvmtools/lib/libLLVM-15.0.6.so | grep Shared | cut -b 37-
+llvm-readelf -d /llvmtools/lib/libLLVM-17.0.5.so | grep Shared | cut -b 37-
 # Shared library: [libz.so.1]
 # Shared library: [libc++.so.1]
 # Shared library: [libc.so]
