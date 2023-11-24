@@ -4,7 +4,7 @@
 # Set build flags
 export  CARGS="--prefix=/llvmtools "
 export CARGS+="--mandir=/share/man "
-export CARGS+="--docdir=/share/doc/cmake-3.26.3 "
+export CARGS+="--docdir=/share/doc/cmake-3.27.8 "
 
 # Do not use host's libraries. use built-in
 export CARGS+="--no-system-jsoncpp "
