@@ -16,16 +16,16 @@ chmod -v +x /llvmtools/bin/lsb_release
 # Base (LSB)
 cat > /llvmtools/etc/lsb-release << "EOF"
 DISTRIB_ID="llvmtools"
-DISTRIB_RELEASE="3.0.0_amd64"
-DISTRIB_CODENAME="15-elftool-tools"
+DISTRIB_RELEASE="4.0.0_amd64"
+DISTRIB_CODENAME="17-elftool-tools"
 DISTRIB_DESCRIPTION="Clang-built Musl Toolchain for CMLFS, AMD64"
 EOF
 
 # The same information but used by some graphical desktop environments:
 cat > /llvmtools/etc/os-release << "EOF"
 NAME="llvmtools"
-VERSION="3.0.0_amd64"
+VERSION="4.0.0_amd64"
 ID=llvmtools
 PRETTY_NAME="Clang-built Musl Toolchain for CMLFS, AMD64"
-VERSION_CODENAME="15-elftool-tools"
+VERSION_CODENAME="17-elftool-tools"
 EOF
