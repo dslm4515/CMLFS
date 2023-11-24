@@ -26,7 +26,6 @@ do
 done
 ln -sv /llvmtools/lib/libunwind.a  /usr/lib
 ln -sv /llvmtools/lib/libncursesw.so /usr/lib/libncursesw.so
-ln -sv libncursesw.so /llvmtools/lib/libtinfow.so
 
 # Some packages will look for sh. Create a compatibility
 # link as bash can subsitutte for sh
