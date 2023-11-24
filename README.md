@@ -118,13 +118,15 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 
 ## Issues
 <ul>
-<li>Investigating: Misplaced gcc libraries when building stage0 LLVM</li>
-<li>Python3 may need to be added to llvmtools</li>
+<li>Test for C++11/14 fails when testing stage0 & stage1 LLVM's. Not sure what issue this will cause</li>
+<li>Coreutils will not build for llvmtools under 32-bit x86 (i386/i586/i686)</li>
+<li>Ninja for llvmtools fails to compile with python3. For now use cmake</l> 
 </ul>
 
 ## Change log
 
 <ul>
+<li>4.0.0: Upgraded to LLVM 17.0.5 </li>
 <li>3.0.0: Upgraded to LLVM-15.0.6. cgnutools is now bootstrapped with mussel. Replaced binutils with elftoolchain. Most of llvmtools will be build under chroot to avoid contamination from host. </li>
 <li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li>
 <li>1.2.0: Incomplete: LLVM-11.0.0, Install GCC & Binutils in /llvmtools & /usr instead of /llvmtools/gnu and /opt/gnu </li>
