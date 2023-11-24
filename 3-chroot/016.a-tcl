@@ -2,15 +2,6 @@
 # Build and install under chroot
 # Can be optional: Package used for testing final system packages
 
-# This build insists on executing "cr" instead og "llvm-ar cr"
-# Create a wrapper script.
-cat > /llvmtools/bin/cr << "EOF"
-#!/bin/bash 
-llvm-ar cr $@
-EOF
-
-chmod -v a+x /llvmtools/bin/cr
-
 # Change directories:
 cd unix
 
@@ -36,6 +27,4 @@ chmod -v u+w /llvmtools/lib/libtcl8.6.so
 make install-private-headers
 ln -sv tclsh8.6 /llvmtools/bin/tclsh
 
-# Remove wrapper script:
-rm -v /llvmtools/bin/cr
 
