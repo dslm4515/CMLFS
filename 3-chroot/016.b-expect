@@ -1,18 +1,24 @@
 # stage1: Expect-5.45.3
 # Build and install under chroot
 # Can be optional: Package used for testing final system packages
-# *No need to use latest version, so far. If so, patches need updating.*
 
 # Patch source to run with musl libc
-patch -Np1 -i ../patches/expect-5.45.3/dont-put-toolchain-in-libpath.patch
-patch -Np1 -i ../patches/expect-5.45.3/dont-configure-testsuites.patch
-patch -Np1 -i ../patches/expect-5.45.3/allow-cross-compile.patch
+patch -Np1 -i ../patches/expect-5.45.4-chimera/001-expect-5.45-gfbsd.patch 
+patch -Np1 -i ../patches/expect-5.45.4-chimera/002-expect-5.45-ldflags.patch 
+patch -Np1 -i ../patches/expect-5.45.4-chimera/003-expect-5.45-headers.patch
+patch -Np1 -i ../patches/expect-5.45.4-chimera/004-expect-5.45-format-security.patch
+patch -Np1 -i ../patches/expect-5.45.4-chimera/005-expect-5.45-configure-in.patch 
+patch -Np1 -i ../patches/expect-5.45.4-chimera/006-expect-5.45.4-configure-clang16.patch 
+patch -Np1 -i ../patches/expect-5.45.4-chimera/007-no-sys-wait-h.patch 
+patch -Np1 -i ../patches/expect-5.45.4-chimera/fix-overflow-when-logging.patch
 
 # Update files to support Musl Libc for configure
 cp -v ../files/config.guess-musl tclconfig/config.guess
 cp -v ../files/config.sub-musl tclconfig/config.sub
-cp -v configure{,.orig}
-sed 's:/usr/local/bin:/bin:' configure.orig > configure
+
+# For some reason clang (stage1) has warnings on implicit declarations as errors
+# Turn off such warnings with this CFLAG:
+export CFLAGS="-Wno-implicit"
 
 # Configure source with clang
 CC=clang \
@@ -22,6 +28,7 @@ AS=llvm-as \
 RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
+expect_cv_wnohang_value=1 \
 ./configure --build=${TUPLE} \
             --host=${TUPLE} \
             --prefix=/llvmtools \
@@ -31,3 +38,4 @@ STRIP=llvm-strip \
 # Build and install to toolchain
 make && make SCRIPTS="" install
 
+unset CFLAGS
