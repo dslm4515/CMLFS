@@ -2,6 +2,19 @@
 
 CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It started as a hobby to see if a Linux system can be built with clang as primary toolchain and GCC as secondary (for packages that cannot be built with clang). This is based on [Linux From Scratch](www.linuxfromscratch.org) and my previous work [MLFS](https://github.com/dslm4515/Musl-LFS). Big thanks to [Chimera-Linux](https://chimera-linux.org) that had patches that fixed a lot of issues.
 
+## DISCLAIMER
+
+Use at you own risk. This builds a Unix-like system that may not be stable enough as a 'daily driver' for most users. Security-hardening of the built system is beyound the scope of this project. This repo started as means to backup and archive my work.
+
+## Getting Started
+
+The master branch may be unstable when I am working on upgrading CMLFS. 
+
+To build this project, pick a branch other than master. Each branch is based on the LLVM version.
+As of this writing, llvm-15.0.6 is stable. Older branches maybe incomplete or unstable (may not compile).
+
+When I have time later, I will write a more thorough introduction for users new to LFS.
+
 ## Specification
 <ul>
 <li>C Runtime Library (system libc): Musl </li>
@@ -19,8 +32,10 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 <li>Init system: skarnet's S6 & S6-rc</li>
 <li>Device manager: Udev </li>
 <li>TLS Implementaion: LibreSSL</li>
+<li>Secondary TLS Implementaion: OpenSSL</li>
 <li>System Shell: Bash </li>
 <li>System Gettext: gettext-tiny</li>
+<li>Curses Library: netbsd-curses </li>
 </ul>
 
 ## Supported Architectures
