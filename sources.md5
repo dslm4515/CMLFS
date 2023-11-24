@@ -58,8 +58,8 @@ d990b0770dd2b15f7a8399580d55d32c  libuv-v1.41.0.tar.gz
 ed7af4ee62c054680315181a428a3e5a  linux-6.6.2.tar.xz
 7368ec545a26d67dbc487706970827c1  lld-12.0.0.src.tar.xz
 0a925004f4df230f5f40eefb6828e159  llvm-project-17.0.5.src.tar.xz
-730bb15d96fffe47e148d1e09235af82  m4-1.4.18.tar.xz
-fc7a67ea86ace13195b0bce683fd4469  make-4.3.tar.gz
+0d90823e1426f1da2fd872df0311298d  m4-1.4.19.tar.xz
+c8469a3713cbbe04d955d4ae4be23eeb  make-4.4.1.tar.gz
 6e233a555f7b9ae91ce7cd0faa322bce  man-db-2.9.4.tar.xz
 9f40e8fff6766563837d98d7d7c6e19b  man-pages-5.11.tar.xz
 18ac55e3d6a5acb17b5737eb2a15bb5b  meson-0.58.0.tar.gz
