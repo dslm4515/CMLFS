@@ -2,16 +2,13 @@
 # Build under chroot
 
 # Apply fixes to build under musl
-patch -Np0 -i ../patches/python3-void/musl-find_library.patch &&
-patch -Np0 -i ../patches/python3-void/tweak-MULTIARCH-for-powerpc-linux-musl.patch
+patch -Np0 -i ../patches/python-alpine/musl-find_library.patch 
 
-# Make sure ctypes for darwin isnt built
-rm -r Modules/_ctypes/darwin
-
-# The main script for building modules is written in Python, and 
-# uses hard-coded paths to the host /usr/include and /usr/lib 
-# directories. Prevent this:
-sed -i '/def add_multiarch_paths/a \        return' setup.py
+# If adding optional python-based tools to toolchain, like
+# meson, make sure pip3 is built
+export PI="--with-ensurepip=yes "
+# Otherwise:
+export PI="--without-ensurepip "
 
 # Configure source with clang
 CC=clang \
@@ -24,10 +21,11 @@ STRIP=llvm-strip \
 ./configure --build=${TUPLE} \
             --host=${TUPLE}  \
             --prefix=/llvmtools      \
-            --enable-shared          \
-            --without-ensurepip 
+            --enable-shared $PI
 
 # Build and install to toolchain
 make && make install
-chmod -v 755 /llvmtools/lib/libpython3.11.so &&
-chmod -v 755 /llvmtools/lib/libpython3.so  
+chmod -v 755 /llvmtools/lib/libpython3.12.so &&
+chmod -v 755 /llvmtools/lib/libpython3.so 
+
+unset PI 
