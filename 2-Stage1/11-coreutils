@@ -1,8 +1,9 @@
 # Stage1: Coreutils
 # Build and install as cmlfs
 
-# Re-create configure script
-autoreconf -vif
+# [Don't] Re-create configure script 
+# [ ... it usually fails]
+#autoreconf -vif
 
 # Cross Compiling the configure script 
 # does not does not determine the correct 
