@@ -19,13 +19,13 @@ rm -rf /llvmtools/{,share}/{info,man,doc}
 find /llvmtools/{lib,libexec} -name \*.la -delete
 
 # Changing Ownership 
-# Currently, the $MLFS/tools directory is owned by 
-# the user mlfs, a user that exists only on the 
-# host system. If the $MLFS/tools directory is kept 
+# Currently, the $CMLFS/llvmtools directory is owned 
+# by the user cmlfs, a user that exists only on the 
+# host system. If the $CMLFS/llvmtools directory is kept 
 # as is, the files are owned by a user ID without 
 # a corresponding account. This is dangerous because 
 # a user account created later could get this same 
-# user ID and would own the $MLFS/tools directory 
+# user ID and would own the $CMLFS/llvmtools directory 
 # and all the files therein, thus exposing these 
 # files to possible malicious manipulation.
 
@@ -41,6 +41,6 @@ find /llvmtools/{lib,libexec} -name \*.la -delete
 # $MLFS is set in root's environment.
 # ************************************************
 
-# Change the ownership of the $MLFS/tools directory 
+# Change the ownership of the $CMLFS/llvmtools directory 
 # to user root by running the following command:
 chown -R root:root $CMLFS/llvmtools
