@@ -13,5 +13,6 @@ make PREFIX="/llvmtools" all
 make PREFIX="/llvmtools" install
 
 # Some packages may not configure with the curses library
-# in llvmtools. Create a compatibility link:
+# in llvmtools. Create a compatibility links:
 ln -sv  libcurses.so  /llvmtools/lib/libtinfo.so
+ln -sv  libcurses.so  /llvmtools/lib/libtinfow.so
