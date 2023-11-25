@@ -64,7 +64,7 @@ rm -rf  /cgnutools/share/man
 #
 # This will be reached by creating a modified  specs  file in the
 # proper location:
-export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
+export MCGV=$(/cgnutools/bin/*gcc  --version | sed 1q | cut -d' ' -f3- )
 /cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/cgnutools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
 
 # Test the _tools toolchain:
