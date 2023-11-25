@@ -4,7 +4,7 @@
 CC=$CC CXX=$CXX \
 ./configure --prefix=/usr    \
             --disable-static \
-            --docdir=/usr/share/doc/xz-5.4.2
+            --docdir=/usr/share/doc/xz-5.4.5
 
 make && make install
 
