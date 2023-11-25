@@ -3,8 +3,8 @@
 
 # Create a new configuration for stage1 clang:
 touch /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
-ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang
-ln -sv clang-15 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
+ln -sv clang-17 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang
+ln -sv clang-17 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
 
 # Re-configure clang to use new sysroot (/usr) with newly built musl Libc
 echo "--sysroot=/usr " > \
@@ -22,7 +22,7 @@ cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
 -I/llvmtools/include/c++/v1
 -I/usr/include
 -I/llvmtools/include
--I/llvmtools/lib/clang/15.0.6/include
+-I/llvmtools/lib/clang/17/include
 EOF
 
 # Update the build environment
@@ -30,8 +30,8 @@ export CC=$(uname -m)-pc-linux-musl-clang
 export CXX=$(uname -m)-pc-linux-musl-clang++
 
 # Adjust the library search path for the dynamic loader in llvmtools:
-cp -v /llvmtools/etc/ld-musl-$(uname -m).path{,.orig}
-cat > /llvmtools/etc/ld-musl-$(uname -m).path <<EOF
+cp -v /llvmtools/etc/ld-musl-${MCA}.path{,.orig}
+cat > /llvmtools/etc/ld-musl-${MCA}.path <<EOF
 /lib
 /usr/lib
 /llvmtools/lib
