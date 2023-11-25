@@ -1,5 +1,5 @@
 https://www.kernel.org/pub/linux/docs/man-pages/man-pages-6.05.01.tar.xz
-https://musl.libc.org/releases/musl-1.2.3.tar.gz
+https://musl.libc.org/releases/musl-1.2.4.tar.gz
 http://skarnet.org/software/skalibs/skalibs-2.13.1.1.tar.gz
 https://skarnet.org/software/utmps/utmps-0.1.2.1.tar.gz
 https://data.iana.org/time-zones/releases/tzdata2023c.tar.gz
@@ -92,7 +92,7 @@ https://github.com/chimera-linux/libatomic-chimera/archive/refs/tags/v0.90.0.tar
 https://github.com/libarchive/libarchive/releases/download/v3.7.2/libarchive-3.7.2.tar.xz
 https://www.crufty.net/ftp/pub/sjg/bmake-20230909.tar.gz
 https://www.nano-editor.org/dist/v7/nano-7.2.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/compiler-rt-15.0.6.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.5/compiler-rt-17.0.5.src.tar.xz
 https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0.tar.bz2
 https://github.com/Projeto-Pindorama/musl-compat/archive/refs/tags/0.5-a.tar.gz
 https://github.com/chimera-linux/elftoolchain/archive/f27fcce314b91b3dece6bee90949183f7a1e18b3.tar.gz

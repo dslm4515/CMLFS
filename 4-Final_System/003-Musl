@@ -13,15 +13,15 @@ patch -Np1 -i ../patches/musl-mlfs/fix-utmp-wtmp-paths.patch
 
 # Harden musl libc with scudo from compiler-rt
 # o Extract compiler-rt
-cd .. && tar xf pkgs/compiler-rt-15.0.6.src.tar.xz
+cd .. && tar xf pkgs/compiler-rt-17.0.5.src.tar.xz
 
 # o Copy over scudo from compiler-rt
 cd -  && mkdir -pv src/malloc/scudo/scudo
 for t in cpp h inc
 do
-  cp -rv ../compiler-rt-15.0.6.src/lib/scudo/standalone/*.$t src/malloc/scudo/
+  cp -rv ../compiler-rt-17.0.5.src/lib/scudo/standalone/*.$t src/malloc/scudo/
 done
-cp -rv ../compiler-rt-15.0.6.src/lib/scudo/standalone/include/scudo/interface.h \
+cp -rv ../compiler-rt-17.0.5.src/lib/scudo/standalone/include/scudo/interface.h \
        src/malloc/scudo/scudo/
 # o Remove wrappers ...
 rm -v src/malloc/scudo/wrappers_c*
@@ -36,8 +36,10 @@ patch -Np1 -i ../patches/musl-chimera/0003-do-not-rely-on-system-headers-for-cpu
 patch -Np1 -i ../patches/musl-chimera/libcc-compiler-rt.patch
 patch -Np1 -i ../patches/musl-chimera/lto.patch
 patch -Np1 -i ../patches/musl-chimera/mo_lookup.patch
-patch -Np1 -i ../patches/musl-chimera/musl-overflow.patch
 patch -Np1 -i ../patches/musl-chimera/plt.patch
+patch -Np1 -i ../patches/musl-chimera/lfs64.patch 
+patch -Np1 -i ../patches/musl-chimera/lfs64-2.patch 
+patch -Np1 -i ../patches/musl-chimera/mntent-unescape.patch 
 
 # Set the CPU architechture
 case $(uname -m) in
@@ -53,6 +55,7 @@ LD=ld.lld             \
 AR=llvm-ar            \
 RANLIB=llvm-ranlib    \ 
 AS=llvm-as            \
+LIBCC_LDFLAGS="--rtlib=compiler-rt " \
 ./configure --prefix=/usr         \
             --sysconfdir=/etc     \
             --localstatedir=/var  \
@@ -63,9 +66,11 @@ AS=llvm-as            \
 make && make  install
 
 # Provide minimal libssp_nonshared.a so we don't need libssp from gcc
-clang -fpie -c ../files/musl-alpine/__stack_chk_fail_local.c -o __stack_chk_fail_local.o
+export CFLAGS="-Wno-implicit-int"
+clang -fpie $CFLAGS -c ../files/musl-alpine/__stack_chk_fail_local.c -o __stack_chk_fail_local.o
 llvm-ar r libssp_nonshared.a __stack_chk_fail_local.o
 cp -v libssp_nonshared.a /usr/lib/
+unset CFLAGS
 
 # Create link for ldd:
 ln -sv ../lib/libc.so /usr/bin/ldd
@@ -81,10 +86,20 @@ EOF
 case $(uname -m) in
      i686) ln -sv ../usr/lib/libc.so  /lib/ld-musl-i686.so.1 ;;
 esac
-unset CARCH 
 
-# Create  ldconfig
-install -v -D -m755 ../files/musl-alpine/ldconfig /usr/bin/
+# Install a ldconfig script.
+# This is handy for package managers to add/remove library paths
+# without directly modifying the ld-musl-$ARCH.path file.
+# If not using package managers, simply create ldconfig as a link
+# to true
+install -v -D -m755 ../files/ldconfig /usr/sbin/
+chmod -v +x /usr/sbin/ldconfig
+mkdir -pv $BUILD/etc/ld-musl-${CARCH}.d
+cat > $BUILD/etc/ld-musl-${CARCH}.d/default <<EOF
+/lib
+/usr/lib
+EOF
+unset CARCH
 
 # Remove, as skarnet's utmps will provide it
 rm -v /usr/include/utmpx.h
