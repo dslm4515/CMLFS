@@ -2,14 +2,16 @@
 # Build under chroot
 #
 # NOTE: Reuse llvm-project source tree from before
-# NOTE: Using CC=clang instead of CC=${TARGET_TUPLE}-clang
 
 # Restore default dynamic linker/loader path to /lib
-patch -Np1 -i ../patches/llvm1506-cmlfs/modify-test-dynamic-loader.restore.patch
-patch -Np1 -i ../patches/llvm1506-cmlfs/modify-toolchain-dynamic-loader.restore.patch
+patch -Np1 -i ../patches/llvm-cmlfs/modify-test-dynamic-loader.restore.patch 
+patch -Np1 -i ../patches/llvm-cmlfs/modify-toolchain-dynamic-loader.restore.patch  
 
 # stage1 clang cannot find zstd headers
 ln -sv /usr/include/zstd.h  /llvmtools/include/
+
+export CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
 export  CT="-DCMAKE_C_COMPILER=clang "
@@ -20,12 +22,11 @@ export CT+="-DCMAKE_RANLIB=/llvmtools/bin/llvm-ranlib "
 export CT+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
 
 # Set the tuples & build target ...
-export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DLLVM_HOST_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=x86_64-pc-linux-musl "
-export CTG+="-DLLVM_TARGETS_TO_BUILD=host "
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TUPLE} "
+export CTG+="-DLLVM_HOST_TRIPLE=${TUPLE} "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TUPLE} "
 export CTG+="-DLLVM_TARGET_ARCH=host "
-export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host;AMDGPU "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host;AMDGPU;BPF "
 
 # Set the paths ...
 export  CP="-DCMAKE_INSTALL_PREFIX=/usr "
@@ -43,7 +44,7 @@ export  CRT="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
 export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
 export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
 # + Set compiler_rt to use libcxx
-export CRT+="-D-DCOMPILER_RT_CXX_LIBRARY=libcxx "
+export CRT+="-DCOMPILER_RT_CXX_LIBRARY=libcxx "
 
 # Set options for clang
 # + Set the standard C++ library that clang will use to LLVM's libc++
@@ -93,44 +94,62 @@ export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
 export COFF+="-DLLVM_ENABLE_LIBXML2=OFF "
 export COFF+="-DLLVM_ENABLE_LIBPFM=OFF "
 
+# Remove more tests & docs that breaks build
+export  MOFF="-DCLANG_INCLUDE_TESTS=OFF "
+export MOFF+="-DLLVM_ENABLE_OCAMLDOC=OFF "
+export MOFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
+export MOFF+="-DLLVM_INCLUDE_DOCS=OFF "
+export MOFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
+export MOFF+="-DLLVM_INCLUDE_TESTS=OFF "
+
+# Configure source [to build all of LLVM]
 cmake -B build -G Ninja -Wno-dev -S llvm \
       -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
-      -DCLANG_VENDOR="CMLFS 3.0.0" -DLLD_VENDOR="CMLFS 3.0.0" \
-      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF 
+      -DLLVM_ENABLE_PROJECTS="lld;clang" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
+      -DCLANG_VENDOR="CMLFS 4.0.0" -DLLD_VENDOR="CMLFS 4.0.0" \
+      -DDEFAULT_SYSROOT="/usr" \
+      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF $MOFF \
+      -DCMAKE_CXX_FLAGS="-fPIC " \
+      -DCMAKE_C_FLAGS="-fPIC " 
 
-# compile
-ninja -C build
+# compile (~ 4,048 targets)
+ninja -C build 
 
 # If build fails to compile, use below to see what component failed.
 # ninja -C build $TARGET
-# Build target break down:
-builtins # 166 ............. PASS
-unwind # 19 ................ PASS
-cxxabi # 828 ............... PASS
-cxx # 89 ................... PASS
-compiler-rt # 646 .......... PASS
-llvm-tblgen # 242 .......... PASS
-lld # 1824 ................. PASS
-libclang # 798 ............. PASS
-clang # 336 ................ PASS
-remaining targets # 678..... PASS
+# Build target break down (still unsure of order):
+# * Count is based on the x86_64-pc-linux-musl target
+#
+# $TARGET ......... COUNT ........ STATUS
+# llvm-headers ...... 202 ......... PASS
+# llvm-tblgen ........ 68 ......... PASS 
+# llvm-lib ......... 1812 ......... PASS 
+# lld ............... 126 ......... PASS 
+# clang ............ 1181 ......... PASS 
+# builtins ........... 56 ......... PASS
+# cxxabi ........... 1067 ......... PASS 
+# cxx ............... 103 ......... PASS
+# compiler-rt ....... 582 ......... PASS 
+# libclang ........... 31 ......... PASS 
+# unwind .............. 5 ......... PASS
+# <remaining> ....... 530 ......... PASS 
 
 # Install
 cmake --install build --strip
 
 # Fix the dynamic linker for the executables:
-for b in bugpoint c-index-test clang-15 count diagtool dsymutil FileCheck \
+for b in bugpoint c-index-test clang-17 count diagtool dsymutil FileCheck \
          llc lld lli lli-child-target not obj2yaml opt sancov sanstats \
          split-file UnicodeNameMappingGenerator verify-uselistorder yaml2obj \
-         yaml-bench
+         yaml-bench  amdgpu-arch nvptx-arch
 do
   setDL /usr/bin/$b
 done
 
-for b in check extdef-mapping format linker-wrapper nvlink-wrapper \
-         offload-bundler offload-packager offload-wrapper refactor \
-         rename repl scan-deps
+for b in check extdef-mapping format linker-wrapper \
+         offload-bundler offload-packager  \
+         rename repl scan-deps scan-deps tblgen 
 do
   setDL /usr/bin/clang-$b
 done
@@ -141,10 +160,22 @@ for b in ar as bcanalyzer cat cfi-verify config cov c-test cvtres cxxdump \
          libtool-darwin link lipo lto lto2 mc mca ml modextract mt nm objcopy \
          objdump opt-report pdbutil PerfectShuffle profdata profgen rc readobj \
          reduce remark-size-diff rtdyld sim size split stress strings \
-         symbolizer tapi-diff tblgen tli-checker undname xray
+         symbolizer tapi-diff tblgen tli-checker undname xray remarkutil \
+         debuginfo-analyzer
 do
   setDL /usr/bin/llvm-$b
 done
+
+# NOTE: stage2 clang loads libc shared object from llvmtools. 
+# Sysroot still set to /llvmtools
+# Create a clang config to set sysroot to /
+cat > /usr/bin/${TUPLE}.cfg << "EOF"
+--sysroot=/
+EOF
+
+# NOTE: Stage2 clang looks for ld/lld first /llvmtools/bin
+# Disable it:
+mv -v  /llvmtools/bin/lld{,.disabled}
 
 # Test stage2 Clang
 echo "int main(){}" > dummy.c
@@ -154,12 +185,13 @@ llvm-readelf -l a.out | grep ': /lib'
 # [Requesting program interpreter: /lib/ld-musl-x86_64.so.1
 
 # Check if the correct start files are used
-grep  'crt[1in]' dummy.log | grep ld.lld:
+grep  'crt[1in]' dummy.log | grep ld:
 # Should output:
-# ld.lld: /lib/Scrt1.o
-# ld.lld: /lib/crti.o
-# ld.lld: /lib/crtn.o
+# ld: /lib/Scrt1.o
+# ld: /lib/crti.o
+# ld: /lib/crtn.o
 # * /lib is a link to /usr/lib, therefore this is acceptable
+# * ld is a link to ld.lld, therefore this is acceptable
 
 # Verify that stage2 clang is searching for the correct header files:
 grep -B1 -A1 '^ /usr' dummy.log
@@ -167,22 +199,22 @@ grep -B1 -A1 '^ /usr' dummy.log
 # #include <...> search starts here:
 #  /usr/local/include
 #  /usr/include
-#  /usr/lib/clang/15.0.6/include
+#  /usr/lib/clang/17/include
 # End of search list.
 
 # Make sure no libraries are loaded from llvmtools
-grep ld.lld:  dummy.log
+grep ld:  dummy.log
 # ld.lld: /lib/Scrt1.o
 # ld.lld: /lib/crti.o
-# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
 # ld.lld: /tmp/dummy-1f0e32.o
-# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 # ld.lld: /lib/libunwind.so
 # ld.lld: /lib/libatomic.so
 # ld.lld: /lib/libc.so
-# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
 # ld.lld: /lib/libunwind.so
-# ld.lld: /usr/lib/clang/15.0.6/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
 # ld.lld: /lib/crtn.o
 
 # Check if stage2 clang++ supports atomics.
@@ -212,7 +244,7 @@ grep -B4 -A1 '^ /usr/lib' atomics-test.log
 #  /usr/bin/../include/c++/v1
 #  /usr/local/include
 #  /usr/include
-#  /usr/lib/clang/15.0.6/include
+#  /usr/lib/clang/17/include
 # It should be in this order
 
 # Test if stage1 clang supports C++11
@@ -238,7 +270,7 @@ EOF
 grep error: cxx11-test.log
 # Should return nothing if there are no errors.
 
-# Execute the binary. Should output "C++14"
+# Execute the binary. Should output "C++" ... perhaps test nees to be updated
 ./a.out
 
 # Check that libunwind, libc++abi, libc++ and LLVM.so are GCC-free:
@@ -248,7 +280,7 @@ llvm-readelf -d /usr/lib/libc++.so.1.0  | grep Shared | cut -b 37-
 # Shared library: [libc.so]
 llvm-readelf -d /usr/lib/libc++abi.so.1.0  | grep Shared | cut -b 37-
 # Shared library: [libc.so]
-llvm-readelf -d /usr/lib/libLLVM-15.0.6.so | grep Shared | cut -b 37-
+llvm-readelf -d /usr/lib/libLLVM-17.0.5.so | grep Shared | cut -b 37-
 # Shared library: [libz.so.1]
 # Shared library: [libzstd.so.1]
 # Shared library: [libterminfo.so]
@@ -267,7 +299,7 @@ ln -sv ld.lld /usr/bin/ld
 
 # Many packages use the name cc to call the C compiler. To
 # satisfy those packages, create a symlink
-ln -sv clang-15 /usr/bin/cc
+ln -sv clang-17 /usr/bin/cc
 
 # Create a symlink required by the FHS for "historical" reasons
-ln -sv ../bin/clang-15 /usr/lib/cpp
+ln -sv ../bin/clang-17 /usr/lib/cpp
