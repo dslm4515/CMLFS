@@ -6,8 +6,8 @@ touch /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 ln -sv clang-17 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang
 ln -sv clang-17 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
 
-# Re-configure clang to use new sysroot (/usr) with newly built musl Libc
-echo "--sysroot=/usr " > \
+# Re-configure clang to use new sysroot (/) with newly built musl Libc
+echo "--sysroot=/ " > \
      /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
 
 # With the sysroot changed, disable the stage1 clang's defaults. Then
