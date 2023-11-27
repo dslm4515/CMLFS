@@ -1,0 +1,11 @@
+--- llvm-project-17.0.5.src.orig/clang/lib/Driver/ToolChains/Linux.cpp	2023-11-27 01:41:09.613664005 +0000
++++ llvm-project-17.0.5.src/clang/lib/Driver/ToolChains/Linux.cpp	2023-11-25 09:01:37.326478511 +0000
+@@ -474,7 +474,7 @@
+         Triple.getSubArch() == llvm::Triple::PPCSubArch_spe)
+       ArchName = "powerpc-sf";
+ 
+-    return "/llvmtools/lib/ld-musl-" + ArchName + ".so.1";
++    return "/lib/ld-musl-" + ArchName + ".so.1";
+   }
+ 
+   std::string LibDir;
