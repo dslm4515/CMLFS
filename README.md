@@ -118,9 +118,10 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 
 ## Issues
 <ul>
-<li>Test for C++11/14 fails when testing stage0 & stage1 LLVM's. Not sure what issue this will cause</li>
+<li>sysroot fo Stage2 LLVM is set to /llvmtools and not /. Current workaround is a clang config file.</li>
+<li>Test for C++11/14 fails when testing stage0 & stage1 LLVM's. Not sure what issue this will cause or if test needs to be revised..</li>
 <li>Coreutils will not build for llvmtools under 32-bit x86 (i386/i586/i686)</li>
-<li>Ninja for llvmtools fails to compile with python3. For now use cmake</l> 
+<li>Ninja for llvmtools fails to compile with python3. For now use cmake instead of python3</li> 
 </ul>
 
 ## Change log
