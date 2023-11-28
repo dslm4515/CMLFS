@@ -10,10 +10,10 @@ Use at you own risk. This builds a Unix-like system that may not be stable enoug
 
 The master branch may be unstable when I am working on upgrading CMLFS. 
 
-To build this project, pick a branch other than master. Each branch is based on the LLVM version.
+To build this project, pick a branch other than master OR choose a tag. Each branch & tag are based on the LLVM version.
 As of this writing, llvm-15.0.6 is stable. Older branches maybe incomplete or unstable (may not compile).
 
-When I have time later, I will write a more thorough introduction for users new to LFS.
+When I have time later, I will write a more thorough introduction for users new to CMLFS.
 
 ## Specification
 <ul>
