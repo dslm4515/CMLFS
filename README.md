@@ -61,7 +61,7 @@ When I have time later, I will write a more thorough introduction for users new 
 <li> [x] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 <li> [x] Merge cross-tools build with cgnutools </li>
 <li> [x] Build successfully on a Glibc host </li>
-<li> [x] Build find system without GCC </li>
+<li> [x] Build final system without GCC </li>
 <li> [x] Replace binutils with elftoolchain </li>
 <li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools </li>
 <li> [ ] Build on aarch64</li>
