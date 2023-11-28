@@ -1,0 +1,199 @@
+# Stage2 clang rebuild
+# Build under chroot
+#
+# NOTE: Reuse llvm-project source tree from before as
+# there is no clang standalong build that will build
+# against system-installed LLVM
+
+export CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+# Set clang options:
+export  COPTS="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export COPTS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export COPTS+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export COPTS+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export COPTS+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
+export COPTS+="-DCLANG_INCLUDE_TESTS=OFF "
+
+# Turn off LLVM options:
+export  LOFF="-DLLVM_ENABLE_OCAMLDOC=OFF "
+export LOFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
+export LOFF+="-DLLVM_INCLUDE_DOCS=OFF "
+export LOFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
+export LOFF+="-DLLVM_INCLUDE_TESTS=OFF "
+export LOFF+="-DLLVM_BUILD_RUNTIMES=OFF "
+export LOFF+="-DLLVM_BUILD_RUNTIME=OFF "
+export LOFF+="-DLLVM_BUILD_TOOLS=OFF "
+export LOFF+="-DLLVM_BUILD_UTILS=OFF "
+
+# Enable the same LLVM options used with 
+# previous build
+export  LOPTS="-DLLVM_ENABLE_RTTI=ON "
+export LOPTS+="-DLLVM_ENABLE_EH=ON "
+export LOPTS+="-DLLVM_DEFAULT_TARGET_TRIPLE=${TUPLE} "
+export LOPTS+="-DLLVM_TARGETS_TO_BUILD=Native;host;AMDGPU;BPF "
+
+# Configure source to enable only the clang project:
+cmake -B build -G Ninja -Wno-dev -S llvm \
+      -DLLVM_ENABLE_PROJECTS=clang \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_INSTALL_LIBDIR=lib  \
+      -DCLANG_VENDOR="CMLFS 4.0.0" \
+      -DDEFAULT_SYSROOT=/ \
+      $COPTS $LOFF $LOPTS
+
+ninja -C build
+
+# If build fails to compile, use below to see what component failed.
+# ninja -C build $TARGET
+# Build target break down (still unsure of order):
+# * Count is based on the x86_64-pc-linux-musl target
+
+# $TARGET ........... COUNT
+# -------------------------
+# llvm-headers ....... 202
+# llvm-tblgen ......... 68
+# llvm-lib ........... 691
+# clang ............. 1950
+# libclang ............ 47
+# <remaining> ........ 530
+
+# Install to a directory to extract clang
+export BUILD=/sources/BUILD
+mkdir -pv $BUILD
+DESTDIR=$BUILD cmake --install build --strip
+
+# Extract clang to a directory.
+# * No need to install the rebuilt LLVM libraries
+#   as both clang builds are compiled from same
+#   patched LLVM monorepo
+export VBUILD=/sources/VBUILD
+mkdir $VBUILD
+mkdir -pv $VBUILD/CLANG/usr/{bin,lib,include,share}
+mkdir -pv $VBUILD/CLANG/usr/lib/cmake
+mkdir -pv $VBUILD/CLANG/usr/lib/clang/17
+
+mv -v $BUILD/usr/bin/*clang*        $VBUILD/CLANG/usr/bin/
+mv -v $BUILD/usr/bin/c-index-test   $VBUILD/CLANG/usr/bin/
+mv -v $BUILD/usr/bin/diagtool       $VBUILD/CLANG/usr/bin/
+mv -v $BUILD/usr/bin/cc             $VBUILD/CLANG/usr/bin/
+
+mv -v $BUILD/usr/include/clang      $VBUILD/CLANG/usr/include/
+mv -v $BUILD/usr/include/clang-c    $VBUILD/CLANG/usr/include/
+mv -v $BUILD/usr/lib/clang/17/include  $VBUILD/CLANG/usr/lib/clang/17/
+mv -v $BUILD/usr/lib/cmake/clang    $VBUILD/CLANG/usr/lib/cmake/
+mv -v $BUILD/usr/lib/libclang*.a    $VBUILD/CLANG/usr/lib/
+mv -v $BUILD/usr/lib/libclang*.so   $VBUILD/CLANG/usr/lib/
+mv -v $BUILD/usr/lib/libclang.so.*  $VBUILD/CLANG/usr/lib/
+mv -v $BUILD/usr/lib/libclang-cpp.so.* $VBUILD/CLANG/usr/lib/
+mv -v $BUILD/usr/lib/cpp            $VBUILD/CLANG/usr/lib/
+mv -v $BUILD/usr/share/clang        $VBUILD/CLANG/usr/share/
+
+# Install
+cd $VBUILD
+cp -ar CLANG/* /
+
+# Test Rebuilt Clang
+echo "int main(){}" > dummy.c
+/usr/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
+llvm-readelf -l a.out | grep ': /lib'
+# Shoud output:
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
+# Should output:
+# ld.lld: /lib/Scrt1.o
+# ld.lld: /lib/crti.o
+# ld.lld: /lib/crtn.o
+# * /lib is a link to /usr/lib, therefore this is acceptable
+
+# Verify that stage2 rebuilt clang is searching for the correct header files:
+grep -B1 -A1 '^ /usr' dummy.log
+# It should output:
+# #include <...> search starts here:
+#  /usr/local/include
+#  /usr/include
+#  /usr/lib/clang/17/include
+# End of search list.
+
+# Make sure no libraries are loaded from llvmtools
+grep ld.lld:  dummy.log
+# It should output:
+# ld.lld: /lib/Scrt1.o
+# ld.lld: /lib/crti.o
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /tmp/dummy-b69998.o
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /lib/libunwind.so
+# ld.lld: /lib/libatomic.so
+# ld.lld: /lib/libc.so
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /lib/libunwind.so
+# ld.lld: /usr/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /lib/crtn.o
+
+
+# Check if stage2 clang++ supports atomics.
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+/usr/bin/clang++ \
+atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# Make sure stage2 clang can find libc++ headers:
+grep -B4 -A1 '^ /usr/lib' atomics-test.log
+# It should output this order:
+# #include <...> search starts here:
+#  /usr/bin/../include/c++/v1
+#  /usr/local/include
+#  /usr/include
+#  /usr/lib/clang/17/include
+# End of search list.
+
+# Test if stage1 clang supports C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+/usr/bin/clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# Should return nothing if there are no errors.
+
+# Execute the binary. Should output "C++"... test may need to be updated as desired result was "C++14"
+./a.out
+
+# If all is good, clean up
+rm -v dummy.* atomics-test.* cxx11-test.*
+cd sources
+rm -rf /sources/{BUILD,VBUILD}
+unset  COPTS LOFF LOPTS BUILD VBUILD
