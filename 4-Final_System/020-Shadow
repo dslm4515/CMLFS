@@ -33,7 +33,7 @@ sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD SHA512:' \
 
 # Per https://github.com/dslm4515/Musl-LFS/issues/79,
 # Apply musl's limit to shadow for SHA_ROUNDS_MAX
-sed -i -e 's/^\(#define SHA_ROUNDS_MAX 9999999\)99/\1/' libmisc/salt.c
+sed -i -e 's/^\(#define SHA_ROUNDS_MAX 9999999\)99/\1/' lib/salt.c
 
 # Configure source
 touch /usr/bin/passwd
@@ -46,7 +46,8 @@ AR=llvm-ar \
             --disable-static \
             --bindir=/usr/bin \
             --sbindir=/usr/sbin \
-            --libdir=/usr/lib
+            --libdir=/usr/lib \
+            --without-libbsd
 
 # Build, Install, and fix misplaced files
 make && make install
