@@ -3,7 +3,7 @@
 
 # Set version for pkgconfig file
 cp -v ../files/utmps-alpine/*.pc /tmp/
-sed -i -e "s/@@VERSION@@/0.1.2.1/g" -- /tmp/*.pc 
+sed -i -e "s/@@VERSION@@/0.1.2.2/g" -- /tmp/*.pc 
 
 # Source is hard-coded for binutils.
 # Create links to work around
