@@ -11,6 +11,10 @@ patch -Np1 -i ../patches/elftoolchain-chimera/cxxfilt.patch
 patch -Np1 -i ../patches/elftoolchain-chimera/use-symlinks.patch
 patch -Np1 -i ../patches/elftoolchain-chimera/werror.patch
 
+# Apply patch such that the tools can report a more descriptive 
+# version number
+patch -Np1 -i ../patches/elftoolchain-cmlfs/fix-version.patch 
+
 # Source is hard-coded for ar, ranlib, and strip (either binutils or 
 # elftoolchain).
 for t in ar as ranlib strip
