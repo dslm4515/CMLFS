@@ -1,9 +1,6 @@
 # Final System: Coreutils
 # This section is done in Chroot environment
 
-# Recreate configure script
-autoreconf -vf
-
 # Suppress a test which on some machines can loop forever
 sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
 
