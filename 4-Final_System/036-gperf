@@ -1,6 +1,10 @@
 # Final System: Gperf 
 # This section is done in Chroot environment
 
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/gperf-chimera/gperf-3.1-clang-16-wregister.patch 
+patch -Np1 -i ../patches/gperf-chimera/gperf-3.1-strncmp-decl-mismatch.patch
+
 # Configure with clang
 CC=clang CXX=clang++ \
 ./configure --prefix=/usr \
