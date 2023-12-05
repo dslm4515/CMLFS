@@ -1,12 +1,11 @@
 # Final System: Python 3
 # This section is done in Chroot environment
 
-# Apply patch to build under musl, from Alpine Linux
-patch -Np1 -i ../patches/python-alpine/musl-find_library.patch
+# Apply patch to build under musl, from Void Linux
+patch -Np0 -i ../patches/python3-void/musl-find_library.patch 
 
-# Remove to ensure system libraries are used.
+# Remove to ensure system expat is used.
 rm -r Modules/expat
-rm -r Modules/_ctypes/{darwin,libffi}*
 
 # Configure source
 CC=clang CXX=clang++            \
@@ -27,7 +26,7 @@ CC=clang CXX=clang++            \
 make && make install
 
 # Change permissions to allow stripping later
-chmod -v 755 /usr/lib/libpython3.11.so
+chmod -v 755 /usr/lib/libpython3.12.so
 chmod -v 755 /usr/lib/libpython3.so
 
 # Pip3 expects to find /usr/bin/python. Python2 is no longer
