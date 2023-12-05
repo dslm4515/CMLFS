@@ -1,9 +1,6 @@
 # Final System: LibreSSL 
 # Build and install under chroot
 
-# Run autoreconf
-autoreconf -vif
-
 # Set a few variables ...
 case $(uname -m) in
  x86_64)  export EXTRACONFIG=""
