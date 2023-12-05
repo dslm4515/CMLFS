@@ -9,7 +9,7 @@ cmake -B BUILD \
       -DZLIB_COMPAT=ON \
       -UBUILD_SHARED_LIBS \
       -DWITH_GTEST=OFF \
-      -DPKGCONFIG_INSTALL_DIR="lib/pkgconfig" \
+      -DPKGCONFIG_INSTALL_DIR="/usr/lib/pkgconfig" \
       -G Ninja
 
 # Compile
