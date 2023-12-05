@@ -9,7 +9,7 @@
          --openssldir=/opt/openssl/etc/ssl \
          --libdir=lib          \
          shared                \
-         zlib-dynamic no-ssl3-method -Wa,--noexecstack
+         zlib-dynamic enable-ktls -Wa,--noexecstack
 
 # Compile
 make
@@ -17,4 +17,10 @@ make
 # Install to /opt
 sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
 make MANSUFFIX=ssl install
+
+# Create a link for openSSL and libreSSL to use the same
+# certificates
+mkdir -pv /etc/ssl/certs
+rm -rf /opt/openssl/etc/ssl/certs
+ln -sv ../../../../etc/ssl/certs /opt/openssl/etc/ssl/certs
 
