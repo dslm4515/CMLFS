@@ -4,13 +4,17 @@
 # The behavior of the backspace and delete keys is not
 # consistent across the keymaps in the Kbd package.
 # Apply patch:
-patch -Np1 -i ../patches/kbd-chimera/kbd-2.0.2-backspace-1.patch
+patch -Np1 -i  ../patches/kbd-lfs/kbd-2.6.3-backspace-1.patch
 
 # Adjust source BSD style of install
 patch -Np1 -i ../patches/kbd-chimera/bsd_install.patch
 
 # Fix missing include
 patch -Np1 -i ../patches/kbd-chimera/fix-euro-symbol-es-keymap.patch
+
+# This allows one to print all paths involved when loading a given
+# keymap, including all include files.
+patch -Np1 -i  ../patches/kbd-chimera/path-dump.patch
 
 # Rename conflicting keymaps
 mv -v data/keymaps/i386/qwerty/cz{.map,-qwerty.map}
