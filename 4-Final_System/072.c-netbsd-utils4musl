@@ -1,0 +1,15 @@
+# Final System: netbsd-utils for musl
+# This section is done in Chroot environment
+
+# Build
+mkdir netbsd-utils4musl && cd netbsd-utils4musl
+clang -fpie ../files/netbsd-musl/getent.c -o getent
+clang -fpie ../files/netbsd-musl/getconf.c -o getconf
+clang -fpie ../files/netbsd-musl/iconv.c -o iconv
+
+# Install
+install -v -m755  getent  /usr/bin/
+install -v -m755  getconf /usr/bin/
+install -v -m755  iconv   /usr/bin/
+cp -v ../../files/netbsd-musl/getent.1   /usr/share/man/man1/
+cp -v ../../files/netbsd-musl/getconf.1  /usr/share/man/man1/
