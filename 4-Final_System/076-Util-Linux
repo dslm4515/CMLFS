@@ -4,11 +4,14 @@
 # Apply patch from Glucus to fix utmp paths
 patch -Np0 -i ../patches/util-linux-glaucus/0001-fix-utmp-file-path.patch
 
+# Per LFS, disable a problematic test:
+sed -i '/test_mkfds/s/^/#/' tests/helpers/Makemodule.am
+
 # Configure source. Disable more, as it does not support netbsd-curses
 CC=clang CXX=clang++    \
 LIBS="-lutmps -lskarnet" \
 ./configure ADJTIME_PATH=/var/lib/hwclock/adjtime     \
-            --docdir=/usr/share/doc/util-linux-2.38.1 \
+            --docdir=/usr/share/doc/util-linux-2.39.2 \
             --disable-chfn-chsh  \
             --disable-login      \
             --disable-nologin    \
