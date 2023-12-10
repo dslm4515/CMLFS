@@ -25,7 +25,6 @@ f3438e672e3fa273a7dc26339dd1eed6  cpio-2.13.tar.bz2
 2745c50f6f4e395e7b7d52f902d075bf  diffutils-3.10.tar.xz
 e8ef5fa3b72557be5e9fe564a25da6eb  e2fsprogs-1.46.2.tar.gz
 2b6e94c2eebc1f2194173e31bca9396e  elfutils-0.185.tar.bz2
-60b135a189523f333cea5f71a3345c8d  eudev-3.2.10.tar.gz
 1db2962b05f2566826ad9da4e3b5c475  execline-2.8.0.1.tar.gz
 a4fb91a9441bcaec576d4c4a56fa3aa6  expat-2.4.1.tar.xz
 00fce8de158422f5ccd2666512329bd2  expect5.45.4.tar.gz
@@ -96,6 +95,7 @@ d245f2d3c0399f32b5e834adb30c0531  s6-linux-init-1.0.6.3.tar.gz
 effc1aa17590305647413125b966f1dd  shadow-4.14.2.tar.xz
 50e0eeeea99514cc00f212f2f46c3ec2  skalibs-2.14.0.1.tar.gz
 d0462c4f60c1783311a77583f60a68bb  sources.list
+0d266e5361dc72097b6c18cfde1c0001  systemd-254.tar.gz
 a2d8042658cfd8ea939e6d911eaf4152  tar-1.35.tar.xz
 0e4358aade2f5db8a8b6f2f6d9481ec2  tcl8.6.13-src.tar.gz
 edd9928b4a3f82674bcc3551616eef3b  texinfo-7.1.tar.xz

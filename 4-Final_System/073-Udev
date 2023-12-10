@@ -1,0 +1,117 @@
+# Final System: Udev from systemd
+# This section is done in Chroot environment
+#
+# Eudev is no longer maintained. Udev will be built from systemd source.
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/systemd-chimera/0001-Adjust-for-musl-headers.patch
+patch -Np1 -i ../patches/systemd-chimera/0001-errno-util-Make-STRERROR-portable-for-musl.patch
+patch -Np1 -i ../patches/systemd-chimera/0001-pass-correct-parameters-to-getdents64.patch
+patch -Np1 -i ../patches/systemd-chimera/0001-test-bus-error-strerror-is-assumed-to-be-GNU-specifi.patch
+patch -Np1 -i ../patches/systemd-chimera/0002-Add-sys-stat.h-for-S_IFDIR.patch
+patch -Np1 -i ../patches/systemd-chimera/0003-missing_type.h-add-comparison_fn_t.patch
+patch -Np1 -i ../patches/systemd-chimera/0004-add-fallback-parse_printf_format-implementation.patch
+patch -Np1 -i ../patches/systemd-chimera/0005-src-basic-missing.h-check-for-missing-strndupa.patch
+patch -Np1 -i ../patches/systemd-chimera/0007-don-t-fail-if-GLOB_BRACE-and-GLOB_ALTDIRFUNC-is-not-.patch
+patch -Np1 -i ../patches/systemd-chimera/0008-add-missing-FTW_-macros-for-musl.patch
+patch -Np1 -i ../patches/systemd-chimera/0010-Use-uintmax_t-for-handling-rlim_t.patch
+patch -Np1 -i ../patches/systemd-chimera/0012-don-t-pass-AT_SYMLINK_NOFOLLOW-flag-to-faccessat.patch
+patch -Np1 -i ../patches/systemd-chimera/0013-Define-glibc-compatible-basename-for-non-glibc-syste.patch
+patch -Np1 -i ../patches/systemd-chimera/0014-Do-not-disable-buffering-when-writing-to-oom_score_a.patch
+patch -Np1 -i ../patches/systemd-chimera/0015-distinguish-XSI-compliant-strerror_r-from-GNU-specif.patch
+patch -Np1 -i ../patches/systemd-chimera/0018-avoid-redefinition-of-prctl_mm_map-structure.patch
+patch -Np1 -i ../patches/systemd-chimera/0022-do-not-disable-buffer-in-writing-files.patch
+patch -Np1 -i ../patches/systemd-chimera/0025-Handle-__cpu_mask-usage.patch
+patch -Np1 -i ../patches/systemd-chimera/0026-Handle-missing-gshadow.patch
+patch -Np1 -i ../patches/systemd-chimera/0028-missing_syscall.h-Define-MIPS-ABI-defines-for-musl.patch
+patch -Np1 -i ../patches/systemd-chimera/0029-add-missing-musl-include.patch
+patch -Np1 -i ../patches/systemd-chimera/0030-remove-malloc-trim.patch
+patch -Np1 -i ../patches/systemd-chimera/999-chimera-hacks.patch
+patch -Np1 -i ../patches/systemd-chimera/999-chimera-tmpfiles-man.patch
+
+# Disable feature from systemd not needed by udev:
+export  MARGS="-Dadm-group=false -Dapparmor=false -Danalyze=false  "
+export MARGS+="-Daudit=false -Dbacklight=false -Dbpf-framework=false "
+export MARGS+="-Dbinfmt=false -Dbzip2=false -Dcoredump=false "
+export MARGS+="-Defi=false -Ddbus=false -Delfutils=false "
+export MARGS+="-Denvironment-d=false -Dgcrypt=false -Dfdisk=false "
+export MARGS+="-Dglib=false -Dgshadow=false -Dhibernate=false "
+export MARGS+="-Dgnutls=false -Dtmpfiles=true -Dhostnamed=false "
+export MARGS+="-Dima=false -Didn=false -Dinitrd=false "
+export MARGS+="-Dfirstboot=false -Dldconfig=false -Dkernel-install=false "
+export MARGS+="-Dlibcryptsetup=false -Dlibcurl=false -Dlibidn=false "
+export MARGS+="-Dlibfido2=false -Dlibidn2=false -Dlibiptc=false "
+export MARGS+="-Dlogind=false -Dlocaled=false -Dlz4=false "
+export MARGS+="-Dmachined=false -Dnetworkd=false -Dmicrohttpd=false "
+export MARGS+="-Dnscd=false -Dnss-myhostname=false -Dnss-systemd=false "
+export MARGS+="-Dnss-resolve=false -Doomd=false -Dopenssl=false "
+export MARGS+="-Dpam=false -Dp11kit=false -Dpcre2=false -Dpolkit=false "
+export MARGS+="-Dpstore=false -Dportabled=false -Dpwquality=false "
+export MARGS+="-Drandomseed=false -Drfkill=false -Dresolve=false "
+export MARGS+="-Dseccomp=false -Dselinux=false -Dsysext=false "
+export MARGS+="-Dsmack=false -Dsysusers=false -Dtimedated=false "
+export MARGS+="-Dtpm=false -Dtimesyncd=false -Dqrencode=false "
+export MARGS+="-Dquotacheck=false -Dutmp=false -Duserdb=false "
+export MARGS+="-Dvconsole=false -Dwheel-group=false -Dxkbcommon=false "
+export MARGS+="-Dxz=false -Dzlib=false -Dhwdb=true -Dzstd=false -Dman=false "
+export MARGS+="-Dtests=false -Dlink-journalctl-shared=false "
+export MARGS+="-Dlink-boot-shared=false -Dlink-networkd-shared=false "
+export MARGS+="-Dlink-systemctl-shared=false -Dlink-udev-shared=false "
+export MARGS+="-Dlink-timesyncd-shared=false -Dsplit-usr=false "
+export MARGS+="-Dsplit-bin=false -Drpmmacrosdir=no -Dsysvinit-path= -Dpamconfdir=no "
+
+# Remove two unneeded groups, render and sgx, from the default udev rules: 
+sed -i -e 's/GROUP="render"/GROUP="video"/' \
+       -e 's/GROUP="sgx", //' rules.d/50-udev-default.rules.in
+
+# Remove one udev rule requiring a full Systemd installation: 
+sed '/systemd-sysctl/s/^/#/' -i rules.d/99-systemd.rules.in
+
+# Adjust the hardcoded paths to network configuration files for the standalone udev installation: 
+sed '/NETWORK_DIRS/s/systemd/udev/' -i src/basic/path-lookup.h
+
+# Configure with meson:
+meson setup --prefix=/usr --buildtype=release \
+      -Dmode=release -Ddev-kvm-mode=0660 \
+      -Dstandalone-binaries=true $MARGS \
+      -Dstatic-libudev=true OUT
+
+unset MARGS
+
+# Compile just the library and tools
+cd OUT
+ninja udevadm udev-hwdb \
+      $(grep -o -E "^build (src/libudev|src/udev|rules.d|hwdb.d)[^:]*" \
+        build.ninja | awk '{ print $2 }')                              \
+      $(realpath libudev.so --relative-to .)
+
+# Install 
+install -vm755 -d {/usr/lib,/etc}/udev/{hwdb.d,rules.d,network}
+install -vm755 -d /usr/{lib,share}/pkgconfig
+install -vm755 udevadm                             /usr/bin/
+install -vm755 udev-hwdb                           /usr/bin/
+ln      -svfn  ../bin/udevadm                      /usr/sbin/udevd
+cp      -av    libudev.so{,*[0-9]}                 /usr/lib/
+install -vm644 ../src/libudev/libudev.h            /usr/include/
+install -vm644 src/libudev/*.pc                    /usr/lib/pkgconfig/
+install -vm644 src/udev/*.pc                       /usr/share/pkgconfig/
+install -vm644 ../src/udev/udev.conf               /etc/udev/
+
+install -vm644 rules.d/* ../rules.d/README         /usr/lib/udev/rules.d/
+install -vm644 $(find ../rules.d/*.rules \
+                      -not -name '*power-switch*') /usr/lib/udev/rules.d/
+install -vm644 hwdb.d/*  ../hwdb.d/{*.hwdb,README} /usr/lib/udev/hwdb.d/
+install -vm755 $(find src/udev \
+                      -type f -not -name '*.*')    /usr/lib/udev
+install -vm644 ../network/99-default.link          /usr/lib/udev/network
+
+# Information about hardware devices is maintained in the /etc/udev/hwdb.d and 
+# /usr/lib/udev/hwdb.d directories. Udev needs that information to be compiled 
+# into a binary database /etc/udev/hwdb.bin. Create the initial database:
+udevadm hwdb --update
+
+# Install some custom rules and support files useful in an CMLFS environment:
+cp -r ../files/udev-mlfs-20220325 ./
+make -f udev-mlfs-20220325/Makefile.mlfs  install
+
+
