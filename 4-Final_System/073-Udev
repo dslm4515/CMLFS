@@ -29,6 +29,9 @@ patch -Np1 -i ../patches/systemd-chimera/0030-remove-malloc-trim.patch
 patch -Np1 -i ../patches/systemd-chimera/999-chimera-hacks.patch
 patch -Np1 -i ../patches/systemd-chimera/999-chimera-tmpfiles-man.patch
 
+# Apply patch as systemd-hwdb was not built.
+patch -Np1 -i ../patches/udev-mlfs/do-not-mention-systemd-hwdb.patch
+
 # Disable feature from systemd not needed by udev:
 export  MARGS="-Dadm-group=false -Dapparmor=false -Danalyze=false  "
 export MARGS+="-Daudit=false -Dbacklight=false -Dbpf-framework=false "
