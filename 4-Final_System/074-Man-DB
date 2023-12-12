@@ -8,7 +8,7 @@ patch -Np1 -i ../patches/man-db-alpine/ignore.patch
 CC=clang CXX=clang++ \
 ac_cv_header_sys_cdefs_h=no \
 ./configure --prefix=/usr                        \
-            --docdir=/usr/share/doc/man-db-2.11.2 \
+            --docdir=/usr/share/doc/man-db-2.12.0 \
             --sysconfdir=/etc                    \
             --disable-setuid                     \
             --enable-cache-owner=bin             \
