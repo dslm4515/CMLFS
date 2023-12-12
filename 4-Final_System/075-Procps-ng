@@ -7,9 +7,6 @@ patch -Np1 -i ../patches/procps-mlfs/use_utmpx.patch
 # Apply patch for netbsd-curses compatibility:
 patch -Np1 -i ../patches/procps-mlfs/netbsd-curses-compat.patch
 
-# Update configure script
-autoreconf -fiv
-
 # Configure with clang, utmps and skalibs
 LIBS="$LIBS -lutmps -lskarnet"   \
 ac_cv_func_malloc_0_nonnull=yes  \
@@ -19,7 +16,7 @@ ac_cv_func_realloc_0_nonnull=yes \
             --sbindir=/usr/sbin                      \
             --exec-prefix=                           \
             --libdir=/usr/lib                        \
-            --docdir=/usr/share/doc/procps-ng-4.0.3  \
+            --docdir=/usr/share/doc/procps-ng-4.0.4  \
             --disable-static                         \
             --disable-kill                           \
             --enable-watch8bit                       \

@@ -1,21 +1,25 @@
-diff -uNr procps-ng-4.0.2.orig/library/uptime.c procps-ng-4.0.2/library/uptime.c
---- procps-ng-4.0.2.orig/library/uptime.c	2022-10-04 06:34:22.014478454 -0500
-+++ procps-ng-4.0.2/library/uptime.c	2023-02-03 19:19:13.673149077 -0600
-@@ -29,7 +29,7 @@
+--- procps-ng-4.0.4.orig/library/uptime.c       2023-07-11 04:09:18.436786212 -0500
++++ procps-ng-4.0.4/library/uptime.c    2023-12-12 00:13:42.715524125 -0600
+@@ -30,7 +30,7 @@
  #include <string.h>
  #include <time.h>
  #include <unistd.h>
 -#include <utmp.h>
 +#include <utmpx.h>
- 
- #include "misc.h"
- #include "procps-private.h"
-@@ -42,14 +42,14 @@
+ #ifdef WITH_SYSTEMD
+ #include <systemd/sd-daemon.h>
+ #include <systemd/sd-login.h>
+@@ -51,19 +51,19 @@
  static int count_users(void)
  {
      int numuser = 0;
 -    struct utmp *ut;
 +    struct utmpx *u;
+ 
+ #if defined(WITH_SYSTEMD) || defined(WITH_ELOGIND)
+     if (sd_booted() > 0)
+       return sd_get_sessions(NULL);
+ #endif
  
 -    setutent();
 -    while ((ut = getutent())) {
