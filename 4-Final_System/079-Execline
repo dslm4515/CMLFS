@@ -8,7 +8,7 @@ CC=clang CXX=clang++ \
             --enable-allstatic      \
             --enable-static-libc    \
             --libdir=/usr/lib       \
-            --with-dynlib=/usr/li   \
+            --with-dynlib=/usr/lib  \
             --prefix=/usr           \
             --exec-prefix=/usr      \
             --enable-pedantic-posix \
