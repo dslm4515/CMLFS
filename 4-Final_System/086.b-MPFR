@@ -7,7 +7,7 @@
 ./configure --prefix=/opt/gnu        \
             --disable-static     \
             --enable-thread-safe \
-            --docdir=/opt/gnu/share/doc/mpfr-4.2.0
+            --docdir=/opt/gnu/share/doc/mpfr-4.2.1
 
 # Build
 make
