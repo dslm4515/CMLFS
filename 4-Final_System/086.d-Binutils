@@ -11,6 +11,9 @@
 patch -Np1 -i ../patches/binutils-alpine/0001-Revert-PR25882-.gnu.attributes-are-not-checked-for-s.patch 
 patch -Np1 -i ../patches/binutils-alpine/binutils-ld-fix-static-linking.patch 
 
+# Make sure ld is not present, otherwise libctf will fail to build
+mv -v  /usr/bin/ld{,.disabled}
+
 # Create build directory
 mkdir -v build && cd build
 
@@ -61,3 +64,6 @@ make tooldir=/opt/gnu install
 
 # Clean up variables used in this build
 unset EXTRA_CONFIG CARGS COFF 
+
+# Restore link to make LLD the default linker
+mv -v  /usr/bin/ld{.disabled,}
