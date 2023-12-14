@@ -14,14 +14,14 @@ CC=clang CXX=clang++ \
 ./configure --prefix=/usr   \
             --enable-cxx        \
             --disable-static    \
-            --docdir=/usr/share/doc/gmp-6.2.1
+            --docdir=/usr/share/doc/gmp-6.3.0
 
 # Build
 make
 
 # Test if desired:
 make check 2>&1 | tee gmp-check-log
-# Make sure all 197 tests pass:
+# Make sure all 199 tests pass:
 awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
 
 # Install
