@@ -1,0 +1,21 @@
+# Final System: Dash (optional)
+# This section is done in Chroot environment
+
+# NOTE: Dash can replace bash for sh shell
+#       implementation
+
+# Generate the configure script
+autoreconf -vfi
+
+# Configure source
+CC=clang CXX=clang++ \
+./configure --prefix=/usr
+
+# Build
+make 
+
+# Install
+make install
+
+# Create a link as dash will be used for sh
+ln -sv dash /usr/bin/sh
