@@ -110,7 +110,7 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 <ol>
 <li>Bootstrap build of cgnutools with mussel</li>
 <li>Use mussel-built toolchain (cgnutools) to build stage0 LLVM+clang</li>
-<li>Use cgnutools to build stage1 LLVM+clang with sysroot at llvmtools with stage0 LVVM+clang</li>
+<li>Use cgnutools to build stage1 LLVM+clang with sysroot at llvmtools with stage0 LLVM+clang</li>
 <li>Build enough of llvmtools to enter a chroot with stage1 LLVM+clang</li>
 <li>Build the rest of llvmtools under chroot </li>
 <li>Build final system with llvmtools </li>
