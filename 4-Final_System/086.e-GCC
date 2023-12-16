@@ -29,9 +29,6 @@ case $(uname -m) in
      arm*) export LIBITM=false ;;
 esac &&
 
-#tar -xf ../pkgs/isl-0.25.tar.xz &&
-#mv -v isl-0.25 isl         &&
-
 # Apply patches from glaucus
 case $(uname -m) in
    x86_64)  patch -Np0 -i ../patches/gcc-glaucus/0001-pure64-for-x86-64.patch 
@@ -39,6 +36,10 @@ case $(uname -m) in
    aarch64) patch -Np0 -i ../patches/gcc-glaucus/0001-pure64-for-aarch64.patch
             ;;
 esac
+
+# Apply fixes from FreeBSD 
+patch -Np1 -i ../patches/gcc-freebsd/fix-system.h-and_explicit_includes.patch 
+patch -Np1 -i ../patches/gcc-freebsd/fix-ctype-def-order_v2.patch
 
 # Set paths for GNU libraries and headers for GCC:
 export PKG_CONFIG_PATH=/opt/gnu/lib/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
@@ -59,29 +60,41 @@ export CARGS+="--enable-linker-build-id --enable-checking=release "
 
 # Turn off features not needed
 export  COFF="--disable-libstdcxx-pch --disable-nls --disable-multilib "
-export COFF+="--disable-bootstrap --disable-symvers --disable-libsanitizer "
+# Need bootstrap to due to unsupported GCC flags & 'poisoned headers'
+#export COFF+="--disable-bootstrap --disable-symvers --disable-libsanitizer " 
+export COFF+="--disable-symvers --disable-libsanitizer "
 export COFF+="--disable-libssp --disable-libmpx --disable-libmudflap "
 export COFF+="--disable-fixed-point --disable-sjlj-exceptions --disable-werror "
 
 # Configure source
 CC=clang CXX=clang++ \
 LDFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+CFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+CXXFLAGS="-Wl,--rpath=/opt/gnu/lib" \
 SED=sed  libat_cv_have_ifunc=no \
 ../configure --prefix=/opt/gnu \
              --build=x86_64-pc-linux-musl \
              --enable-languages=c,c++,lto \
              --enable-lto \
-             --with-pkgversion='CMLFS 3.0.0' \
+             --with-pkgversion='CMLFS 4.0.0' \
              --enable-default-pie \
              --enable-default-ssp \
              --enable-plugins \
-             --with-system-zlib $CARGS $COFF
+             --with-system-zlib $CARGS $COFF $EXTRA_CONFIG
 
 # Compile
-make 
+LD_LIBRARY_PATH=/opt/gnu/lib make 
 
 # Install!
 make install
+
+# Bootstrapping does not use the LDFLAGS (invoked with configure script) to set run-path
+# Fix with patchelf
+for b in cc1 cc1plus lto1
+do
+  patchelf --set-rpath /opt/gnu/lib  /opt/gnu/libexec/gcc/x86_64-pc-linux-musl/13.2.0/$b
+done
+patchelf --set-rpath /opt/gnu/lib /opt/gnu/bin/lto-dump 
 
 # Create a symlink required by the FHS for 'historical' reasons
 ln -sv ../bin/cpp /opt/gnu/lib/cpp
@@ -93,11 +106,12 @@ ln -sv gcc /opt/gnu/bin/cc
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)
 install -v -dm755 /opt/gnu/lib/bfd-plugins
-ln -sv  ../../libexec/gcc/${TUPLE}/13.1.0/liblto_plugin.so \
+ln -sv  ../../libexec/gcc/${TUPLE}/13.2.0/liblto_plugin.so \
         /opt/gnu/lib/bfd-plugins/
 mkdir -pv /opt/gnu/share/gdb/auto-load/usr/lib
 mv -v /opt/gnu/lib/*gdb.py /opt/gnu/share/gdb/auto-load/usr/lib
 
 # Clean up variables used in this build
-unset PKG_CONFIG_PATH LIBRARY_PATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH
+unset PKG_CONFIG_PATH LIBRARY_PATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH 
+unset CARGS COFF EXTRA_CONFIG
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin

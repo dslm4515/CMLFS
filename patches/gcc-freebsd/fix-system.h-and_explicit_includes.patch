@@ -1,0 +1,278 @@
+commit 39e361ca12240c07b49d357a2c13345518b81c51
+Author: Dimitry Andric <dim@FreeBSD.org>
+Date:   2023-12-13T16:22:46+01:00
+
+    lang/gcc12 lang/gcc12-devel lang/gcc13 lang/gcc13-devel lang/gcc14-devel: fix build without bootstrap
+    
+    When more recent gcc ports are built without bootstrap, compiling libcc1
+    plugins results in errors similar to:
+    
+      In file included from /wrkdirs/share/dim/ports/lang/gcc13/work/gcc-13.2.0/libcc1/libcc1plugin.cc:72:
+      In file included from /usr/include/c++/v1/vector:321:
+      In file included from /usr/include/c++/v1/__format/formatter_bool.h:20:
+      In file included from /usr/include/c++/v1/__format/formatter_integral.h:32:
+      /usr/include/c++/v1/locale:289:36: error: attempt to use a poisoned identifier
+        289 |         __status = (unsigned char*)malloc(__nkw);
+            |                                    ^
+      /usr/include/c++/v1/locale:1584:28: error: attempt to use a poisoned identifier
+       1584 |         __ob = (char_type*)malloc(2*static_cast<size_t>(__nc)*sizeof(char_type));
+            |                            ^
+    
+    This is because gcc's own system.h header poisons these identifiers, and
+    the libcc1 plugins include <vector> after that. (Note that libstdc++ is
+    not affected because they seem to have implicitly included <vector>
+    already at that point.)
+    
+    Fix it by telling system.h to include <vector> at the correct place, and
+    removing the explicit includes from libcc1plugin.cc and libcp1plugin.cc.
+
+diff --git a/lang/gcc12-devel/files/patch-libcc1_libcc1plugin.cc b/lang/gcc12-devel/files/patch-libcc1_libcc1plugin.cc
+new file mode 100644
+index 000000000000..d54adddb021b
+--- /dev/null
++++ b/lang/gcc12-devel/files/patch-libcc1_libcc1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcc1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcc1plugin.cc
++@@ -32,6 +32,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -68,8 +69,6 @@
++ #include "rpc.hh"
++ #include "gcc-c-interface.h"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc12-devel/files/patch-libcc1_libcp1plugin.cc b/lang/gcc12-devel/files/patch-libcc1_libcp1plugin.cc
+new file mode 100644
+index 000000000000..0f3d2d161404
+--- /dev/null
++++ b/lang/gcc12-devel/files/patch-libcc1_libcp1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcp1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcp1plugin.cc
++@@ -33,6 +33,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -70,8 +71,6 @@
++ #include "marshall-cp.hh"
++ #include "rpc.hh"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc12/files/patch-libcc1_libcc1plugin.cc b/lang/gcc12/files/patch-libcc1_libcc1plugin.cc
+new file mode 100644
+index 000000000000..d54adddb021b
+--- /dev/null
++++ b/lang/gcc12/files/patch-libcc1_libcc1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcc1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcc1plugin.cc
++@@ -32,6 +32,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -68,8 +69,6 @@
++ #include "rpc.hh"
++ #include "gcc-c-interface.h"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc12/files/patch-libcc1_libcp1plugin.cc b/lang/gcc12/files/patch-libcc1_libcp1plugin.cc
+new file mode 100644
+index 000000000000..0f3d2d161404
+--- /dev/null
++++ b/lang/gcc12/files/patch-libcc1_libcp1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcp1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcp1plugin.cc
++@@ -33,6 +33,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -70,8 +71,6 @@
++ #include "marshall-cp.hh"
++ #include "rpc.hh"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc13-devel/files/patch-libcc1_libcc1plugin.cc b/lang/gcc13-devel/files/patch-libcc1_libcc1plugin.cc
+new file mode 100644
+index 000000000000..d54adddb021b
+--- /dev/null
++++ b/lang/gcc13-devel/files/patch-libcc1_libcc1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcc1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcc1plugin.cc
++@@ -32,6 +32,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -68,8 +69,6 @@
++ #include "rpc.hh"
++ #include "gcc-c-interface.h"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc13-devel/files/patch-libcc1_libcp1plugin.cc b/lang/gcc13-devel/files/patch-libcc1_libcp1plugin.cc
+new file mode 100644
+index 000000000000..0f3d2d161404
+--- /dev/null
++++ b/lang/gcc13-devel/files/patch-libcc1_libcp1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcp1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcp1plugin.cc
++@@ -33,6 +33,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -70,8 +71,6 @@
++ #include "marshall-cp.hh"
++ #include "rpc.hh"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc13/files/patch-libcc1_libcc1plugin.cc b/lang/gcc13/files/patch-libcc1_libcc1plugin.cc
+new file mode 100644
+index 000000000000..d54adddb021b
+--- /dev/null
++++ b/lang/gcc13/files/patch-libcc1_libcc1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcc1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcc1plugin.cc
++@@ -32,6 +32,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -68,8 +69,6 @@
++ #include "rpc.hh"
++ #include "gcc-c-interface.h"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc13/files/patch-libcc1_libcp1plugin.cc b/lang/gcc13/files/patch-libcc1_libcp1plugin.cc
+new file mode 100644
+index 000000000000..0f3d2d161404
+--- /dev/null
++++ b/lang/gcc13/files/patch-libcc1_libcp1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcp1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcp1plugin.cc
++@@ -33,6 +33,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -70,8 +71,6 @@
++ #include "marshall-cp.hh"
++ #include "rpc.hh"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc14-devel/files/patch-libcc1_libcc1plugin.cc b/lang/gcc14-devel/files/patch-libcc1_libcc1plugin.cc
+new file mode 100644
+index 000000000000..d54adddb021b
+--- /dev/null
++++ b/lang/gcc14-devel/files/patch-libcc1_libcc1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcc1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcc1plugin.cc
++@@ -32,6 +32,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -68,8 +69,6 @@
++ #include "rpc.hh"
++ #include "gcc-c-interface.h"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 
+diff --git a/lang/gcc14-devel/files/patch-libcc1_libcp1plugin.cc b/lang/gcc14-devel/files/patch-libcc1_libcp1plugin.cc
+new file mode 100644
+index 000000000000..0f3d2d161404
+--- /dev/null
++++ b/lang/gcc14-devel/files/patch-libcc1_libcp1plugin.cc
+@@ -0,0 +1,19 @@
++--- libcc1/libcp1plugin.cc.orig	2023-07-27 08:13:07 UTC
+++++ libcc1/libcp1plugin.cc
++@@ -33,6 +33,7 @@
++ #undef PACKAGE_VERSION
++ 
++ #define INCLUDE_MEMORY
+++#define INCLUDE_VECTOR
++ #include "gcc-plugin.h"
++ #include "system.h"
++ #include "coretypes.h"
++@@ -70,8 +71,6 @@
++ #include "marshall-cp.hh"
++ #include "rpc.hh"
++ #include "context.hh"
++-
++-#include <vector>
++ 
++ using namespace cc1_plugin;
++ 

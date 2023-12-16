@@ -34,7 +34,7 @@ eeefe2e6380931a77dfa6d9350b43186  findutils-4.8.0.tar.xz
 2882e3179748cc9f9c23ec593d6adc8d  flex-2.6.4.tar.gz
 3bc52f1952b9a78361114147da63c35b  flit_core-3.9.0.tar.gz
 97c5a7d83f91a7e1b2035ebbe6ac7abd  gawk-5.3.0.tar.xz
-6b2dfc39ee0f301f09edfebd163c2cc8  gcc-10.3.1_git20210424.tar.xz
+e0e48554cc6e4f261d55ddee9ab69075  gcc-13.2.0.tar.xz
 8551961e36bf8c70b7500d255d3658ec  gdbm-1.23.tar.gz
 9ddf4d35636fa3beacd3627cc02723ff  gettext-tiny-0.3.2.tar.xz
 956dc04e864001a9c22429f761f2c283  gmp-6.3.0.tar.xz
