@@ -1,3 +1,4 @@
 [submodule "MLFS-S6-Bootscripts"]
 	path = MLFS-S6-Bootscripts
 	url = https://github.com/dslm4515/MLFS-S6-Bootscripts
+	branch = sh-shell
