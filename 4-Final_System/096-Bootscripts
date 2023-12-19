@@ -5,38 +5,37 @@
 # Copy s6 directory to /etc
 cp -ar s6 /etc/
 
-# Copy config for setting up virtual terminals (VT's)
-cp -av vconsole.conf /etc/
-
-# Copy useful utilities
-install -v -m755 modules-load /usr/bin/
-install -v -m755 tmpfiles /bin/
-
 # Compile a basic database for boot
-s6-rc-compile /etc/s6/db/basic /etc/s6/sv 
+mkdir -pv /etc/s6/db
+s6-rc-compile /etc/s6/db/basic /etc/s6/dbsrc 
 ln -sv /etc/s6/db/basic /etc/s6/db/current
 
-# Copy necessary scripts to boot, reboot, and poweroff system
-install -v -m755 s6/base/bin/* /sbin/
-mv /etc/s6/base/scripts /etc/s6/scripts
+# Make sure the skeleton scripts are adjusted to boot s6 & s6-rc... or copy over with these:
+cp -v s6-linux-init-scripts/* /etc/s6-linux-init/skel/
 
 # Re-initialize s6 init base. 
 # ** Must be done anytime s6 init base is unpacked or copied. **
 rm -rf /etc/s6/base
-s6-linux-init-maker -1 -f /etc/s6/skel -p "/bin:/sbin:/usr/bin"    \
+s6-linux-init-maker -1 -f /etc/s6-linux-init/skel -p "/bin:/sbin:/usr/bin"    \
                     -D default -G "/sbin/agetty -L -8 tty1 115200" \
-                    -c /etc/s6/base -t 2 -L -u root -U utmp /etc/s6/base
-rm -rf /etc/s6/base/scripts
-cp -r /etc/s6/scripts /etc/s6/base/scripts
+                    -c /etc/s6/base -t 2 -L -u root /etc/s6/base
+
+# Copy necessary scripts to boot, reboot, and poweroff system
+install -v -m755 s6/base/bin/* /sbin/
+
+# Create the safemode init script:
+cp -v  /etc/s6/base/bin/init       /usr/sbin/init-safemode
+sed -i 's/default/safemode/g'      /usr/sbin/init-safemode 
 
 # Copy scripts to bring NIC's up and down
+# NOTE: Skip if using NetworkManager
 install -v -m755 if* /sbin/
 mkdir -pv /lib/services
 install -v -m755 net-services/* /lib/services/
 
 # For logging services, create the log user as root:
 groupadd -g 983 s6log &&
-useradd -c "S6-Log User" -d / \
+useradd -c "S6-Log User" -M \
         -u 983 -g s6log -s /usr/bin/false s6log
 
 # For utmps, create a utmp user:
@@ -45,15 +44,14 @@ useradd -c "utmps user" -d /run/utmps \
 
 # Make sure the directory for wtmp is owned by utmp user:
 mkdir -pv /var/log/utmps
-mv -v /var/log/wtmp /var/log/utmps/
-chown -vR utmp:utmp /var/log/utmps
-ln -sv utmps/wtmp /var/log/wtmp
+chown -v utmp:utmp /run/utmps
+mv -v /var/log/wtmp /run/utmps/
+ln -sv /run/utmps /var/log/utmps
 
-# Bootscripts require system boot with a initramfs image. It's unlcear 
-# why boot scripts work without an initramfs loaded at boot. You may 
-# use thses scripts from BLFS to build one. Script requires cpio installed.
-
-# Copy the script to /sbin:
+# Bootscripts do not require system boot with a initramfs image. 
+# But kernel parameters should boot with root filesystem as 
+# read-only for checking root filesystem at boot (i.e. linux root=/dev/sda2 ro
+# To use the iniramfs build script, Copy the script to /sbin:
 install -v -m755 mkinitrd/mkinitramfs /sbin/
 
 # Copy the configuration:
