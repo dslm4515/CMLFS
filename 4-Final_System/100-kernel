@@ -1,15 +1,13 @@
 # Final System: Linux Kernel
-# Source: https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.13.tar.xz 
+# Source: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.2.tar.xz 
 # This section is done in Chroot environment
-
-# Kernel version greater than 5.9.16 will not compile under musl
-patch -Np1 -i ../patches/kernel/include-uapi-linux-swab-Fix-potentially-missing-__always_inline.patch
 
 # Prepare for compilation by running the following command:
 LLVM=1 LLVM_IAS=1 make mrproper
 
 # Configure kernel:
-LLVM=1 LLVM_IAS=1 make menuconfig
+# This requires bison, append $PATH
+PATH=$PATH:/opt/gnu/bin LLVM=1 LLVM_IAS=1 make menuconfig
 
 # Compile the kernel image and modules: 
 LLVM=1 LLVM_IAS=1 make
