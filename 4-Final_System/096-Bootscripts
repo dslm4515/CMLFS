@@ -48,15 +48,3 @@ chown -v utmp:utmp /run/utmps
 mv -v /var/log/wtmp /run/utmps/
 ln -sv /run/utmps /var/log/utmps
 
-# Bootscripts do not require system boot with a initramfs image. 
-# But kernel parameters should boot with root filesystem as 
-# read-only for checking root filesystem at boot (i.e. linux root=/dev/sda2 ro
-# To use the iniramfs build script, Copy the script to /sbin:
-install -v -m755 mkinitrd/mkinitramfs /sbin/
-
-# Copy the configuration:
-mkdir -p /usr/share/mkinitramfs 
-install -v -m644 mkinitrd/init.in /usr/share/mkinitramfs/ 
-
-# To use, use the running kernel version:
-mkinitramfs $(uname -r)
