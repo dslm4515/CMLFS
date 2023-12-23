@@ -64,6 +64,7 @@ When I have time later, I will write a more thorough introduction for users new 
 <li> [x] Build final system without GCC </li>
 <li> [x] Replace binutils with elftoolchain </li>
 <li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools </li>
+<li> [ ] Create initramfs with busybox & mdev </li>
 <li> [ ] Build on aarch64</li>
 </ul>
 
