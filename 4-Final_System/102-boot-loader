@@ -42,20 +42,56 @@ EOF
 #  or
 #  * The GNU-EFI package (http://sourceforge.net/projects/gnu-efi/)
 
+# Requires efivar, efibootmgr and popt
+# https://github.com/rhboot/efivar/releases/download/38/efivar-37.tar.bz2
+# https://github.com/rhboot/efibootmgr/archive/18/efibootmgr-18.tar.gz
+# http://ftp.rpm.org/popt/releases/popt-1.x/popt-1.19.tar.gz
+
+# The following requires host to have booted in UEFI mode. To check, see if "EFI" exists:
+file  /sys/firmware/efi
+
 # Mount the efi partition
 # For example, if efi partition is /dev/sda1:
-mkdir -pv /mnt/efi
-mount -v /dev/sda1 /mnt/efi
+mkdir -pv /efi
+mount -v  /dev/sda1 /efi
 
 # Create required directories:
-mkdir -pv /mnt/efi/EFI/BOOT
+mkdir -pv /efi/EFI/BOOT
 
 # Install rEFInd:
-cp -v   refind/refind_x64.efi      /mnt/efi/EFI/BOOT/
-cp -vr  refind/icons               /mnt/efi/EFI/BOOT/
-cp -vr  refind/drivers_x64         /mnt/efi/EFI/BOOT/
-cp -vr  refind/tools_x64           /mnt/efi/EFI/BOOT/
-cp -vr  refind/refind.conf-sample  /mnt/efi/EFI/BOOT/refind.conf
+cp -v   refind/refind_x64.efi      /efi/EFI/BOOT/
+cp -vr  refind/icons               /efi/EFI/BOOT/
+cp -vr  refind/drivers_x64         /efi/EFI/BOOT/
+cp -vr  refind/tools_x64           /efi/EFI/BOOT/
+cp -vr  refind/refind.conf-sample  /efi/EFI/BOOT/refind.conf
+
+# Copy kernel over
+cp -v /boot/vmlinuz /efi/EFI/BOOT/vmlinuz
+
+# Mount the efi variables as read-write
+mount -o remount,rw /sys/firmware/efi
+
+# Add rEFInd to your EFI's list of available boot loaders, which it stores in NVRAM
+efibootmgr -c -l \\EFI\\BOOT\\refind_x64.efi -L rEFInd
+
+# Find the volume label for the efi parition
+blkid /dev/sda1 | grep LABEL= | cut -d " " -f 2
+
+# Find the PARTUUID for the partition the root fileysytem is on
+# For example if the parition is /dev/sda1
+blkid /dev/sda2 | grep PARTUUID | cut -d " " -f 7
+
+# Add boot entry in rEFInd's configuration
+cat >> /efi/EFI/BOOT/refind.conf << "EOF"
+menuentry "CMLFS 4.0.0" {
+  icon /EFI/Boot/icons/os_linux.png
+  volume EFI
+  loader /EFI/Boot/vmlinuz
+  options "ro root=PARTUUID=c429ed10-7b29-ee7b-0c71-d2937c47da57 init=/usr/sbin/init"
+  submenuentry "Boot in Safe mode" {
+     options "ro root=PARTUUID=c429ed10-7b29-ee7b-0c71-d2937c47da57 init=/usr/sbin/init-sb"
+  }
+}
 
 ########################## For ARM ##########################
 Depending on target, boot loader may be u-boot.
