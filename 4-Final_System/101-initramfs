@@ -101,7 +101,7 @@ cp -rv /lib/firmware/* lib/firmware/
 cp -rv /lib/modules/* lib/modules/
 
 # Now create the initramfs image. Do not change directories
-find . | cpio -o -H newc | gzip -9  > /boot/initrd.img
+find . | bsdcpio -o -H newc | gzip -9  > /boot/initrd.img
 
 # If desired and/or available, create img for CPU microcode
 #
@@ -115,5 +115,5 @@ cat /usr/lib/firmware/amd-ucode/microcode_amd*.bin > kernel/x86/microcode/Authen
 cat /usr/lib/firmware/intel-ucode/* > $DSTDIR/GenuineIntel.bin
 
 # Create the microcode img:
-find . | cpio -o -H newc --quiet ) > /boot/microcode.img
+find . | bsdcpio -o -H newc --quiet ) > /boot/microcode.img
 

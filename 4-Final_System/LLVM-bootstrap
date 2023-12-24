@@ -1,0 +1,88 @@
+# LLVM Bootstrap
+# Build under chroot
+#
+# NOTE: Reuse llvm-project source tree from before
+
+# Restore default dynamic linker/loader path to /lib
+patch -Np1 -i ../patches/llvm-cmlfs/modify-test-dynamic-loader.restore.patch
+patch -Np1 -i ../patches/llvm-cmlfs/modify-toolchain-dynamic-loader.restore.patch
+
+# stage1 clang cannot find zstd headers
+ln -sv /usr/include/zstd.h  /llvmtools/include/
+
+export CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+# Set the build options
+export  LBO="-DCMAKE_BUILD_TYPE=Release "
+export LBO+="-Wno-dev "
+export LBO+="-DCMAKE_INSTALL_PREFIX=/opt/LLVM-bootstrap "
+export LBO+="-DCMAKE_INSTALL_RPATH=/opt/LLVM-bootstrap/lib "
+export LBO+="-DENABLE_LINKER_BUILD_ID=YES "
+export LBO+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=YES " 
+export LBO+="-DLIBCXX_CXX_ABI=libcxxabi "
+export LBO+="-DLIBCXX_USE_COMPILER_RT=YES "
+export LBO+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=NO "
+export LBO+="-DLIBCXX_HAS_MUSL_LIBC=YES "
+export LBO+="-DLIBCXX_HARDENING_MODE=hardened "
+export LBO+="-DLIBCXXABI_USE_LLVM_UNWINDER=YES "
+export LBO+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=NO "
+export LBO+="-DLIBCXXABI_USE_COMPILER_RT=YES "
+export LBO+="-DLLVM_INSTALL_UTILS=YES "
+export LBO+="-DLLVM_BUILD_LLVM_DYLIB=YES "
+export LBO+="-DLLVM_LINK_LLVM_DYLIB=YES "
+export LBO+="-DLLVM_ENABLE_RTTI=YES "
+export LBO+="-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=YES "
+export LBO+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export LBO+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export LBO+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export LBO+="-DCLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang "
+export LBO+="-DLLVM_ENABLE_LLD=YES "
+export LBO+="-DLLVM_ENABLE_LIBCXX=YES "
+export LBO+="-DLIBUNWIND_USE_COMPILER_RT=YES "
+
+export  LBOO="-DLLVM_ENABLE_LIBXML2=NO "
+export LBOO+="-DLLVM_ENABLE_LIBEDIT=NO "
+export LBOO+="-DLLVM_ENABLE_LIBPFM=NO "
+export LBOO+="-DLLVM_ENABLE_TERMINFO=NO "
+export LBOO+="-DCOMPILER_RT_BUILD_SANITIZERS=NO "
+export LBOO+="-DCOMPILER_RT_BUILD_XRAY=NO "
+export LBOO+="-DCOMPILER_RT_BUILD_LIBFUZZER=NO "
+export LBOO+="-DCOMPILER_RT_BUILD_PROFILE=NO "
+export LBOO+="-DCOMPILER_RT_BUILD_MEMPROF=NO "
+
+# Remove more tests & docs that breaks build
+export  MOFF="-DCLANG_INCLUDE_TESTS=OFF "
+export MOFF+="-DLLVM_ENABLE_OCAMLDOC=OFF "
+export MOFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
+export MOFF+="-DLLVM_INCLUDE_DOCS=OFF "
+export MOFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
+export MOFF+="-DLLVM_INCLUDE_TESTS=OFF "
+
+cmake -B build -G Ninja -S llvm $LBO $LBOO $MOFF \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
+      -DLLVM_TARGETS_TO_BUILD="Native;host;AMDGPU;BPF" \ 
+      -DLLVM_TARGET_ARCH="host" \
+      -DLLVM_HOST_TRIPLE="$TUPLE" \
+      -DLLVM_DEFAULT_TARGET_TRIPLE="$TUPLE" \
+      -DCLANG_VENDOR="Bootstrap" -DLLD_VENDOR="Bootstrap" \
+      -DCOMPILER_RT_USE_LLVM_UNWINDER=ON \
+      -DLIBUNWIND_INSTALL_HEADERS=ON 
+
+ninja -C build
+
+# llvm-headers .......... 202 .... PASS
+# llvm-tblgen ...........  68 .... PASS
+# llvm-lib ............. 1812 .... PASS
+# lld ................... 126 .... PASS 
+# clang ................ 1181 .... PASS 
+# builtins ............... 56 .... PASS
+# compiler-rt ...........1020 .... PASS *builds libclang
+# cxxabi ................. 60 .... PASS
+# cxx ................... 101 .... PASS
+# libclang ............... 31 .... PASS
+# unwind .................. 5 .... PASS
+# <remaining> ........... 570 .... PASS
+
+cmake --install build --strip

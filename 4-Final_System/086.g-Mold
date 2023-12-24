@@ -1,0 +1,17 @@
+# Final System: Mold (optional)
+# This section is done in Chroot environment
+
+# NOTE: Faster alternative to LLD or Gold 
+# Source: https://github.com/rui314/mold/archive/refs/tags/v2.4.0.tar.gz
+# md5sum: 8e692fe85d061e200bb66ef7a32d3ab2  v2.4.0.tar.gz
+# Requires: onetbb(optional)
+
+cmake -B OUT -DCMAKE_BUILD_TYPE=Release \
+             -DCMAKE_CXX_COMPILER=clang++ \
+             -DCMAKE_INSTALL_PREFIX=/usr \
+             -DMOLD_USE_MIMALLOC=OFF \
+             -DMOLD_USE_SYSTEM_TBB=OFF 
+
+make -C OUT 
+
+make -C OUT install
