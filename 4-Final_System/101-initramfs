@@ -1,6 +1,19 @@
 # Final System: initramfs
 # This section is done in Chroot environment
 
+# Unpack busybox source
+tar xf pkgs/busybox-1.36.1.tar.bz2
+cd busybox-1.36.1
+
+# Copy over config
+cp -v ../files/busybox-initramfs.config .config
+
+# Check for any unresolved [config] symbols
+PATH=$PATH:/opt/gnu/bin make oldconfig
+
+# Compile busybox
+PATH=$PATH:/opt/gnu/bin make 
+
 # Create a directory to hold the contents of
 # the initramfs
 mkdir -pv /sources/initramfs_build
@@ -8,48 +21,78 @@ mkdir -pv /sources/initramfs_build
 # Enter directory and create a base 
 # directory tree:
 cd /sources/initramfs_build
-mkdir -pv bin dev etc lib proc run sbin sys usr
-mkdir -pv lib/{firmware,modules,udev}
-mkdir -pv etc/{modprobe.d,udev}
+mkdir -pv dev etc lib proc run sbin sys 
+mkdir -pv lib/{firmware,modules}
+mkdir -pv etc/modprobe.d
+mkdir -pv usr
 
 # Create symlinks
 ln -sv lib lib64
-ln -sv ../bin usr/bin
+ln -sv sbin bin
+ln -sv ../sbin usr/bin
+ln -sv ../sbin usr/sbin
 
-# Copy binaries
+# Create directories for CPU microcode
+mkdir -pv kernel/x86/microcode
+
+# Copy busybox
+cp -v /sources/busybox-1.36.1/busybox bin/
+
+# Create symlinks to busybox
 for b in cat cp dd killall kmod ln ls mkdir \
-         mknod mount rm sed sh sleep umount uname
+         mknod mount rm sed sh sleep umount uname \
+         basename readlink insmod lsmod mdev
 do 
-  cp -va /bin/$b bin/
+  ln -sv  busybox bin/$b
 done
-cp -va /usr/bin/basename bin/
-cp -va /usr/bin/readlink bin/
-ln -sv kmod bin/insmod
-ln -sv kmod bin/lsmod
 
-# Create the nodes for udev to mount on:
+# Create the nodes for mdev to mount on:
 mknod -m 600 dev/console c 5 1
 mknod -m 666 dev/null c 1 3
-
-# Copy udev configuration
-cp -v  /etc/udev/udev.conf etc/udev/
-cp -rv /etc/udev/rules.d   etc/udev/
-cp -rv /lib/udev/*         lib/udev/
 
 # Set module load order, if needed
 touch etc/modprobe.d/modprobe.conf 
 
-# Copy the init script
-cp -v ../files/initramfs-init sbin/init
+# Create the init script
+cat > bin/init << "EOF"
+#!/bin/busybox sh
 
-# Copy required libraries
-for l in libacl.so.1  libattr.so.1 libblkid.so.1 libcap.so.2 \
-         libkmod.so.2 liblzma.so.5 libmount.so.1 libncursesw.so.6 \
-         libreadline.so.8 libz.so.1
-do
-  cp -va /lib/$l lib/
-done
-cp -v /lib/ld-musl-$(uname -m).so.1 lib/
+# simple cmdline parser function
+cmdline() {
+    local value
+    value=" $(cat /proc/cmdline) "
+    value="${value##* ${1}=}"
+    value="${value%% *}"
+    [ "${value}" != "" ] && echo "${value}"
+}
+
+# execute rescue shell if an error occurs
+rescue_shell() {
+    echo "Something went wrong. Dropping to a shell."
+    exec sh
+}
+
+# Mount the /proc and /sys filesystems.
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+# Start mdev
+echo /bin/mdev > /proc/sys/kernel/hotplug
+mdev -s
+
+# Mount the root filesystem.
+mount -o ro $(findfs $(cmdline root)) /mnt/root || rescue_shell
+
+# Clean up.
+umount /proc
+umount /sys
+
+# Boot the real system
+exec switch_root /mnt/root /sbin/init
+EOF
+
+# Make sure init script is executable
+chmod -v a+x bin/init
 
 # Copy any firmware required for boot:
 cp -rv /lib/firmware/* lib/firmware/
@@ -59,4 +102,18 @@ cp -rv /lib/modules/* lib/modules/
 
 # Now create the initramfs image. Do not change directories
 find . | cpio -o -H newc | gzip -9  > /boot/initrd.img
+
+# If desired and/or available, create img for CPU microcode
+#
+mkdir -pv /sources/microcode_build/kernel/x86/microcode
+cd /sources/microcode_build
+
+# For AMD:
+cat /usr/lib/firmware/amd-ucode/microcode_amd*.bin > kernel/x86/microcode/AuthenticAMD.bin
+
+# For Intel:
+cat /usr/lib/firmware/intel-ucode/* > $DSTDIR/GenuineIntel.bin
+
+# Create the microcode img:
+find . | cpio -o -H newc --quiet ) > /boot/microcode.img
 
