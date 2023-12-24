@@ -117,3 +117,6 @@ cat /usr/lib/firmware/intel-ucode/* > $DSTDIR/GenuineIntel.bin
 # Create the microcode img:
 find . | bsdcpio -o -H newc --quiet ) > /boot/microcode.img
 
+# if desired, combine both microcode.img and initrd.img into a single image
+mv /boot/initrd.img /boot/initramfs.img
+cat /boot/microcode.img /boot/initramfs.img > /boot/initrd.img
