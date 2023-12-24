@@ -48,3 +48,6 @@ chown -v utmp:utmp /run/utmps
 mv -v /var/log/wtmp /run/utmps/
 ln -sv /run/utmps /var/log/utmps
 
+# Make sure the directory for dmesg logging is owned by the log user
+mkdir -pv /var/log/dmesg
+chown -v s6log:s6log /var/log/dmesg
