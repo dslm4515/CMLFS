@@ -108,6 +108,9 @@ install -vm755 $(find src/udev \
                       -type f -not -name '*.*')    /usr/lib/udev
 install -vm644 ../network/99-default.link          /usr/lib/udev/network
 
+# Remove an unnecessary udev rule:
+rm -v /usr/lib/udev/rules.d/90-vconsole.rules
+
 # Information about hardware devices is maintained in the /etc/udev/hwdb.d and 
 # /usr/lib/udev/hwdb.d directories. Udev needs that information to be compiled 
 # into a binary database /etc/udev/hwdb.bin. Create the initial database:
