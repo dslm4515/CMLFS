@@ -21,7 +21,7 @@ mkdir -pv /sources/initramfs_build
 # Enter directory and create a base 
 # directory tree:
 cd /sources/initramfs_build
-mkdir -pv dev etc lib proc run sbin sys 
+mkdir -pv dev etc lib proc run sbin sys mnt/root
 mkdir -pv lib/{firmware,modules}
 mkdir -pv etc/modprobe.d
 mkdir -pv usr
@@ -41,7 +41,8 @@ cp -v /sources/busybox-1.36.1/busybox bin/
 # Create symlinks to busybox
 for b in cat cp dd killall kmod ln ls mkdir \
          mknod mount rm sed sh sleep umount uname \
-         basename readlink insmod lsmod mdev
+         basename readlink insmod lsmod mdev \
+         switch_root findfs 
 do 
   ln -sv  busybox bin/$b
 done
@@ -84,12 +85,17 @@ mdev -s
 mount -o ro $(findfs $(cmdline root)) /mnt/root || rescue_shell
 
 # Clean up.
-umount /proc
-umount /sys
+#umount /proc
+#umount /sys
+
+# stop mdev
+killall -w mdev
 
 # Boot the real system
 exec switch_root /mnt/root /sbin/init
 EOF
+
+ln -sv sbin/init init
 
 # Make sure init script is executable
 chmod -v a+x bin/init
@@ -112,7 +118,7 @@ cd /sources/microcode_build
 cat /usr/lib/firmware/amd-ucode/microcode_amd*.bin > kernel/x86/microcode/AuthenticAMD.bin
 
 # For Intel:
-cat /usr/lib/firmware/intel-ucode/* > $DSTDIR/GenuineIntel.bin
+cat /usr/lib/firmware/intel-ucode/* > kernel/x86/microcode/GenuineIntel.bin
 
 # Create the microcode img:
 find . | bsdcpio -o -H newc --quiet ) > /boot/microcode.img
