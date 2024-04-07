@@ -2,17 +2,23 @@
 # Build as cmlfs
 
 # Configure with freshly built GCC
-./configure \
-  CROSS_COMPILE=${TARGET_TUPLE}- \
-  --prefix=/ \
-  --target=${TARGET_TUPLE}
+ARCH=${MCA} CC=${TARGET_TUPLE}-gcc \
+CROSS_COMPILE=${TARGET_TUPLE}- \
+LIBCC=/cgnutools/lib/gcc/${TARGET_TUPLE}/${MCGV}/libgcc.a \
+./configure --host=$TARGET_TUPLE --prefix=/
 
-# Buid and install
-make && make DESTDIR=/llvmtools install
+# Compile
+make AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib
+
+# Install
+make AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib \
+DESTDIR=/llvmtools install
 
 # Fix a symlink
-rm -v /llvmtools/lib/ld-musl-$(uname -m).so.1
-ln -sv libc.so /llvmtools/lib/ld-musl-$(uname -m).so.1
+rm -v /llvmtools/lib/ld-musl-${MCA}.so.1
+ln -sv libc.so /llvmtools/lib/ld-musl-${MCA}.so.1
 
 # Create a symlink that can be used to print
 # the required shared objects of a program or
@@ -29,18 +35,18 @@ EOF
 
 # Since llvmtools now has a libc, the cross GCC compiler (located
 # in /cgnutools) will need a built-in specs that refers to the freshly
-# compile musl dynamic loader /llvmtools/lib/ld-musl-x86_64.so.1.
+# compile musl dynamic loader /llvmtools/lib/ld-musl-${MCA}.so.1.
 # We have to adjust this to build up the llvmtools with
-# /llvmtools/lib/ld-musl-x86_64.so.1, but keep the cross-gcc in
+# /llvmtools/lib/ld-musl-${MCA}.so.1, but keep the cross-gcc in
 # cgnutools.
 # This will be reached by creating a modified  specs  file in the
 # proper location:
 
-export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
+export MCGV=$(/cgnutools/bin/${TARGET_TUPLE}-gcc  --version | sed 1q | cut -d' ' -f3- )
 
 /cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
 
-# Test the _tools toolchain:
+# Test the cgnutools toolchain:
 cd $CMLFS/sources
 printf "#include <stdio.h>\nint main(){}\n" > dummy.c
 ${TARGET_TUPLE}-gcc dummy.c
