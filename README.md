@@ -6,6 +6,8 @@ CMLFS can either mean "Clang-built Musl Linux from Scratch" or "Clang MLFS". It 
 
 Use at you own risk. This builds a Unix-like system that may not be stable enough as a 'daily driver' for most users. Security-hardening of the built system is beyound the scope of this project. This repo started as means to backup and archive my work.
 
+On March 28, 2024, malicious code was discovered in the upstream tarballs of xz. All branches of CMLFS did not update to xz-5.6.x. For now, all branches will stay on 5.4.6 until there is a need to update to a newer version. More info on the malicious code found in xz can be read at [Redhat's CVE-2024-3094](https://access.redhat.com/security/cve/CVE-2024-3094). 
+
 ## Getting Started
 
 The master branch may be unstable when I am working on upgrading CMLFS. 
