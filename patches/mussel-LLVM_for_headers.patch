@@ -1,0 +1,19 @@
+--- mussel/mussel.sh.origII	2024-03-23 17:59:51.642217075 -0500
++++ mussel/mussel.sh	2024-03-23 18:00:30.082215468 -0500
+@@ -924,14 +924,14 @@
+ 
+   $MAKE \
+     ARCH=$LARCH \
+-    mrproper >> $MLOG 2>&1
++    LLVM=1 mrproper >> $MLOG 2>&1
+ 
+   printf "${BLUEC}..${NORMALC} Installing linux headers...\n"
+   $MAKE \
+     O=$BLDDIR/linux \
+     ARCH=$LARCH \
+     INSTALL_HDR_PATH=$MSYSROOT/usr \
+-    headers_install >> $MLOG 2>&1
++    LLVM=1 headers_install >> $MLOG 2>&1
+ 
+   printf "${GREENC}=>${NORMALC} linux headers finished.\n\n"
+ fi

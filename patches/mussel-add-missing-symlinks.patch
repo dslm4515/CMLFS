@@ -1,13 +1,25 @@
---- mussel/mussel.sh	2023-09-28 18:28:11.314284801 -0500
-+++ mussel.new/mussel.sh	2023-09-28 18:31:51.823275578 -0500
-@@ -558,6 +558,10 @@
+--- mussel/mussel.sh.orig	2024-03-25 15:14:52.854404082 -0500
++++ mussel/mussel.sh	2024-03-25 15:21:52.216386543 -0500
+@@ -814,6 +814,22 @@
    --host=$XTARGET \
    --prefix=/usr >> $MLOG 2>&1
  
-+printf -- "${BLUEC}..${NORMALC} Adding assembler link ...\n"
-+ln -sv $XTARGET-gcc-ar $MPREFIX/bin/$XTARGET-ar >> $MLOG 2>&1
-+ln -sv $XTARGET-gcc-ranlib $MPREFIX/bin/$XTARGET-ranlib >> $MLOG 2>&1
++printf -- "${BLUEC}..${NORMALC} Adding assembler link if needed ...\n"
++if [ -e $MPREFIX/bin/$XTARGET-ar ]
++then
++  printf -- "${BLUEC}>>${NORMALC} link not needed for AR. \n"
++else
++  printf -- "${BLUEC}>>${NORMALC} link needed for AR. \n"
++  ln -sv $XTARGET-gcc-ar $MPREFIX/bin/$XTARGET-ar >> $MLOG 2>&1
++fi
++if [ -e $MPREFIX/bin/$XTARGET-ranlib ]
++then
++  printf -- "${BLUEC}>>${NORMALC} link not needed for RANLIB. \n"
++else
++  printf -- "${BLUEC}>>${NORMALC} link needed for RAN. \n" 
++  ln -sv $XTARGET-gcc-ranlib $MPREFIX/bin/$XTARGET-ranlib >> $MLOG 2>&1
++fi
 +
- printf -- "${BLUEC}..${NORMALC} Building musl...\n"
+ printf "${BLUEC}..${NORMALC} Building musl...\n"
  $MAKE \
    AR=$XTARGET-ar \

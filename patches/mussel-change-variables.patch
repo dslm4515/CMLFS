@@ -1,6 +1,6 @@
---- mussel.orig/mussel.sh	2023-11-23 01:49:53.733812887 -0600
-+++ mussel/mussel.sh	2023-11-23 01:50:41.042814867 -0600
-@@ -174,8 +174,8 @@
+--- mussel/mussel.sh.orig	2024-03-23 17:33:06.151284222 -0500
++++ mussel/mussel.sh	2024-03-23 17:35:03.937279295 -0500
+@@ -212,8 +212,8 @@
  BLDDIR="$CURDIR/builds"
  PCHDIR="$CURDIR/patches"
  
@@ -11,4 +11,3 @@
  
  # ----- mussel Log File ---- #
  MLOG="$CURDIR/log.txt"
-cmlfs:/mnt/cmlfs/sources/mussel

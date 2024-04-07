@@ -2,48 +2,58 @@
 cd $CMLFS/sources
 git clone https://github.com/firasuke/mussel
 
-# Use commit 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
-# If b3sum is not installed. This is also the last 
-# commit before mussel switch to b3sum
 cd mussel
+
+# Custom patches were updated against 
+# commit: dc8a99c95b72431eb2c6ecdde7ebb0eefef12560
+git checkout dc8a99c95b72431eb2c6ecdde7ebb0eefef12560
+
+# Use commit 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
+# # If b3sum is not installed. This is also the last 
+# # commit before mussel switch to b3sum
 git checkout 26c50d6362731bc54ca9f92ac31b3f95e885c3c7
+
 
 # Make sure host has all requirements:
 ./check.sh
 
-# Modify ./mussel.sh to change these:
+# Patch to Modify ./mussel.sh to change these:
 # MPREFIX="/cgnutools"
 # MSYSROOT="/cgnutools"
 patch -Np1 -i ../patches/mussel-change-variables.patch
 
 # Modify ./mussel to add a vendor in target tuple
 # Set vendor as 'pc'. If omitted, clang defaults to 'unknown'
-patch -Np0 -i ../patches/mussel-add-vendor-set-sysroot.patch
+patch -Np1 -i ../patches/mussel-add-vendor.patch
 
 # If host uses clang instead of GCC,
 # Do not build ISL:
 patch -Np1 -i ../patches/mussel-dont-build-isl.patch 
 
-# If host uses clang instead of GCC,
 # Apply patch to add compatibility links for cross AR and RANLIB
 patch -Np1 -i ../patches/mussel-add-missing-symlinks.patch
 
-# Build toolchain. Ommit -p in not building in parallel and using all
-# the host's CPU cores:
-sudo ./mussel.sh x86_64 -l -o -k -p
+# If compiling with LLVM, prefix commands with LLVM=1 
+# to build kernel headers
+patch -Np1 -i ../patches/mussel-LLVM_for_headers.patch 
+
+# Build toolchain. Amend PATH to include /cgnutools/bin
+# o Ommit -p if not building in parallel to use all
+#   the host's CPU cores
+sudo PATH=/cgnutools/bin:$PATH ./mussel.sh x86_64 -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
 sudo chown -vR cmlfs $CMLFS/cgnutools
 
-# Move misplaced headers and files:
+# Unify  headers and libraries:
 mv -v /cgnutools/usr/lib/*     /cgnutools/lib/
 mv -v /cgnutools/usr/include/* /cgnutools/include/
 rm -rfv /cgnutools/usr/{include,lib}
 ln -sv ../lib     /cgnutools/usr/lib
 ln -sv ../include /cgnutools/usr/include
 
-# Remove unneeded manpages
-rm -rf  /cgnutools/share/man
+# Remove unneeded documentation
+rm -rf  /cgnutools/share/{man,info}
 
 # The new cross compiler has built-in specs which refer to the musl
 # dynamic loader  /lib/ld-musl-x86_64.so.1... which will not exist on
@@ -52,7 +62,7 @@ rm -rf  /cgnutools/share/man
 # cgnutools.
 # This will be reached by creating a modified  specs  file in the
 # proper location:
-export MCGV=$(/cgnutools/bin/gcc  --version | sed 1q | cut -d' ' -f3- )
+export MCGV=$(/cgnutools/bin/${TARGET_TUPLE}-gcc  --version | sed 1q | cut -d' ' -f3- )
 /cgnutools/bin/${TARGET_TUPLE}-gcc -dumpspecs | sed 's/\/lib\/ld-musl/\/llvmtools\/lib\/ld-musl/g' > /cgnutools/lib/gcc/${TARGET_TUPLE}/$MCGV/specs
 
 # Test the _tools toolchain:
