@@ -100,7 +100,7 @@ case $(uname -m) in
     i686)     export CMLFS_TARGET="i686-cmlfs-linux-musl"
               export TARGET_TUPLE="i686-pc-linux-musl"
               export   CMLFS_ARCH="x86"
-              export    CMLFS_CPU="x86"
+              export    CMLFS_CPU="i686"
               export          MCA="i386"
            ;;
     aarch64 ) export  CMLFS_TARGET="aarch64-cmlfs-linux-musl"
