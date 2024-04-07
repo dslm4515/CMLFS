@@ -9,4 +9,8 @@ RANLIB=${TARGET_TUPLE}-ranlib \
 make PREFIX="/llvmtools"
 
 # Install to llvmtools
+CC=${TARGET_TUPLE}-gcc  \
+CXX=${TARGET_TUPLE}-g++ \
+AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib \
 make PREFIX="/llvmtools" install
