@@ -83,14 +83,14 @@ https://prdownloads.sourceforge.net/expect/expect5.45.4.tar.gz
 https://ftp.gnu.org/gnu/dejagnu/dejagnu-1.6.3.tar.gz
 https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.2.tar.xz
 http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
-https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.5/llvm-project-17.0.5.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/llvm-project-17.0.6.src.tar.xz
 https://cmake.org/files/v3.27/cmake-3.27.8.tar.gz
 https://dist.libuv.org/dist/v1.41.0/libuv-v1.41.0.tar.gz
 https://github.com/chimera-linux/libatomic-chimera/archive/refs/tags/v0.90.0.tar.gz
 https://github.com/libarchive/libarchive/releases/download/v3.7.2/libarchive-3.7.2.tar.xz
 https://www.crufty.net/ftp/pub/sjg/bmake-20230909.tar.gz
 https://www.nano-editor.org/dist/v7/nano-7.2.tar.xz
-https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.5/compiler-rt-17.0.5.src.tar.xz
+https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/compiler-rt-17.0.6.src.tar.xz
 https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0.tar.bz2
 https://github.com/Projeto-Pindorama/musl-compat/archive/refs/tags/20230601.tar.gz
 https://github.com/chimera-linux/elftoolchain/archive/fea115ec80ece0a0c2271ed2bc25a30a85da990e.tar.gz
