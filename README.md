@@ -42,7 +42,7 @@ When I have time later, I will write a more thorough introduction for users new 
 
 <ul>
 <li>AMD64/x86_64: Toolchains and final system build sucessfully (musl & glibc hosts) .</li>
-<li>i686: Pending</li>
+<li>i686: Toolchain built. Final system build still in progress</li>
 <li>AARCH64/ARM64: Pending</li>
 <li>ARMV7L: Pending</li>
 </ul>
@@ -110,23 +110,39 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 
 <ol>
 <li>Bootstrap build of cgnutools with mussel</li>
-<li>Use mussel-built toolchain (cgnutools) to build stage0 LLVM+clang</li>
-<li>Use cgnutools to build stage1 LLVM+clang with sysroot at llvmtools with stage0 LLVM+clang</li>
-<li>Build enough of llvmtools to enter a chroot with stage1 LLVM+clang</li>
-<li>Build the rest of llvmtools under chroot </li>
+<li>Use mussel-built toolchain (cgnutools) to build stage0 LLVM+clang+LLD & install in cgnutools</li>
+<li>Use stage0 LLVM+clang+LLD to build stage 1 runtimes to llvmtools in this order:
+  <ol>
+    <li>libc++ headers</li>
+    <li>compiler-rt</li>
+    <li>libc++abi, libc++, libunwind</li>
+  </ol>
+</li>
+<li>Build stage 1 LLVM+clang+compiler-rt+lld and install in llvmtools</li>
+<li>Build enough of llvmtools with stage 1 LLVM+clang+compiler-rt+lld to enter chroot</li>
+<li>Enter chroot and use stage 1 LLVM to build dependencies for building LLVM</li>
+<li>Use stage 1 LLVM to build stage 2 LLVM+clang+lld. Do not build runtimes (libc++{,abi}, libunwind, compiler-rt) yet.</li>
+<li>Use stage 2 LLVM to build & install the stage2 runtimes in this order
+ <ol>  
+   <li>libc++-headers (required to build compiler-rt)</li>
+   <li>compiler-rt </li>
+   <li>libc++abi, libc++, libunwind
+ </ol>
+</li>
+<li>Use stage 2 LLVM to rebuild stage 2 LLVM+clang+lld against installed stage 2 runtimes & set sysroot to /
 <li>Build final system with llvmtools </li>
 </ol>
 
 ## Issues
 <ul>
-<li>Test for C++11/14 fails when testing stage0 & stage1 LLVM's. Not sure what issue this will cause or if test needs to be revised..</li>
-<li>Coreutils will not build for llvmtools under 32-bit x86 (i386/i586/i686)</li>
-<li>Ninja for llvmtools fails to compile with python3. For now use cmake instead of python3</li> 
+<li>Test for C++11/14 fails without error when testing stage0 & stage1 LLVM's. Likely test needs updating</li>
+<li>Cannot build LLVM all at once. Have to build just LLVM-base, clang, and lld first... then use it to build the runtimes and then rebuild LLVM-base, clang, and lld to compile against just built runtimes.</li> 
 </ul>
 
 ## Change log
 
 <ul>
+<li>4.0.1: Upgraded to LLVM 17.0.6. Updated build method for cross-compiling</li>
 <li>4.0.0: Upgraded to LLVM 17.0.5 </li>
 <li>3.0.0: Upgraded to LLVM-15.0.6. cgnutools is now bootstrapped with mussel. Replaced binutils with elftoolchain. Most of llvmtools will be build under chroot to avoid contamination from host. </li>
 <li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li>
