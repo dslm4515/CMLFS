@@ -3,12 +3,16 @@
 
 CC=${TARGET_TUPLE}-gcc \
 CXX=${TARGET_TUPLE}-g++ \
+AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib \
 ./configure --prefix=/llvmtools \
             --libdir=/llvmtools/lib \
             --zlib-compat
 
-make
+make AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib
 
-make install
+make AR=${TARGET_TUPLE}-ar \
+RANLIB=${TARGET_TUPLE}-ranlib install
 
 ln -sv libz.so.1.3.0.zlib-ng  /llvmtools/lib/libz.so.1.3.11 
