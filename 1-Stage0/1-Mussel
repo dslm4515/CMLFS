@@ -40,7 +40,8 @@ patch -Np1 -i ../patches/mussel-LLVM_for_headers.patch
 # Build toolchain. Amend PATH to include /cgnutools/bin
 # o Ommit -p if not building in parallel to use all
 #   the host's CPU cores
-sudo PATH=/cgnutools/bin:$PATH ./mussel.sh x86_64 -l -o -k -p
+# o If building with clang, add CC=clang CXX=clang++ 
+sudo PATH=/cgnutools/bin:$PATH ./mussel.sh ${CMLFS_CPU} -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
 sudo chown -vR cmlfs $CMLFS/cgnutools
