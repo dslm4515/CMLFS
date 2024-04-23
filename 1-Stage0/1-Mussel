@@ -37,10 +37,14 @@ patch -Np1 -i ../patches/mussel-add-missing-symlinks.patch
 # to build kernel headers
 patch -Np1 -i ../patches/mussel-LLVM_for_headers.patch 
 
-# Build toolchain. Amend PATH to include /cgnutools/bin
+# Build toolchain. A few notes:
 # o Ommit -p if not building in parallel to use all
 #   the host's CPU cores
 # o If building with clang, add CC=clang CXX=clang++ 
+# o Building with clang on CMLFS system is unstable, best to use GCC
+# o Building with clang on MLFS system has yet to be tested
+# o PATH is hard-coded in script. Will need to patch (line 219)
+
 sudo PATH=/cgnutools/bin:$PATH ./mussel.sh ${CMLFS_CPU} -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
