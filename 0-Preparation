@@ -96,31 +96,36 @@ case $(uname -m) in
               export   CMLFS_ARCH="x86"
               export    CMLFS_CPU="x86-64"
               export          MCA="x86_64"
+              export        LARCH="X86"
           ;;
     i686)     export CMLFS_TARGET="i686-cmlfs-linux-musl"
               export TARGET_TUPLE="i686-pc-linux-musl"
               export   CMLFS_ARCH="x86"
               export    CMLFS_CPU="i686"
               export          MCA="i386"
+              export        LARCH="X86"
            ;;
     aarch64 ) export  CMLFS_TARGET="aarch64-cmlfs-linux-musl"
               export  TARGET_TUPLE="aarch64-pc-linux-musl"
               export    CMLFS_ARCH="arm64"
               export     CMLFS_CPU="armv8-a"
               export           MCA="aarch64"
+              export         LARCH="AArch64"
            ;;
     arm7*)    export  CMLFS_TARGET="armv7l-cmlfs-linux-musleabihf"
               export  TARGET_TUPLE="armv7l-pc-linux-musleabihf"
               export    CMLFS_ARCH="arm"
               export     CMLFS_CPU="armv7-a"
               export           MCA="arm"    
+              export         LARCH="ARM"
 
            ;;
     arm6*)    export  CMLFS_TARGET="armv6l-cmlfs-linux-musleabihf"
               export  TARGET_TUPLE="armv6l-pc-linux-musleabihf"
               export    CMLFS_ARCH="arm"
               export     CMLFS_CPU="armv6zk"
-               export           MCA="arm"
+              export           MCA="arm"
+              export         LARCH="ARM"
            ;;
 esac
 
@@ -132,7 +137,7 @@ export CMLFS_HOST="${CMLFS_HOST}" \
 	CMLFS_TARGET="${CMLFS_TARGET}" \
 	CMLFS_ARCH="${CMLFS_ARCH}" \
 	CMLFS_CPU="${CMLFS_CPU}" \
-	TARGET_TUPLE="${TARGET_TUPLE}"
-        MCA="${MCA}"
+	TARGET_TUPLE="${TARGET_TUPLE}" \
+        MCA="${MCA}" LARCH="${LARCH}"
 EOF
 source ~/.bashrc
