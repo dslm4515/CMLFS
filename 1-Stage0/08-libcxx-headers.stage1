@@ -1,0 +1,69 @@
+# cgnutools: Stage1 libc++abi & libc++ headers
+# Build as cmlfs
+#
+# o Reuse llvm-project source tree from before
+# o Install libc++abi & libc++ headers for llvmtools
+
+# Set the rpath
+export  CFLAGS="-fPIC -I/cgnutools/include "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags to use stage 0 clang ...
+export  CT="-DCMAKE_C_COMPILER=/cgnutools/bin/clang "
+export CT+="-DCMAKE_CXX_COMPILER=/cgnutools/bin/clang++ "
+export CT+="-DCMAKE_AR=/cgnutools/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+#export CP+="-DDEFAULT_SYSROOT=/llvmtools "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=OFF "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=OFF "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+# Configure the source to install headers
+cmake -B build-headers  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"  \
+      -DLLVM_INCLUDE_TESTS=OFF $CT $CP $CLLVM $COFF $CTG $CLCPPA $CLCPP \
+      -DLLVM_ROOT=/cgnutools 
+
+# Install headers for libc++abi & libc++:
+ninja -C build-headers install-cxxabi-headers
+ninja -C build-headers install-cxx-headers
+
+# Reconfigure stage0 clang
+mv -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old}
+cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
+-L/cgnutools/lib
+-nostdinc++
+-I/llvmtools/include/c++/v1
+-I/llvmtools/include
+EOF
+
+# Clean up. Do not Remove build directory as it will be re-used to build libc++
+unset CT CP CLLVM COFF CTG CLCPPA CLCPP CFLAGS CXXFLAGS
+

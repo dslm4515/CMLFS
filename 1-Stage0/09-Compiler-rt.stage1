@@ -1,0 +1,95 @@
+# cgnutools: Stage0 & 1 compiler-rt
+# Build as cmlfs
+#
+# o Reuse llvm-project source tree from before
+# o Compile & install compiler-rt for llvmtools (stage1) & cgnutools (stage0)
+
+# Built llvm-tblgen will need libstdc++.so.6 & libgcc_s.so.1.
+# Set the rpath
+export  CFLAGS="-fPIC -I/cgnutools/include "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags to use stage 0 clang ...
+export  CT="-DCMAKE_C_COMPILER=/cgnutools/bin/clang " 
+export CT+="-DCMAKE_CXX_COMPILER=/cgnutools/bin/clang++ "  
+export CT+="-DCMAKE_AR=/cgnutools/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_TERMINFO=OFF "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=OFF "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=OFF "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+# Set options for compiler-rt
+# + avoid all the optional runtimes:
+export  CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+# + Avoid need for libexecinfo:
+export CRT+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
+
+# Build compiler-rt as it is needed to build libc++abi 
+cmake -B build-crt  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
+      -DLLVM_INCLUDE_TESTS=OFF $CT $CP $CLLVM $COFF $CTG $CLCPPA $CLCPP \
+      -DGOLD_EXECUTABLE=/cgnutools/bin/${CMLFS_TARGET}-ld.bfd \
+      -DLLVM_ROOT=/cgnutools $CRT 
+
+ninja -C build-crt compiler-rt # 141 ............................ PASS
+
+# Install compiler-rt
+ninja -C build-crt install-compiler-rt-headers-stripped
+ninja -C build-crt install-compiler-rt-stripped
+
+# Move misplaced files
+mkdir -pv /llvmtools/lib/clang/17/lib
+mv /llvmtools/lib/linux /llvmtools/lib/clang/17/lib/
+
+# Rebuild for cgnutools (so that libc++ can be built against compiler-rt instead of libgcc)
+cmake -B build-crt0  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
+      -DLLVM_INCLUDE_TESTS=OFF $CT $CLLVM $COFF $CTG $CLCPPA $CLCPP \
+      -DGOLD_EXECUTABLE=/cgnutools/bin/${CMLFS_TARGET}-ld.bfd \
+      -DLLVM_ROOT=/cgnutools $CRT -DCMAKE_INSTALL_PREFIX=/cgnutools 
+
+ninja -C build-crt0 compiler-rt # 141 ............................ PASS
+
+ninja -C build-crt0 install-compiler-rt-headers-stripped
+ninja -C build-crt0  install-compiler-rt-stripped
+
+mkdir -pv /cgnutools/lib/clang/17/lib
+mv /cgnutools/lib/linux /cgnutools/lib/clang/17/lib/
+
+# Clean up
+unset CT CP CLLVM COFF CTG CLCPPA CLCPP CRT
+

@@ -1,0 +1,154 @@
+# cgnutools: Stage1 libc++abi & libc++ & libunwind
+# Build as cmlfs
+#
+# o Reuse llvm-project source tree from before
+# o Compile & install libc++abi & libc++ & libunwind
+
+# Add a header directory
+export  CFLAGS="-fPIC -I/cgnutools/include "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags to use stage 0 clang ...
+export  CT="-DCMAKE_C_COMPILER=/cgnutools/bin/clang "
+export CT+="-DCMAKE_CXX_COMPILER=/cgnutools/bin/clang++ "
+export CT+="-DCMAKE_AR=/cgnutools/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CP+="-DDEFAULT_SYSROOT=/llvmtools "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+# + Use the just built compiler-rt
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+# + Use the just built compiler-rt
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=ON "
+
+# Configure the source 
+cmake -B build-libcxx  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"  \
+      -DLLVM_INCLUDE_TESTS=OFF $CT $CP $CLLVM $COFF $CTG $CLCPPA $CLCPP \
+      -DLLVM_ROOT=/cgnutools
+
+ninja -C build-libcxx unwind # 19 .................................. PASS
+ninja -C build-libcxx cxxabi # 1051 ................................ PASS
+ninja -C build-libcxx  cxx # 103 ................................... PASS
+
+# Install libc++{,abi} & libunwind to /llvmtools/lib
+ninja -C build-libcxx install-cxxabi-stripped 
+ninja -C build-libcxx install-cxx-stripped
+ninja -C build-libcxx install-unwind-stripped
+
+# Reconfigure stage 0 clang to use compiler-rt & lib++
+mv -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old2}
+cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
+-nostdinc++ -nostdlib++ -nostdinc
+-rtlib=compiler-rt
+-I/llvmtools/include/c++/v1
+-I/llvmtools/include
+-I/llvmtools/lib/clang/17/include
+-I/cgnutools/lib/clang/17/include
+-L/llvmtools/lib
+-Wl,-rpath=/llvmtools/lib
+-lc -lc++ -lunwind -latomic 
+EOF
+
+# Test stage 0 clang
+cd $CMLFS/sources
+echo "int main(){}" > dummy.c
+/cgnutools/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Check if compiler-rt was used:
+cat  dummy.log | grep 'ld.lld: ' | grep '_rt'
+# Should see:
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/linux/clang_rt.crtbegin-i386.o
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/linux/libclang_rt.builtins-i386.a
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/linux/libclang_rt.builtins-i386.a
+# ld.lld: /mnt/cmlfs/cgnutools/lib/clang/17/lib/linux/clang_rt.crtend-i386.o
+# NOTE: WIll differ slightly for different CPU arches
+
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
+# attempt to open /llvmtools/lib/Scrt1.o succeeded
+# attempt to open /llvmtools/lib/crti.o succeeded
+# attempt to open /llvmtools/lib/crtn.o succeeded
+
+# Verify that stage0 clang is searching for the correct header files:
+grep -B1 -A2 '^ /llvmtools/include' dummy.log
+# Should output:
+# #include <...> search starts here:
+#  /llvmtools/include/c++/v1
+#  /llvmtools/include
+#  /cgnutools/lib/clang/17/include
+# End of search list.
+
+# Check if stage0 clang++ [in llvmtools] still has atomics:
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+/cgnutools/bin/clang++ \
+atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# Test if stage0 clang support C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+/cgnutools/bin/clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# Should return no errors.
+
