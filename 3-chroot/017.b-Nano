@@ -15,7 +15,7 @@ RANLIB=llvm-ranlib \
 LD=ld.lld \
 STRIP=llvm-strip \
 ./configure --build=${TUPLE} \
-            --host=${TTUPLE} \
+            --host=${TUPLE} \
             --prefix=/llvmtools \
             --enable-tiny
 
