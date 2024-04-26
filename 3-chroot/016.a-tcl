@@ -2,6 +2,10 @@
 # Build and install under chroot
 # Can be optional: Package used for testing final system packages
 
+# Bootstrap script still tries to use ar 
+# intead of llvm-ar.
+ln -sv llvm-ar /llvmtools/bin/ar
+
 # Change directories:
 cd unix
 
@@ -27,4 +31,5 @@ chmod -v u+w /llvmtools/lib/libtcl8.6.so
 make install-private-headers
 ln -sv tclsh8.6 /llvmtools/bin/tclsh
 
-
+# Remove the link made earlier
+rm -v /llvmtools/bin/ar
