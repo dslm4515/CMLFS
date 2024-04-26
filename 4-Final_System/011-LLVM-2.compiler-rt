@@ -1,0 +1,79 @@
+# Final Stage2 compiler-rt
+# Build under chroot
+#
+# NOTE: Reuse llvm-project source tree from before
+
+export  CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+export  CT="-DCMAKE_C_COMPILER=clang "
+export CT+="-DCMAKE_CXX_COMPILER=clang++ "
+export CT+="-DCMAKE_AR=/usr/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/usr/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/usr/bin/llvm-ranlib "
+
+export  CTG="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+
+export  CP="-DCMAKE_INSTALL_PREFIX=/usr "
+
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_TERMINFO=OFF "
+
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=ON " # ?
+
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=ON " # ?
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+export  CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+
+export CRT+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
+
+# Build compiler-rt as it is needed to build libc++abi 
+cmake -B build-crt2 -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
+      -DLLVM_INCLUDE_TESTS=OFF $CT $CP $CLLVM $COFF $CTG $CLCPPA $CLCPP \
+      -DLLVM_ROOT=/usr $CRT
+
+# Compile
+ninja -C build-crt2 compiler-rt # 141 ......... PASS
+
+# Remove link made earlier
+rm -v /usr/lib/clang/17/lib
+
+# Install 
+ninja -C build-crt2 install-compiler-rt-headers-stripped
+ninja -C build-crt2 install-compiler-rt-stripped
+
+# Move misplaced files
+mkdir /usr/lib/clang/17/lib
+mv /usr/lib/linux /usr/lib/clang/17/lib/
+
+# Check that stage2 clang uses the correct runtime:
+echo "int main(){}" > dummy.c
+/usr/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
+cat  dummy.log | grep 'ld: ' | grep '_rt'
+# Should see:
+#ld: /usr/lib/clang/17/lib/linux/clang_rt.crtbegin-i386.o
+#ld: /usr/lib/clang/17/lib/linux/libclang_rt.builtins-i386.a
+#ld: /usr/lib/clang/17/lib/linux/libclang_rt.builtins-i386.a
+#ld: /usr/lib/clang/17/lib/linux/clang_rt.crtend-i386.o
+
+# clean up
+rm -v a.out dummy.*
+unset CT CP CLLVM COFF CTG CLCPPA CLCPP CRT

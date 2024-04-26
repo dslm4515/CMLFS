@@ -1,0 +1,63 @@
+# Final Stage2 libc++abi, libc++, & libunwind
+# Build under chroot
+#
+# NOTE: Reuse llvm-project source tree from before
+
+export  CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+export  CT="-DCMAKE_C_COMPILER=clang "
+export CT+="-DCMAKE_CXX_COMPILER=clang++ "
+export CT+="-DCMAKE_AR=/usr/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/usr/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/usr/bin/llvm-ranlib "
+
+export  CTG="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+
+export  CP="-DCMAKE_INSTALL_PREFIX=/usr "
+
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=ON "
+
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=ON "
+
+# Configure the source for building just the runtimes
+cmake -B build-libcxx2 -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"  \
+      -DLLVM_INCLUDE_TESTS=OFF $CT $CP $CLLVM $COFF $CTG $CLCPPA $CLCPP \
+      -DLLVM_ROOT=/usr
+
+# Just compile libc++abi, libc++, and libunwind
+ninja -C build-libcxx2 unwind # 19 ....... PASS
+ninja -C build-libcxx2 cxxabi # 1051 ..... PASS
+ninja -C build-libcxx2 cxx # 103 ......... PASS
+
+# Remove links made earlier
+rm -v /usr/include/c++
+rm -v /usr/include/__libunwind_config.h 
+rm -v /usr/include/unwind_itanium.h 
+
+# Install 
+ninja -C build-libcxx2 install-cxxabi-stripped 
+ninja -C build-libcxx2 install-cxxabi-headers
+ninja -C build-libcxx2 install-cxx-stripped
+ninja -C build-libcxx2 install-cxx-headers
+ninja -C build-libcxx2 install-unwind-stripped
+ninja -C build-libcxx2 install-unwind-headers
+
+# clean up
+unset CT CP CLLVM COFF CTG CLCPPA CLCPP CFLAGS CXXFLAGS

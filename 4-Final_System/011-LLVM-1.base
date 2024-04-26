@@ -1,0 +1,150 @@
+# Final Stage2 clang (with lld and llvm support libraries & tools)
+# Build under chroot
+#
+# NOTE: Reuse llvm-project source tree from before
+
+# Restore default dynamic linker/loader path to /lib
+patch -Np1 -i ../patches/llvm-cmlfs/modify-test-dynamic-loader.restore.patch
+patch -Np1 -i ../patches/llvm-cmlfs/modify-toolchain-dynamic-loader.restore.patch
+
+# Fix Clang config header for  stage 1 clang in llvmtools
+cd /
+patch -Np1 -i /sources/patches/llvm-cmlfs/modify-clang-config-header.patch 
+cd -
+
+# stage1 clang cannot find zstd headers
+ln -sv /usr/include/zstd.h  /llvmtools/include/
+
+# Build will fail as some shared objects require -fPIC
+export CFLAGS="-fPIC "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags...
+export  CT="-DCMAKE_C_COMPILER=clang "
+export CT+="-DCMAKE_CXX_COMPILER=clang++ "
+export CT+="-DCMAKE_AR=/llvmtools/bin/llvm-ar "
+export CT+="-DCMAKE_NM=/llvmtools/bin/llvm-nm "
+export CT+="-DCMAKE_RANLIB=/llvmtools/bin/llvm-ranlib "
+export CT+="-DCLANG_DEFAULT_LINKER=/usr/bin/ld.lld "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TUPLE} "
+export CTG+="-DLLVM_HOST_TRIPLE=${TUPLE} "
+export CTG+="-DLLVM_TARGET_ARCH=${LARCH} "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=AMDGPU;BPF;${LARCH} "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/usr "
+export CP+="-DCMAKE_INSTALL_LIBDIR=lib "
+
+# Set options for clang
+# + Set the standard C++ library that clang will use to LLVM's libc++
+# + Set compiler-rt as default runtime
+export  CLG="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CLG+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CLG+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CLG+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CLLVM+="-DLLVM_ENABLE_ZLIB=ON "
+export CLLVM+="-DZLIB_INCLUDE_DIR=/usr/include "
+export CLLVM+="-DZLIB_LIBRARY_RELEASE=/usr/lib/libz.so "
+export CLLVM+="-DLLVM_INSTALL_UTILS=ON "
+export CLLVM+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CLLVM+="-DLLVM_LINK_LLVM_DYLIB=ON "
+export CLLVM+="-DENABLE_LINKER_BUILD_ID=ON "
+export CLLVM+="-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON "
+export CLLVM+="-DLLVM_ENABLE_LIBCXX=ON "
+export CLLVM+="-DLLVM_ENABLE_LLD=ON "
+export CLLVM+="-DLLVM_ENABLE_ZSTD=ON "
+export CLLVM+="-DLLVM_ENABLE_TERMINFO=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF "
+export COFF+="-DLLVM_ENABLE_LIBPFM=OFF "
+
+# Remove more tests & docs that breaks build
+export  MOFF="-DCLANG_INCLUDE_TESTS=OFF "
+export MOFF+="-DLLVM_ENABLE_OCAMLDOC=OFF "
+export MOFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
+export MOFF+="-DLLVM_INCLUDE_DOCS=OFF "
+export MOFF+="-DLLVM_INCLUDE_EXAMPLES=OFF "
+export MOFF+="-DLLVM_INCLUDE_TESTS=OFF "
+
+# Building everything at once yields lots of build errors.
+# So just build clang & LLD (and LLVM support libraries & tools)
+cmake -B build-base2 -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PROJECTS="lld;clang" \
+      -DCLANG_VENDOR="CMLFS 4.0.1" -DLLD_VENDOR="CMLFS 4.0.1" \
+      -DDEFAULT_SYSROOT="/" \
+      $CT $CTG $CP $CLG $CLLVM $COFF $MOFF
+
+# Compile
+ninja -C build-base2
+
+# For trouble shooting, targets shown:
+ninja -C build-base2 llvm-headers # 198 ............ PASS 
+ninja -C build-base2 llvm-tblgen #.. 68 ............ PASS 
+ninja -C build-base2 llvm-lib #... 1812 ............ PASS 
+ninja -C build-base2 lld #......... 126 ............ PASS
+ninja -C build-base2 clang #...... 1181 ............ PASS
+ninja -C build-base2 libclang #..... 31 ............ PASS
+ninja -C build-base2 # ............ 570 ............ PASS
+
+# Install
+cmake --install build-base2 --strip
+
+# Fix the dynamic linker for the executables:
+for b in bugpoint c-index-test clang-17 count diagtool dsymutil FileCheck \
+         llc lld lli lli-child-target not obj2yaml opt sancov sanstats \
+         split-file UnicodeNameMappingGenerator verify-uselistorder yaml2obj \
+         yaml-bench amdgpu-arch nvptx-arch
+do
+  setDL /usr/bin/$b
+done
+
+for b in check extdef-mapping format linker-wrapper \
+         offload-bundler offload-packager refactor \
+         rename repl scan-deps tblgen 
+do
+  setDL /usr/bin/clang-$b
+done
+
+for b in ar as bcanalyzer cat cfi-verify config cov c-test cvtres cxxdump \
+         cxxfilt cxxmap debuginfod debuginfod-find diff dis dwarfdump \
+         dwarfutil dwp exegesis extract gsymutil ifs jitlink jitlink-executor \
+         libtool-darwin link lipo lto lto2 mc mca ml modextract mt nm objcopy \
+         objdump opt-report pdbutil PerfectShuffle profdata profgen rc readobj \
+         reduce remark-size-diff rtdyld sim size split stress strings \
+         symbolizer tapi-diff tblgen tli-checker undname xray remarkutil debuginfo-analyzer
+do
+  setDL /usr/bin/llvm-$b
+done
+
+# Install llvm-lit to build the llvm runtimes seperately:
+cp -v build-base2/bin/llvm-lit /usr/bin/
+
+# Set LLD as default linker
+ln -sv ld.lld /usr/bin/ld
+
+# Many packages use the name cc to call the C compiler. To
+# satisfy those packages, create a symlink
+ln -sv clang-17 /usr/bin/cc
+
+# Create a symlink required by the FHS for "historical" reasons
+ln -sv ../bin/clang-17 /usr/lib/cpp
+
+# Since compiler-rt and  libc++ & unwind headers are not yet, create links so that the 
+# freshly made stage2 clang can be used right away
+ln -sv /llvmtools/lib/clang/17/lib /usr/lib/clang/17/
+ln -sv /llvmtools/include/c++ /usr/include/
+ln -sv /llvmtools/include/__libunwind_config.h /usr/include/
+ln -sv /llvmtools/include/unwind_itanium.h /usr/include/
+
+# Clean up variables
+unset CT CTG CP CLG CLLVM COFF MOFF CFLAGS CXXFLAGS

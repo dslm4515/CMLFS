@@ -1,0 +1,11 @@
+--- /llvmtools/include/clang/Config/config.h.orig	2024-04-25 19:29:34.469253648 +0000
++++ /llvmtools/include/clang/Config/config.h	2024-04-25 19:29:46.908252957 +0000
+@@ -46,7 +46,7 @@
+ /* #undef CLANG_CONFIG_FILE_USER_DIR */
+ 
+ /* Default <path> to all compiler invocations for --sysroot=<path>. */
+-#define DEFAULT_SYSROOT "/llvmtools"
++#define DEFAULT_SYSROOT "/"
+ 
+ /* Directory where gcc is installed. */
+ #define GCC_INSTALL_PREFIX ""

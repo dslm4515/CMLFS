@@ -1,0 +1,95 @@
+# Final Stage2 llvm Test
+# Build under chroot
+#
+# Before building further, make sure the current stage2 LLVM
+# is functional
+
+cd /sources
+
+echo "int main(){}" > dummy.c
+clang dummy.c -v -Wl,--verbose &> dummy.log
+llvm-readelf -l  a.out | grep Requesting
+# Should output:
+# [Requesting program interpreter: /lib/ld-musl-i386.so.1] 
+# or
+# [Requesting program interpreter: /lib/ld-musl-x86_64.so.1]
+#* will differ slightly depending on the current arch
+
+# Check if compiler-rt was used:
+cat  dummy.log | grep 'ld: ' | grep '_rt'
+# Should output:
+#ld: /usr/lib/clang/17/lib/linux/clang_rt.crtbegin-i386.o
+#ld: /usr/lib/clang/17/lib/linux/libclang_rt.builtins-i386.a
+#ld: /usr/lib/clang/17/lib/linux/libclang_rt.builtins-i386.a
+#ld: /usr/lib/clang/17/lib/linux/clang_rt.crtend-i386.o
+#* will differ slightly depending on the current arch
+
+# Verify that stage2 clang is searching for the correct header files:
+grep -B0 -A4 'search starts here' dummy.log
+# Should output:
+# include "..." search starts here:
+# #include <...> search starts here:
+#  /usr/include
+#  /usr/local/include
+#  /usr/lib/clang/17/include
+# End of search list.
+
+# Check if stage2 clang++  still has atomics:
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+clang++ atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# Make sure stage 2 clang is using libatomic from usr/lib
+grep 'ld:' atomics-test.log | grep "libatomic"
+# Should output:
+# ld: /usr/lib/libatomic.so
+
+# Make sure correct C++ headers path is searched
+grep -B0 -A5 'search starts here' atomics-test.log
+# Should output
+# #include "..." search starts here:
+# #include <...> search starts here:
+#  /usr/bin/../include/c++/v1
+#  /usr/local/include
+#  /usr/include
+#  /usr/lib/clang/17/include
+# End of search list.
+
+# Test if stage2 clang support C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# Should return no errors.
+
+# If all is well, clean up
+rm -v a.out atomics-test.* cxx11-test.*
