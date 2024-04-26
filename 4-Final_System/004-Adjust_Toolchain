@@ -3,8 +3,6 @@
 
 # Create a new configuration for stage1 clang:
 touch /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg
-ln -sv clang-17 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang
-ln -sv clang-17 /llvmtools/bin/$(uname -m)-pc-linux-musl-clang++
 
 # Re-configure clang to use new sysroot (/) with newly built musl Libc
 echo "--sysroot=/ " > \
@@ -24,10 +22,6 @@ cat >> /llvmtools/bin/$(uname -m)-pc-linux-musl.cfg << EOF
 -I/llvmtools/include
 -I/llvmtools/lib/clang/17/include
 EOF
-
-# Update the build environment
-export CC=$(uname -m)-pc-linux-musl-clang
-export CXX=$(uname -m)-pc-linux-musl-clang++
 
 # Adjust the library search path for the dynamic loader in llvmtools:
 cp -v /llvmtools/etc/ld-musl-${MCA}.path{,.orig}
@@ -55,17 +49,21 @@ llvm-readelf -l a.out | grep ': /lib'
 
 # Make sure that we're setup to use the correct start files: 
 grep 'ld.lld:' dummy.log | grep 'crt[1in]'
-#ld.lld: /usr/lib/Scrt1.o
-#ld.lld: /usr/lib/crti.o
-#ld.lld: /usr/lib/crtn.o
+#ld.lld: /lib/Scrt1.o
+#ld.lld: /lib/crti.o
+#ld.lld: /lib/crtn.o
+# NOTE: This is fine as /lib is linked to /usr/lib
 
 # Verify that the compiler is searching for the correct 
 # header files: 
-grep -B1 '^ /usr/include' dummy.log
+grep -A3 -B2 '^ /usr/include' dummy.log
 # Should output:
 # #include <...> search starts here:
-# /llvmtools/include/c++/v1
-# /usr/include
+#  /llvmtools/include/c++/v1
+#  /usr/include
+#  /llvmtools/include
+#  /llvmtools/lib/clang/17/include
+# End of search list.
 
 # Verify that the new linker is being used with the 
 # correct search paths: 
