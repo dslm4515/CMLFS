@@ -32,8 +32,8 @@ make
 
 # Only a few of the utilities and libraries need to be installed to toolchain
 cp -v perl cpan/podlators/scripts/pod2man /llvmtools/bin
-mkdir -pv    /llvmtools/lib/perl5/5.38.0
-cp -Rv lib/* /llvmtools/lib/perl5/5.38.0
+mkdir -pv    /llvmtools/lib/perl5/5.38.2
+cp -Rv lib/* /llvmtools/lib/perl5/5.38.2
 
 unset BUILD_ZLIB BUILD_BZIP2 CFLAGS
 
