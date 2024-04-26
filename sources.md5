@@ -19,7 +19,7 @@ fc9e8c37c6636ede45bf6834c2d6716f  byacc-20230521.tgz
 50fcafcecde5a380415b12e9c574e0b2  check-0.15.2.tar.gz
 877200cc072ece1a52c27677ab26e3ee  clang-12.0.0.src.tar.xz
 df0e65607c9280a8df68b2c93eac4437  cmake-3.27.8.tar.gz
-c706f8b37eda3900a6d902d584b93a6d  compiler-rt-17.0.5.src.tar.xz
+85d25f04cbc4c1a20e3a1ab2a2c522cd  compiler-rt-17.0.6.src.tar.xz
 459e9546074db2834eefe5421f250025  coreutils-9.4.tar.xz
 6800b5dbfbfdd43ac3df2ba9d31d0706  dash-0.5.12.tar.gz
 68c5208c58236eba447d7d6d1326b821  dejagnu-1.6.3.tar.gz

@@ -13,15 +13,15 @@ patch -Np1 -i ../patches/musl-mlfs/fix-utmp-wtmp-paths.patch
 
 # Harden musl libc with scudo from compiler-rt
 # o Extract compiler-rt
-cd .. && tar xf pkgs/compiler-rt-17.0.5.src.tar.xz
+cd .. && tar xf pkgs/compiler-rt-17.0.6.src.tar.xz
 
 # o Copy over scudo from compiler-rt
 cd -  && mkdir -pv src/malloc/scudo/scudo
 for t in cpp h inc
 do
-  cp -rv ../compiler-rt-17.0.5.src/lib/scudo/standalone/*.$t src/malloc/scudo/
+  cp -rv ../compiler-rt-17.0.6.src/lib/scudo/standalone/*.$t src/malloc/scudo/
 done
-cp -rv ../compiler-rt-17.0.5.src/lib/scudo/standalone/include/scudo/interface.h \
+cp -rv ../compiler-rt-17.0.6.src/lib/scudo/standalone/include/scudo/interface.h \
        src/malloc/scudo/scudo/
 # o Remove wrappers ...
 rm -v src/malloc/scudo/wrappers_c*
