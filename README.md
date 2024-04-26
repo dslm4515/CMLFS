@@ -44,7 +44,7 @@ When I have time later, I will write a more thorough introduction for users new 
 
 <ul>
 <li>AMD64/x86_64: Toolchains and final system build sucessfully (musl & glibc hosts) .</li>
-<li>i686: Toolchain built. Final system build still in progress</li>
+<li>i686: Toolchain built. Final system built. Verifying cross-build works.</li>
 <li>AARCH64/ARM64: Pending</li>
 <li>ARMV7L: Pending</li>
 </ul>
@@ -139,12 +139,13 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 <ul>
 <li>Test for C++11/14 fails without error when testing stage0 & stage1 LLVM's. Likely test needs updating</li>
 <li>Cannot build LLVM all at once. Have to build just LLVM-base, clang, and lld first... then use it to build the runtimes and then rebuild LLVM-base, clang, and lld to compile against just built runtimes.</li> 
+<li> mussel cannot be reliably built by a system's clang. For now, use GCC. Not sure if just an isolated issue with my system or not. Will need to verify on a MLFS system with LLVM as secondary system compiler.</li>
 </ul>
 
 ## Change log
 
 <ul>
-<li>4.0.1: Upgraded to LLVM 17.0.6. Updated build method for cross-compiling</li>
+<li>4.0.1: Upgraded to LLVM 17.0.6. Updated build method for cross-compiling. Stage 2 LLVM no longer needs a rebuild.</li>
 <li>4.0.0: Upgraded to LLVM 17.0.5 </li>
 <li>3.0.0: Upgraded to LLVM-15.0.6. cgnutools is now bootstrapped with mussel. Replaced binutils with elftoolchain. Most of llvmtools will be build under chroot to avoid contamination from host. </li>
 <li>2.0.0: Upgraded to LLVM-12.0.0. Upgraded GCC to 10.3.1-x Replace ninja with samurai. Replace zlib with zlib-ng. Patched elfutils to build libelf under clang. No longer using /llvmtools/gnu and /opt/gnu.</li>
