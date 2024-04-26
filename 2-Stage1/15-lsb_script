@@ -14,18 +14,18 @@ chmod -v +x /llvmtools/bin/lsb_release
 
 # Create the status of the new system with respect to the Linux Standards
 # Base (LSB)
-cat > /llvmtools/etc/lsb-release << "EOF"
+cat > /llvmtools/etc/lsb-release << EOF
 DISTRIB_ID="llvmtools"
-DISTRIB_RELEASE="4.0.0_amd64"
+DISTRIB_RELEASE="4.0.1_${CMLFS_CPU}"
 DISTRIB_CODENAME="17-elftool-tools"
-DISTRIB_DESCRIPTION="Clang-built Musl Toolchain for CMLFS, AMD64"
+DISTRIB_DESCRIPTION="Clang-built Musl Toolchain for CMLFS, ${CMLFS_CPU}"
 EOF
 
 # The same information but used by some graphical desktop environments:
-cat > /llvmtools/etc/os-release << "EOF"
+cat > /llvmtools/etc/os-release << EOF
 NAME="llvmtools"
-VERSION="4.0.0_amd64"
+VERSION="4.0.1_${CMLFS_CPU}"
 ID=llvmtools
-PRETTY_NAME="Clang-built Musl Toolchain for CMLFS, AMD64"
+PRETTY_NAME="Clang-built Musl Toolchain for CMLFS, ${CMLFS_CPU}"
 VERSION_CODENAME="17-elftool-tools"
 EOF
