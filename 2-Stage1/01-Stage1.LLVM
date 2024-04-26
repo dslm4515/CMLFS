@@ -1,4 +1,4 @@
-# llvmtools: Stage1 clang (with compiler-rt,libcxx,libcxxabi,libunwind,lld)
+# llvmtools: Stage1 clang (with lld)
 # Build as cmlfs
 #
 # o Reuse llvm-project source tree from before
@@ -8,8 +8,8 @@ export CFLAGS="-fPIC -I/cgnutools/include"
 export CXXFLAGS=$CFLAGS
 
 # Set the compiler and linker flags...
-export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-clang "
-export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-clang++ "
+export  CT="-DCMAKE_C_COMPILER=/cgnutools/bin/clang "
+export CT+="-DCMAKE_CXX_COMPILER=/cgnutools/bin/clang++ "
 export CT+="-DCMAKE_AR=/cgnutools/bin/llvm-ar "
 export CT+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "
 export CT+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
@@ -19,8 +19,8 @@ export CT+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
 export  CTG="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
 export CTG+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
 export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
-export CTG+="-DLLVM_TARGET_ARCH=host "
-export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host "
+export CTG+="-DLLVM_TARGET_ARCH=${LARCH} "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=Native;host;${LARCH} "
 
 # Set the paths ...
 export  CP="-DCMAKE_INSTALL_PREFIX=/llvmtools "
@@ -86,40 +86,57 @@ export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
 export COFF+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
 export COFF+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
 
+######################################################################################
 # Configure source...
-cmake -B build -G Ninja -Wno-dev -S llvm \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_ENABLE_PROJECTS="compiler-rt;libunwind;libcxx;libcxxabi;lld;clang" \
-      -DCLANG_VENDOR="llvmtools 3.0.0" -DLLD_VENDOR="llvmtools 3.0.0" \
-      $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
-
-# libunwind is now not considered as a project, but as a runtime
-cmake -B build -G Ninja -Wno-dev -S llvm \
+cmake -B build1 -G Ninja -Wno-dev -S llvm \
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" \
       -DLLVM_ENABLE_PROJECTS="lld;clang" \
-      -DCLANG_VENDOR="llvmtools 4.0.0" -DLLD_VENDOR="llvmtools 4.0.0" \
+      -DCLANG_VENDOR="llvmtools 4.0.1" -DLLD_VENDOR="llvmtools 4.0.1" \
       $CT $CTG $CP $CRT $CLG $CLCPP $CLCPPA $CUW $CLLVM $COFF
 
 # compile
-ninja -C build
+ninja -C build1
 
 # For troubleshooting, this is the breakdown of build targets:
-ninja -C build llvm-headers # 202 targets .................. PASS
-ninja -C build llvm-tblgen  #  68 .......................... PASS 
-ninja -C build llvm-lib # .. 1598 .......................... PASS 
-ninja -C build unwind # .... 1370 .......................... PASS 
-ninja -C build compiler-rt # .. 5 .......................... PASS
-ninja -C build builtins # ..... 3 .......................... PASS 
-ninja -C build cxxabi # .... 1051 .......................... PASS 
-ninja -C build cxx # ........ 103 .......................... PASS
-ninja -C build lld # ....................................... PASS
-ninja -C build clang # ..................................... PASS 
-ninja -C build libclang # .... 31 .......................... PASS
-ninja -C build # ............ 508 .......................... PASS
+ninja -C build1 llvm-headers # 198 targets .................. PASS
+ninja -C build1 llvm-tblgen  #  68 .......................... PASS 
+ninja -C build1 llvm-lib # .. 1598 .......................... PASS
+ninja -C build1 unwind # .... 1370 .......................... FAIL: <built-in>:1:10: fatal error: 'stdc-predef.h' file not found  
+ninja -C build1 compiler-rt # .. 5 .......................... 
+ninja -C build1 builtins # ..... 3 ..........................  
+ninja -C build1 cxxabi # .... 1051 ..........................  
+ninja -C build1 cxx # ........ 103 .......................... 
+ninja -C build1 lld # ....................................... 
+ninja -C build1 clang # .....................................  
+ninja -C build1 libclang # .... 31 .......................... 
+ninja -C build1 # ............ 508 .......................... 
+################################################################################################
+
+# Just build stage 1 clang+lld+llvm-base
+cmake -B build1 -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PROJECTS="lld;clang" \
+      -DCLANG_VENDOR="llvmtools 4.0.1" -DLLD_VENDOR="llvmtools 4.0.1" \
+      $CT $CTG $CP $CLG  $CLLVM $COFF
+# unused :
+#    COMPILER_RT_DEFAULT_TARGET_TRIPLE
+
+
+# compile
+ninja -C build1
+
+# For troubleshooting, this is the breakdown of build targets:
+ninja -C build1 llvm-headers # 198 targets .................. PASS 
+ninja -C build1 llvm-tblgen  #  68 .......................... PASS
+ninja -C build1 llvm-lib # .. 1598 .......................... PASS
+ninja -C build1 lld # ........ 126 .......................... PASS
+ninja -C build1 clang # ......1181 .......................... PASS 
+ninja -C build1 libclang # .... 31 .......................... PASS
+ninja -C build1 # ............ 588 .......................... PASS 
 
 # install to llvmtools
-cmake --install build --strip
+cmake --install build1 --strip
 
 # Make LLD the default linker
 ln -sv lld /llvmtools/bin/ld
@@ -242,7 +259,7 @@ llvm-readelf -d /llvmtools/lib/libc++.so.1.0  | grep Shared | cut -b 37-
 # Shared library: [libc.so]
 llvm-readelf -d /llvmtools/lib/libc++abi.so.1.0  | grep Shared | cut -b 37-
 # Shared library: [libc.so]
-llvm-readelf -d /llvmtools/lib/libLLVM-17.0.5.so | grep Shared | cut -b 37-
+llvm-readelf -d /llvmtools/lib/libLLVM-17.0.6.so | grep Shared | cut -b 37-
 # Shared library: [libz.so.1]
 # Shared library: [libc++.so.1]
 # Shared library: [libc.so]
