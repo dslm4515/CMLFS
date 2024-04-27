@@ -17,6 +17,7 @@ CC=clang CXX=clang++ \
             --enable-static      \
             --disable-allstatic  \
             --enable-static-libc \
+            --enable-libc-includes \
             --libdir=/usr/lib    \
             --with-dynlib=/usr/lib   \
             --libexecdir="/usr/lib/utmps" \
@@ -25,9 +26,6 @@ CC=clang CXX=clang++ \
 # Build and Install
 make
 make install
-
-# Some packages look for utmpx.h in /usr/include
-ln -sv utmps/utmpx.h /usr/include/utmpx.h
 
 # Install pkgconfig file
 install -v -D -m644 /tmp/utmps.pc /usr/lib/pkgconfig
