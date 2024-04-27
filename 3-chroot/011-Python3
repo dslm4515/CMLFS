@@ -2,7 +2,7 @@
 # Build under chroot
 
 # Apply fixes to build under musl
-patch -Np0 -i ../patches/python-alpine/musl-find_library.patch 
+patch -Np1 -i ../patches/python-alpine/musl-find_library.patch 
 
 # If adding optional python-based tools to toolchain, like
 # meson, make sure pip3 is built
