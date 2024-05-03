@@ -15,7 +15,7 @@ CC=clang CXX=clang++               \
             --with-xz              \
             --with-zlib \
             --with-zstd \
-            --with-openssl 
+            --with-openssl --disable-test-modules 
 
 # Compile & install
 make && make install
