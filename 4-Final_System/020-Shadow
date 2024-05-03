@@ -2,10 +2,12 @@
 # This section is done in Chroot environment
 
 # Apply patches from Chimera linux
+patch -Np1 -i ../patches/shadow-chimera/disable-ruserok.patch
+patch -Np1 -i ../patches/shadow-chimera/fix-undefined-reference.patch
+patch -Np1 -i ../patches/shadow-chimera/libcrypt.patch
+patch -Np1 -i ../patches/shadow-chimera/man.patch
 patch -Np1 -i ../patches/shadow-chimera/usermod-move-home-errmsg.patch
 patch -Np1 -i ../patches/shadow-chimera/xstrdup.patch
-patch -Np1 -i ../patches/shadow-chimera/man.patch 
-patch -Np1 -i ../patches/shadow-chimera/disable-ruserok.patch
 
 #  Disable the installation of the groups program and its man pages, 
 #  as Coreutils provides a better version
