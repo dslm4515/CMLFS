@@ -1,6 +1,8 @@
 # Final System: Attr 
 # This section is done in Chroot environment
 
+patch -Np1 -i ../patches/attr-chimeara/basename.patch
+
 CC=clang CXX=clang++          \
 AR=llvm-ar NM=llvm-nm \
 ./configure --prefix=/usr     \
@@ -8,7 +10,7 @@ AR=llvm-ar NM=llvm-nm \
             --libdir=/usr/lib \
             --disable-static  \
             --sysconfdir=/etc \
-            --docdir=/usr/share/doc/attr-2.5.1
+            --docdir=/usr/share/doc/attr-2.5.2
 
 make && make install
 
