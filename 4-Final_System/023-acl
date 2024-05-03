@@ -8,6 +8,6 @@ AR=llvm-ar NM=llvm-nm             \
             --disable-static      \
             --libexecdir=/usr/lib \
             --libdir=/usr/lib     \
-            --docdir=/usr/share/doc/acl-2.3.1
+            --docdir=/usr/share/doc/acl-2.3.2
 
 make && make install
