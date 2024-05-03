@@ -5,7 +5,7 @@
 CC=clang CXX=clang++         \
 ./configure --prefix=/usr    \
             --disable-static \
-            --docdir=/usr/share/doc/expat-2.5.0
+            --docdir=/usr/share/doc/expat-2.6.2
 
 # Compile & install
 make && make install
