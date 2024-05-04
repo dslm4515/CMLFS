@@ -11,7 +11,7 @@ sed -i '/test_mkfds/s/^/#/' tests/helpers/Makemodule.am
 CC=clang CXX=clang++    \
 LIBS="-lutmps -lskarnet" \
 ./configure ADJTIME_PATH=/var/lib/hwclock/adjtime     \
-            --docdir=/usr/share/doc/util-linux-2.39.2 \
+            --docdir=/usr/share/doc/util-linux-2.39.4 \
             --disable-chfn-chsh  \
             --disable-login      \
             --disable-nologin    \
