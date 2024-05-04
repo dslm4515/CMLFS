@@ -67,7 +67,7 @@ http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.xz
 https://download.savannah.gnu.org/releases/man-db/man-db-2.12.0.tar.xz
 https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz
 https://ftp.gnu.org/gnu/texinfo/texinfo-7.1.tar.xz
-https://anduin.linuxfromscratch.org/LFS/vim-9.0.2103.tar.xz
+https://github.com/vim/vim/archive/v9.1.0330/vim-9.1.0330.tar.gz
 https://www.kernel.org/pub/linux/utils/util-linux/v2.39/util-linux-2.39.2.tar.xz
 https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.47.0/e2fsprogs-1.47.0.tar.gz
 https://skarnet.org/software/execline/execline-2.9.4.0.tar.gz

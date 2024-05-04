@@ -7,7 +7,7 @@ echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
 
 # Configure with clang
 CC=clang CXX=clang++ \
-./configure --prefix=/usr
+./configure --prefix=/usr --disable-nls
 
 # Compile & install
 make && make install
@@ -21,7 +21,7 @@ for L in  /usr/share/man/{,*/}man1/vim.1; do
     ln -sv vim.1 $(dirname $L)/vi.1
 done
 mkdir -pv /usr/share/doc
-ln -sv ../vim/vim90/doc /usr/share/doc/vim-9.0.2103
+ln -sv ../vim/vim90/doc /usr/share/doc/vim-9.1.0330
 
 # Per LFS... By default, vim runs in vi-incompatible mode.
 # Create a default vim configuration file by running the following:
