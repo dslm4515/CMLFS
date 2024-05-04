@@ -1,14 +1,32 @@
 # Final System: Python 3
 # This section is done in Chroot environment
 
-# Apply patch to build under musl, from Void Linux
-patch -Np0 -i ../patches/python3-void/musl-find_library.patch 
+# Apply patch to build under musl, from Chimera Linux
+patch -Np1 -i ../patches/python3-Chimera/musl-find_library.patch
+patch -Np1 -i ../patches/python3-Chimera/expat-2.6.patch
+patch -Np1 -i ../patches/python3-Chimera/strictoverfl0w.patch
 
 # Remove to ensure system expat is used.
 rm -r Modules/expat
 
-# Configure source
-CC=clang CXX=clang++            \
+# For i686, stage 2 clang fails to build python 3 properly
+# Use clang from llvmtools.
+case $MCA in
+    i386) # First remove current clang config
+          mv /llvmtools/bin/${TUPLE}.cfg{,.old}
+          # Create new clang config for llvmtools' clang as it will 
+          # not find headers (such as for readline) in /usr/include:
+          echo "-I/usr/include" > /llvmtools/bin/${TUPLE}.cfg
+          echo "-L/usr/lib"    >> /llvmtools/bin/${TUPLE}.cfg
+          # Set CC & CXX
+          export CC=/llvmtools/bin/clang 
+          export CXX=/llvmtools/bin/clang++
+          ;;
+esac
+
+
+# Configure source 
+CC=$CC CXX=$CXX \
 ./configure --prefix=/usr       \
             --enable-shared     \
             --with-system-expat \
@@ -28,6 +46,21 @@ make && make install
 # Change permissions to allow stripping later
 chmod -v 755 /usr/lib/libpython3.12.so
 chmod -v 755 /usr/lib/libpython3.so
+
+# Since llvmtools' clang was used, fix the dynamic loader for the binaries:
+setDL /usr/bin/python3.12
+
+# Python2 will not be built nor will any python2 code
+# in the BMLFS. Remove support to convert py2 to py3
+rm -v  /usr/bin/2to3
+
+# Tk is not installed, as it is required to run pyhton3's IDLE(GUI) 
+rm -v  /usr/bin/idle*
+rm -rf /usr/lib/python3.12/idlelib
+
+# Remove tests and demo
+rm -rf /usr/lib/python3.12/{turtledemo,test}
+rm -v  /usr/lib/python3.12/turtle.py
 
 # Pip3 expects to find /usr/bin/python. Python2 is no longer
 # used nor built.
