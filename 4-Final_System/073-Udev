@@ -88,28 +88,27 @@ ninja udevadm udev-hwdb \
         build.ninja | awk '{ print $2 }')                              \
       $(realpath libudev.so --relative-to .)
 
+# Remove one udev rule file requiring a full Systemd installation: 
+rm rules.d/90-vconsole.rules
+
+cd ..
+
 # Install 
-install -vm755 -d {/usr/lib,/etc}/udev/{hwdb.d,rules.d,network}
-install -vm755 -d /usr/{lib,share}/pkgconfig
-install -vm755 udevadm                             /usr/bin/
-install -vm755 udev-hwdb                           /usr/bin/
-ln      -svfn  ../bin/udevadm                      /usr/sbin/udevd
-cp      -av    libudev.so{,*[0-9]}                 /usr/lib/
-install -vm644 ../src/libudev/libudev.h            /usr/include/
-install -vm644 src/libudev/*.pc                    /usr/lib/pkgconfig/
-install -vm644 src/udev/*.pc                       /usr/share/pkgconfig/
-install -vm644 ../src/udev/udev.conf               /etc/udev/
-
-install -vm644 rules.d/* ../rules.d/README         /usr/lib/udev/rules.d/
-install -vm644 $(find ../rules.d/*.rules \
-                      -not -name '*power-switch*') /usr/lib/udev/rules.d/
-install -vm644 hwdb.d/*  ../hwdb.d/{*.hwdb,README} /usr/lib/udev/hwdb.d/
-install -vm755 $(find src/udev \
-                      -type f -not -name '*.*')    /usr/lib/udev
-install -vm644 ../network/99-default.link          /usr/lib/udev/network
-
-# Remove an unnecessary udev rule:
-rm -v /usr/lib/udev/rules.d/90-vconsole.rules
+install -vm755 -d {/usr/lib,/etc}/udev/{hwdb,rules}.d
+install -vm755 OUT/udevadm                     /usr/sbin/
+install -vm755 OUT/udev-hwdb                   /usr/sbin/
+ln      -sv    udevadm                         /usr/sbin/udevd
+cp      -av    OUT/libudev.so{,*[0-9]}         /usr/lib/
+install -vm644 src/libudev/libudev.h           /usr/include/
+install -vm644 OUT/src/libudev/*.pc            /usr/lib/pkgconfig/
+install -vm644 OUT/src/udev/*.pc               /usr/share/pkgconfig/
+install -vm644 src/udev/udev.conf              /etc/udev/
+install -vm644 OUT/hwdb.d/*  hwdb.d/{*.hwdb,README}   /etc/udev/hwdb.d/
+install -vm644 OUT/rules.d/* rules.d/README           /usr/lib/udev/rules.d/
+install -vm644 $(find rules.d/*.rules \
+                      -not -name '*power-switch*')    /usr/lib/udev/rules.d/
+install -vm755 $(find OUT/src/udev -type f | grep -F -v ".") /usr/lib/udev
+install -vm644 network/99-default.link                /usr/lib/udev/network
 
 # Information about hardware devices is maintained in the /etc/udev/hwdb.d and 
 # /usr/lib/udev/hwdb.d directories. Udev needs that information to be compiled 
