@@ -2,7 +2,7 @@
 # This section is done in Chroot environment
 
 # Configure with clang
-CC=clang CXx=clang++ \
+CC=clang CXX=clang++ \
 ./configure --enable-shared         \
             --enable-static         \
             --enable-allstatic      \
