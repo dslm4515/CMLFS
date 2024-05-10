@@ -45,7 +45,7 @@ patch -Np1 -i ../patches/mussel-LLVM_for_headers.patch
 # o Building with clang on MLFS system has yet to be tested
 # o PATH is hard-coded in script. Will need to patch (line 219)
 
-sudo PATH=/cgnutools/bin:$PATH ./mussel.sh ${CMLFS_CPU} -l -o -k -p
+sudo PATH=/cgnutools/bin:$PATH ./mussel.sh ${MUSSA} -l -o -k -p
 
 # Make sure cgnutools is owned by cmlfs
 sudo chown -vR cmlfs $CMLFS/cgnutools
