@@ -43,8 +43,8 @@ When I have time later, I will write a more thorough introduction for users new 
 ## Supported Architectures
 
 <ul>
-<li>AMD64/x86_64: Toolchains and final system build sucessfully (musl & glibc hosts) .</li>
-<li>i686: Toolchain built. Final system built. Verifying cross-build works.</li>
+<li>AMD64/x86_64: PASS --Toolchains and final system build sucessfully (musl & glibc hosts) .</li>
+<li>i686: PASS -- Toolchains and final system build sucessfully (musl host, glibc host not tested yet).</li>
 <li>AARCH64/ARM64: Pending</li>
 <li>ARMV7L: Pending</li>
 </ul>
