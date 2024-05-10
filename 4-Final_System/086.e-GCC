@@ -4,6 +4,9 @@
 # NOTE: Installing GCC is optional as most packages can be built with clang.
 # NOTE: GCC requires as (assembler) from binutils as LLVM's llvm-as isn't a
 #       100% drop-in replacement for binutils' (unsupported arguments)
+# NOTE: GCC source is a git snapshot from from gcc.gnu.org/pub/gcc/snapshots.
+#       However, since they are periodically deleted from the GCC mirrors,
+#       the utilized snapshots are mirrored on dev.alpinelinux.org.
 
 # Set CPU flags related to target system
 case $(uname -m) in
@@ -22,28 +25,62 @@ case $(uname -m) in
            export EXTRA_CONFIG+="--enable-fix-cortex-a53-835769 --enable-fix-cortex-a53-843419"
            sed -i '/m64=/s/lib64/lib/' gcc/config/aarch64/t-aarch64-linux
           ;;
-esac &&
+esac
 
 # For ARM, disable libitm because of texrels
 case $(uname -m) in
      arm*) export LIBITM=false ;;
-esac &&
+esac 
 
-# Apply patches from glaucus
-case $(uname -m) in
-   x86_64)  patch -Np0 -i ../patches/gcc-glaucus/0001-pure64-for-x86-64.patch 
-            ;;
-   aarch64) patch -Np0 -i ../patches/gcc-glaucus/0001-pure64-for-aarch64.patch
-            ;;
-esac
+# Apply patches from Alpine Linux, so gcc can be built against musl libc
+patch -Np1 -i ../patches/gcc-alpine/0001-posix_memalign.patch
+patch -Np1 -i ../patches/gcc-alpine/0002-gcc-poison-system-directories.patch
+patch -Np1 -i ../patches/gcc-alpine/0003-specs-turn-on-Wl-z-now-by-default.patch
+patch -Np1 -i ../patches/gcc-alpine/0004-Turn-on-D_FORTIFY_SOURCE-2-by-default-for-C-C-ObjC-O.patch
+patch -Np1 -i ../patches/gcc-alpine/0005-On-linux-targets-pass-as-needed-by-default-to-the-li.patch
+patch -Np1 -i ../patches/gcc-alpine/0006-Enable-Wformat-and-Wformat-security-by-default.patch
+patch -Np1 -i ../patches/gcc-alpine/0007-Enable-Wtrampolines-by-default.patch
+patch -Np1 -i ../patches/gcc-alpine/0008-Disable-ssp-on-nostdlib-nodefaultlibs-and-ffreestand.patch
+patch -Np1 -i ../patches/gcc-alpine/0009-Ensure-that-msgfmt-doesn-t-encounter-problems-during.patch
+patch -Np1 -i ../patches/gcc-alpine/0010-Don-t-declare-asprintf-if-defined-as-a-macro.patch
+patch -Np1 -i ../patches/gcc-alpine/0011-libiberty-copy-PIC-objects-during-build-process.patch
+patch -Np1 -i ../patches/gcc-alpine/0012-libgcc_s.patch
+patch -Np1 -i ../patches/gcc-alpine/0013-nopie.patch
+patch -Np1 -i ../patches/gcc-alpine/0014-ada-fix-shared-linking.patch
+patch -Np1 -i ../patches/gcc-alpine/0015-build-fix-CXXFLAGS_FOR_BUILD-passing.patch
+patch -Np1 -i ../patches/gcc-alpine/0016-add-fortify-headers-paths.patch
+patch -Np1 -i ../patches/gcc-alpine/0017-Alpine-musl-package-provides-libssp_nonshared.a.-We-.patch
+patch -Np1 -i ../patches/gcc-alpine/0018-DP-Use-push-state-pop-state-for-gold-as-well-when-li.patch
+patch -Np1 -i ../patches/gcc-alpine/0019-aarch64-disable-multilib-support.patch
+patch -Np1 -i ../patches/gcc-alpine/0020-s390x-disable-multilib-support.patch
+patch -Np1 -i ../patches/gcc-alpine/0021-ppc64-le-disable-multilib-support.patch
+patch -Np1 -i ../patches/gcc-alpine/0022-x86_64-disable-multilib-support.patch
+patch -Np1 -i ../patches/gcc-alpine/0023-riscv-disable-multilib-support.patch
+patch -Np1 -i ../patches/gcc-alpine/0024-always-build-libgcc_eh.a.patch
+patch -Np1 -i ../patches/gcc-alpine/0025-ada-libgnarl-compatibility-for-musl.patch
+patch -Np1 -i ../patches/gcc-alpine/0026-ada-musl-support-fixes.patch
+patch -Np1 -i ../patches/gcc-alpine/0027-configure-Add-enable-autolink-libatomic-use-in-LINK_.patch
+patch -Np1 -i ../patches/gcc-alpine/0028-configure-fix-detection-of-atomic-builtins-in-libato.patch
+patch -Np1 -i ../patches/gcc-alpine/0029-libstdc-do-not-throw-exceptions-for-non-C-locales-on.patch
+patch -Np1 -i ../patches/gcc-alpine/0030-gdc-unconditionally-link-libgphobos-against-libucont.patch
+patch -Np1 -i ../patches/gcc-alpine/0031-druntime-link-against-libucontext-on-all-platforms.patch
+patch -Np1 -i ../patches/gcc-alpine/0032-libgnat-time_t-is-always-64-bit-on-musl-libc.patch
+patch -Np1 -i ../patches/gcc-alpine/0033-libphobos-do-not-use-LFS64-symbols.patch
+patch -Np1 -i ../patches/gcc-alpine/0034-libgo-fix-lfs64-use.patch
+patch -Np1 -i ../patches/gcc-alpine/0036-PR110792-Early-clobber-issues-with-rot32di2-on-i386.patch
+patch -Np1 -i ../patches/gcc-alpine/0037-loongarch-disable-multilib-support.patch
 
-# Apply fixes from FreeBSD 
-patch -Np1 -i ../patches/gcc-freebsd/fix-system.h-and_explicit_includes.patch 
-patch -Np1 -i ../patches/gcc-freebsd/fix-ctype-def-order_v2.patch
+# Apply patches from Chimera Linux since gcc will be built with libc++ not stdlbc++
+patch -Np1 -i ../patches/gcc-chimera/clang-tree-vect.patch
+patch -Np1 -i ../patches/gcc-chimera/clang17.patch
+
+# Apply fixes from FreeBSD to fix issue with headers
+patch -Np1 -i ../patches/gcc-freebsd/fix-system.h-and_explicit_includes.patch
 
 # Set paths for GNU libraries and headers for GCC:
 export PKG_CONFIG_PATH=/opt/gnu/lib/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
 export       LIBRARY_PATH=/usr/lib:/opt/gnu/lib
+export     LD_LIBRARY_PATH=/opt/gnu/lib:/usr/lib
 export     C_INCLUDE_PATH=/opt/gnu/include
 export CPLUS_INCLUDE_PATH=/opt/gnu/include
 export PATH=/opt/gnu/bin:/bin:/usr/bin:/sbin:/usr/sbin
@@ -60,8 +97,6 @@ export CARGS+="--enable-linker-build-id --enable-checking=release "
 
 # Turn off features not needed
 export  COFF="--disable-libstdcxx-pch --disable-nls --disable-multilib "
-# Need bootstrap to due to unsupported GCC flags & 'poisoned headers'
-#export COFF+="--disable-bootstrap --disable-symvers --disable-libsanitizer " 
 export COFF+="--disable-symvers --disable-libsanitizer "
 export COFF+="--disable-libssp --disable-libmpx --disable-libmudflap "
 export COFF+="--disable-fixed-point --disable-sjlj-exceptions --disable-werror "
@@ -69,18 +104,26 @@ export COFF+="--disable-fixed-point --disable-sjlj-exceptions --disable-werror "
 # Configure source
 CC=clang CXX=clang++ \
 LDFLAGS="-Wl,--rpath=/opt/gnu/lib" \
-CFLAGS="-Wl,--rpath=/opt/gnu/lib" \
-CXXFLAGS="-Wl,--rpath=/opt/gnu/lib" \
+CFLAGS=$LDFLAGS CXXFLAGS=$LDFLAGS  \
 SED=sed  libat_cv_have_ifunc=no \
 ../configure --prefix=/opt/gnu \
-             --build=x86_64-pc-linux-musl \
+             --build=$TUPLE \
              --enable-languages=c,c++,lto \
              --enable-lto \
-             --with-pkgversion='CMLFS 4.0.0' \
+             --with-pkgversion='CMLFS 4.0.1' \
              --enable-default-pie \
              --enable-default-ssp \
              --enable-plugins \
              --with-system-zlib $CARGS $COFF $EXTRA_CONFIG
+
+# Built xgcc fails to find libraries in /usr/lib
+# Create a temporary links
+for L in pthread.a c.so ssp_nonshared.a m.a
+do 
+   ln -sv /usr/lib/lib$L /opt/gnu/lib/
+done
+ln -sv /usr/lib/libgmp.so.10.5.0 /opt/gnu/lib/libgmp.so
+ln -sv /usr/lib/libz.so.1.3.0.zlib-ng /opt/gnu/lib/libz.so
 
 # Compile
 LD_LIBRARY_PATH=/opt/gnu/lib make 
@@ -88,13 +131,13 @@ LD_LIBRARY_PATH=/opt/gnu/lib make
 # Install!
 make install
 
-# Bootstrapping does not use the LDFLAGS (invoked with configure script) to set run-path
-# Fix with patchelf
+# Bootstrapping does not use the LDFLAGS (invoked with configure 
+# script) to set run-path. Fix with patchelf:
 for b in cc1 cc1plus lto1
 do
-  patchelf --set-rpath /opt/gnu/lib  /opt/gnu/libexec/gcc/x86_64-pc-linux-musl/13.2.0/$b
+   /llvmtools/bin/patchelf --set-rpath /opt/gnu/lib /opt/gnu/libexec/gcc/${TUPLE}/13.2.1/$b
 done
-patchelf --set-rpath /opt/gnu/lib /opt/gnu/bin/lto-dump 
+/llvmtools/bin/patchelf --set-rpath /opt/gnu/lib /opt/gnu/bin/lto-dump
 
 # Create a symlink required by the FHS for 'historical' reasons
 ln -sv ../bin/cpp /opt/gnu/lib/cpp
@@ -106,12 +149,17 @@ ln -sv gcc /opt/gnu/bin/cc
 # Create a compatibility symlink to enable building programs with
 # LTO (Link Time Optimization)
 install -v -dm755 /opt/gnu/lib/bfd-plugins
-ln -sv  ../../libexec/gcc/${TUPLE}/13.2.0/liblto_plugin.so \
+ln -sv  ../../libexec/gcc/${TUPLE}/13.2.1/liblto_plugin.so \
         /opt/gnu/lib/bfd-plugins/
-mkdir -pv /opt/gnu/share/gdb/auto-load/usr/lib
-mv -v /opt/gnu/lib/*gdb.py /opt/gnu/share/gdb/auto-load/usr/lib
+
+# Remove links for xgcc 
+for L in pthread.a c.so  ssp_nonshared.a \
+         m.a gmp.so z.so
+do
+   rm -v /opt/gnu/lib/lib$L
+done
 
 # Clean up variables used in this build
-unset PKG_CONFIG_PATH LIBRARY_PATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH 
+unset PKG_CONFIG_PATH LIBRARY_PATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH
 unset CARGS COFF EXTRA_CONFIG
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin
