@@ -63,32 +63,32 @@ export CARGS+="-DLLVM_ROOT=/cgnutools "
 export CARGS+="-DCMAKE_BUILD_TYPE=Release "
 
 # Build compiler-rt as it is needed to build libc++abi 
-cmake -B build-crt  -G Ninja -Wno-dev -S runtimes  \
+cmake -B build1-crt  -G Ninja -Wno-dev -S runtimes  \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
       -DGOLD_EXECUTABLE=/cgnutools/bin/${CMLFS_TARGET}-ld.bfd \
       $CARGS
 
-ninja -C build-crt compiler-rt # 141 ............................ PASS
+ninja -C build1-crt compiler-rt # 141 ............................ PASS
 
 # Install compiler-rt
-ninja -C build-crt install-compiler-rt-headers-stripped
-ninja -C build-crt install-compiler-rt-stripped
+ninja -C build1-crt install-compiler-rt-headers-stripped
+ninja -C build1-crt install-compiler-rt-stripped
 
 # Move misplaced files
 mkdir -pv /llvmtools/lib/clang/17/lib
 mv /llvmtools/lib/linux /llvmtools/lib/clang/17/lib/
 
 # Rebuild for cgnutools (so that libc++ can be built against compiler-rt instead of libgcc)
-cmake -B build-crt0  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+cmake -B build0-crt  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
       -DLLVM_INCLUDE_TESTS=OFF $CT $CLLVM $COFF $CTG $CLCPPA $CLCPP \
       -DGOLD_EXECUTABLE=/cgnutools/bin/${CMLFS_TARGET}-ld.bfd \
       -DLLVM_ROOT=/cgnutools $CRT -DCMAKE_INSTALL_PREFIX=/cgnutools 
 
-ninja -C build-crt0 compiler-rt # 141 ............................ PASS
+ninja -C build0-crt compiler-rt # 141 ............................ PASS
 
-ninja -C build-crt0 install-compiler-rt-headers-stripped
-ninja -C build-crt0  install-compiler-rt-stripped
+ninja -C build0-crt install-compiler-rt-headers-stripped
+ninja -C build0-crt  install-compiler-rt-stripped
 
 mkdir -pv /cgnutools/lib/clang/17/lib
 mv /cgnutools/lib/linux /cgnutools/lib/clang/17/lib/
