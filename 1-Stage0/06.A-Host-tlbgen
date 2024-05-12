@@ -1,0 +1,28 @@
+# Host-LLVM: llvm-tblegen & clang-tblgen
+# Build as cmlfs
+
+# NOTE use host's GCC for build
+
+# Set LDFLAGS if GCC in not installed in /usr, like /opt/gnu  on CMLFS systems
+export  CFLAGS="-fPIC -Wl,-rpath=/opt/gnu/lib "
+export CXXFLAGS=$CFLAGS
+
+# Configure source for host... set PATH if GCC is not in current PATH
+PATH=/opt/gnu/bin:/bin \
+CC=gcc CXX=g++ \
+cmake -B build-host -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/cgnutools \
+      -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;clang-tools-extra'
+
+# Just build llvm-tblgen + clang-tblgen
+PATH=/opt/gnu/bin:/bin ninja -C build-host llvm-tblgen
+PATH=/opt/gnu/bin:/bin ninja -C build-host clang-tblgen
+
+# Install to cgnutools ... but in a seperate directory as it is for the host
+mkdir -pv /cgnutools/${CMLFS_HOST}/bin
+ninja -C build-host install-llvm-tblgen
+ninja -C build-host install-clang-tblgen
+mv /cgnutools/bin/llvm-tblgen  /cgnutools/${CMLFS_HOST}/bin/
+mv /cgnutools/bin/clang-tblgen /cgnutools/${CMLFS_HOST}/bin/
+
+# Do not remove build directory or clear any environment variables
