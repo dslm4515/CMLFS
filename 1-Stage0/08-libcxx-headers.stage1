@@ -45,14 +45,14 @@ export CARGS+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
 export CARGS+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
 
 # Configure the source to install headers
-cmake -B build-headers  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
+cmake -B build1-headers  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"  \
       -DLLVM_INCLUDE_TESTS=OFF $CARGS \
       -DLLVM_ROOT=/cgnutools 
 
 # Install headers for libc++abi & libc++:
-ninja -C build-headers install-cxxabi-headers
-ninja -C build-headers install-cxx-headers
+ninja -C build1-headers install-cxxabi-headers
+ninja -C build1-headers install-cxx-headers
 
 # Reconfigure stage0 clang
 mv -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old}
