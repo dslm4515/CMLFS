@@ -54,15 +54,15 @@ cmake -B build1-headers  -G Ninja -Wno-dev -S runtimes -DCMAKE_BUILD_TYPE=Releas
 ninja -C build1-headers install-cxxabi-headers
 ninja -C build1-headers install-cxx-headers
 
-# Reconfigure stage0 clang
-mv -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old}
-cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
--L/cgnutools/lib
+# Reconfigure stage0 clang to use the just installed 
+# stage 1 libc++ headers
+cp -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old}
+cat >> /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
 -nostdinc++
 -I/llvmtools/include/c++/v1
 -I/llvmtools/include
 EOF
 
 # Clean up. Do not Remove build directory as it will be re-used to build libc++
-unset CT CP CLLVM COFF CTG CLCPPA CLCPP CFLAGS CXXFLAGS
+unset CARGS
 
