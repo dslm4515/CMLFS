@@ -20,7 +20,7 @@ export CARGS+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
 
 # Set the paths ...
 export CARGS+="-DCMAKE_INSTALL_PREFIX=/llvmtools "
-export CARGS+="-DDEFAULT_SYSROOT=/llvmtools "
+#export CARGS+="-DDEFAULT_SYSROOT=/llvmtools "
 
 # Set LLVM options
 # + Enable Exception handling and Runtime Type Info
@@ -53,31 +53,31 @@ export CARGS+="-DCMAKE_BUILD_TYPE=Release "
 export CARGS+="-Wno-dev -G Ninja "
 
 # Configure the source 
-cmake -B build-libcxx -S runtimes $CARGS \
+cmake -B build1-libcxx -S runtimes $CARGS \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"
 
-ninja -C build-libcxx unwind # 19 .................................. PASS
-ninja -C build-libcxx cxxabi # 1051 ................................ PASS
-ninja -C build-libcxx  cxx # 103 ................................... PASS
+ninja -C build1-libcxx unwind # 19 .................................. PASS
+ninja -C build1-libcxx cxxabi # 1051 ................................ PASS
+ninja -C build1-libcxx  cxx # 103 ................................... PASS
 
 # Install libc++{,abi} & libunwind to /llvmtools/lib
-ninja -C build-libcxx install-cxxabi-stripped 
-ninja -C build-libcxx install-cxx-stripped
-ninja -C build-libcxx install-unwind-stripped
+ninja -C build1-libcxx install-cxxabi-stripped 
+ninja -C build1-libcxx install-cxx-stripped
+ninja -C build1-libcxx install-unwind-stripped
 
 # Reconfigure stage 0 clang to use compiler-rt & lib++
-mv -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old2}
+cp -v /cgnutools/bin/${TARGET_TUPLE}.cfg{,.old2}
 cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
 -nostdinc++ -nostdlib++ -nostdinc
--rtlib=compiler-rt
+-fuse-ld=lld -rtlib=compiler-rt
+-Wl,-rpath=/llvmtools/lib
+--sysroot=/llvmtools
 -I/llvmtools/include/c++/v1
 -I/llvmtools/include
--I/llvmtools/lib/clang/17/include
--I/cgnutools/lib/clang/17/include
--L/llvmtools/lib
--Wl,-rpath=/llvmtools/lib
--lc -lc++ -lunwind -latomic 
 EOF
+
+# Disable stage0 GCC runtimes
+mv -v /cgnutools/lib/gcc{,.disabled}
 
 # Test stage 0 clang
 cd $CMLFS/sources
@@ -99,17 +99,16 @@ cat  dummy.log | grep 'ld.lld: ' | grep '_rt'
 
 # Check if the correct start files are used
 grep  'crt[1in]' dummy.log | grep ld.lld:
-# attempt to open /llvmtools/lib/Scrt1.o succeeded
-# attempt to open /llvmtools/lib/crti.o succeeded
-# attempt to open /llvmtools/lib/crtn.o succeeded
+# ld.lld  /llvmtools/lib/Scrt1.o succeeded
+# ld.lld  /llvmtools/lib/crti.o succeeded
+# ld.lld  /llvmtools/lib/crtn.o succeeded
 
 # Verify that stage0 clang is searching for the correct header files:
-grep -B1 -A2 '^ /llvmtools/include' dummy.log
+grep -B1 -A1 '^ /llvmtools/include' dummy.log
 # Should output:
 # #include <...> search starts here:
 #  /llvmtools/include/c++/v1
 #  /llvmtools/include
-#  /cgnutools/lib/clang/17/include
 # End of search list.
 
 # Check if stage0 clang++ [in llvmtools] still has atomics:
@@ -132,24 +131,8 @@ atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
 grep error:  atomics-test.log
 # Should return nothing if there are no errors.
 
-# Test if stage0 clang support C++11
-cat > cxx11-test.cpp << "EOF"
-#include <iostream>
-
-int main(){
-   #if __cplusplus==201402L
-   std::cout << "C++14" << std::endl;
-   #elif __cplusplus==201103L
-   std::cout << "C++11" << std::endl;
-   #else
-   std::cout << "C++" << std::endl;
-   #endif
-
-   return 0;
-}
-EOF
-
-/cgnutools/bin/clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+# Test if stage0 clang supports C++11 or accepts -std=c++11
+/cgnutools/bin/clang++ atomics-test.cpp -v -std=c++11 -Wl,--verbose &> cxx11-test.log
 
 # Check for errors during compile or link:
 grep error: cxx11-test.log
