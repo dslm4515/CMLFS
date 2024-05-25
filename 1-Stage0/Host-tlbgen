@@ -1,0 +1,58 @@
+# Host-LLVM: llvm-tblegen & clang-tblgen
+# Build as cmlfs
+
+# NOTE use host's GCC for build
+
+# Apply patches from Chimera Linux
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0001-llvm-always-set-a-larger-stack-size-explicitly.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0002-llvm-musl-workarounds.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0003-llvm-fix-some-MF_EXEC-related-test-failures-on-aarch.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0004-llvm-disable-dependency-on-libexecinfo-everywhere.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0005-compiler-rt-ppc-sanitizer-fixes.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0006-compiler-rt-default-to-libc-for-sanitizers.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0007-compiler-rt-build-crt-in-runtimes-build.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0008-compiler-rt-lsan-basic-musl-fixes-on-various-archs.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0009-compiler-rt-HACK-hwasan-build-on-x86_64.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0010-compiler-rt-libcxx-abi-libunwind-HACK-force-fno-lto.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0011-compiler-rt-HACK-always-compile-in-gcc_personality_v.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0012-libc-libc-abi-libunwind-disable-multiarch-locations.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0013-libc-musl-locale-workarounds.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0014-clang-disable-multiarch-layout-on-musl.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0015-clang-drop-incorrect-warning-about-vector-equality-r.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0016-clang-add-fortify-include-paths-for-musl-triplets-en.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0017-clang-use-as-needed-by-default.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0018-clang-switch-on-default-now-relro.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0019-clang-default-to-fno-semantic-interposition.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0020-clang-implicitly-link-to-libatomic-on-linux-targets.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0021-clang-use-strong-stack-protector-by-default.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0022-clang-fix-unwind-chain-inclusion.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0023-Add-accessors-for-MCSubtargetInfo-CPU-and-Feature-ta.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0024-clang-link-libcxxabi-on-linux-when-using-libc.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/0025-Get-rid-of-spurious-trailing-space-in-__clang_versio.patch
+patch -Np1 -i ../patches/llvm-17.0.5-chimera/ifunc-fail-if-not-supported.patch
+
+# For llvm-17.0.6, additional patches:
+patch -Np1 -i ../patches/llvm-17.0.6-chimera/libcpp-pointer-traits-sfinae.patch
+patch -Np1 -i ../patches/llvm-17.0.6-chimera/stdc-predef-preinclude.patch
+patch -Np1 -i ../patches/llvm-17.0.6-chimera/string-sso-constant.patch
+
+# Set LDFLAGS if GCC in not installed in /usr, like /opt/gnu  on CMLFS systems
+export  CFLAGS="-fPIC -Wl,-rpath=/opt/gnu/lib "
+export CXXFLAGS=$CFLAGS
+
+# Configure source for host... set PATH if GCC is not in current PATH
+PATH=/opt/gnu/bin:/bin \
+CC=gcc CXX=g++ \
+cmake -B build-host -G Ninja -Wno-dev -S llvm \
+      -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/cgnutools \
+      -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;clang-tools-extra'
+
+# Just build llvm-tblgen + clang-tblgen
+PATH=/opt/gnu/bin:/bin ninja -C build-host llvm-tblgen
+PATH=/opt/gnu/bin:/bin ninja -C build-host clang-tblgen
+
+# Install to cgnutools
+ninja -C build-host install-llvm-tblgen
+ninja -C build-host install-clang-tblgen
+
+# Do not remove build directory or clear any environment variables

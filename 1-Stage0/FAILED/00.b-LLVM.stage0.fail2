@@ -1,0 +1,59 @@
+# cgnutools: stage 0 LLVM
+# Build as CMLFS
+
+# NOTE reuse source from earlier
+
+export  CFLAGS="-fPIC -Wl,-rpath=/opt/gnu/lib "
+export CXXFLAGS=$CFLAGS
+
+# Set options
+export  CARG="-DCMAKE_BUILD_TYPE=Release "
+export CARG+="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CARG+="-DLLVM_HOST_TRIPLE=${CMLFS_HOST} "
+export CARG+="-DLLVM_TARGET_ARCH=${LARCH} "
+export CARG+="-DLLVM_TARGETS_TO_BUILD=host;${LARCH} "
+export CARG+="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CARG+="-DLLVM_INCLUDE_TESTS=OFF "
+export CARG+="-DLIBCLANG_BUILD_STATIC=ON "
+export CARG+="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CARG+='-DLLVM_ENABLE_PROJECTS="clang;lld" '
+export CARG+='-DLLVM_ENABLE_RUNTIMES="compiler-rt;libunwind;libcxx;libcxxabi" '
+export CARG+="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
+export CARG+="-DLLVM_TABLEGEN=/cgnutools/bin/llvm-tblgen "
+export CARG+="-DCLANG_TABLEGEN=/cgnutools/bin/clang-tblgen "
+
+export CARG+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CARG+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CARG+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
+
+export CARG+="-DCOMPILER_RT_BUILD_SANITIZERS=OFF " 
+export CARG+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CARG+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CARG+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CARG+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+
+PATH=/opt/gnu/bin:/bin CC=gcc CXX=g++ \
+cmake -B build0 -G Ninja -Wno-dev -S llvm $CARG
+
+# Compile
+PATH=/opt/gnu/bin:/bin ninja -C build0 
+
+# Install
+cmake --install build0 --strip
+
+# FAILS:
+# [0/13] Performing configure step for 'builtins'
+# -- Builtin supported architectures: 
+# CMake Error at cmake/Modules/CheckSectionExists.cmake:72 (message):
+#   clang: warning: -Wl,-rpath=/opt/gnu/lib: 'linker' input unused
+#     [-Wunused-command-line-argument]
+#
+#     <built-in>:1:10: fatal error: 'stdc-predef.h' file not found
+#
+#          1 | #include "stdc-predef.h"
+#            |          ^~~~~~~~~~~~~~~
+#
+#     1 error generated.
+#
+# Call Stack (most recent call first):
+#   lib/builtins/CMakeLists.txt:878 (check_section_exists)

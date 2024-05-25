@@ -1,0 +1,47 @@
+# cgnutools: stage 0 LLVM
+# Build as CMLFS
+
+# NOTE reuse source from earlier
+
+export  CFLAGS="-fPIC -Wl,-rpath=/opt/gnu/lib "
+export CXXFLAGS=$CFLAGS
+
+# Set options
+export  CARG="-DCMAKE_BUILD_TYPE=Release "
+export CARG+="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CARG+="-DLLVM_HOST_TRIPLE=${CMLFS_HOST} "
+export CARG+="-DLLVM_TARGET_ARCH=${LARCH} "
+export CARG+="-DLLVM_TARGETS_TO_BUILD=host;${LARCH} "
+export CARG+="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CARG+="-DLLVM_INCLUDE_TESTS=OFF "
+export CARG+="-DLIBCLANG_BUILD_STATIC=ON "
+export CARG+="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CARG+='-DLLVM_ENABLE_PROJECTS="clang;lld" '
+export CARG+='-DLLVM_ENABLE_RUNTIMES="libunwind;libcxx;libcxxabi" '
+export CARG+="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
+export CARG+="-DLLVM_TABLEGEN=/cgnutools/bin/llvm-tblgen "
+export CARG+="-DCLANG_TABLEGEN=/cgnutools/bin/clang-tblgen "
+
+PATH=/opt/gnu/bin:/bin CC=gcc CXX=g++ \
+cmake -B build0 -G Ninja -Wno-dev -S llvm $CARG
+
+# Compile
+PATH=/opt/gnu/bin:/bin ninja -C build0 
+
+# FAIL:
+# [3921/3925] Performing configure step for 'runtimes'
+# -- Linker detection: unknown
+# CMake Error at /mnt/32satam2/cmlfs-aarch64/sources/llvm-project-17.0.6.src/llvm/cmake/modules/CheckProblematicConfigurations.cmake:14 (if):
+#   if given arguments
+#
+#    "STREQUAL" "MSVC"
+#
+#   Unknown arguments specified
+# Call Stack (most recent call first):
+#   /mnt/32satam2/cmlfs-aarch64/sources/llvm-project-17.0.6.src/llvm/cmake/modules/HandleLLVMOptions.cmake:10 (include)
+#   CMakeLists.txt:156 (include)
+#-- Configuring incomplete, errors occurred!
+
+# Install
+cmake --install build0 --strip
+

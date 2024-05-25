@@ -1,0 +1,214 @@
+# llvmtools: Stage1 clang (with lld)
+# Build as cmlfs
+#
+# o Reuse llvm-project source tree from before
+#
+
+export CFLAGS="-fPIC -I/cgnutools/include"
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags...
+export  CARGS="-DCMAKE_C_COMPILER=/cgnutools/bin/clang "
+export CARGS+="-DCMAKE_CXX_COMPILER=/cgnutools/bin/clang++ "
+export CARGS+="-DCMAKE_AR=/cgnutools/bin/llvm-ar "
+export CARGS+="-DCMAKE_NM=/cgnutools/bin/llvm-nm "
+export CARGS+="-DCMAKE_RANLIB=/cgnutools/bin/llvm-ranlib "
+export CARGS+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
+
+# Set the tuples & build target ...
+export CARGS+="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
+export CARGS+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
+export CARGS+="-DLLVM_TARGET_ARCH=${LARCH} "
+export CARGS+="-DLLVM_TARGETS_TO_BUILD=Native;host;${LARCH} "
+
+# Set the paths ...
+export CARGS+="-DCMAKE_INSTALL_PREFIX=/llvmtools "
+export CARGS+="-DDEFAULT_SYSROOT=/llvmtools "
+
+# Set options for clang
+# + Set the standard C++ library that clang will use to LLVM's libc++
+# + Set compiler-rt as default runtime
+export CARGS+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+export CARGS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
+export CARGS+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
+export CARGS+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export CARGS+="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CARGS+="-DLLVM_ENABLE_ZLIB=ON "
+export CARGS+="-DLLVM_INSTALL_UTILS=ON "
+export CARGS+="-DLLVM_BUILD_LLVM_DYLIB=ON "
+export CARGS+="-DLLVM_LINK_LLVM_DYLIB=ON "
+export CARGS+="-DENABLE_LINKER_BUILD_ID=ON "
+export CARGS+="-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON "
+export CARGS+="-DLLVM_ENABLE_LIBCXX=ON "
+export CARGS+="-DLLVM_ENABLE_LLD=ON "
+export CARGS+="-DZLIB_INCLUDE_DIR=/llvmtools/include "
+export CARGS+="-DZLIB_LIBRARY_RELEASE=/llvmtools/lib/libz.so "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export CARGS+="-DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export CARGS+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export CARGS+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
+export CARGS+="-DLLVM_INCLUDE_BENCHMARKS=OFF "
+
+export CARGS+="-DCMAKE_BUILD_TYPE=Release "
+export CARGS+="-G Ninja -Wno-dev "
+
+export EPRJS="lld;clang"
+
+# Just build stage 1 clang+lld+llvm-base as libc++, compiler-rt, 
+# and libunwind were just built
+cmake -B build1 -S llvm $CARGS \
+      -DLLVM_ENABLE_PROJECTS=${EPRJS} \
+      -DCLANG_VENDOR='llvmtools 4.0.1'  \
+      -DLLD_VENDOR='llvmtools 4.0.1' \
+#      -DLLVM_TABLEGEN="/cgnutools/bin/llvm-tblgen" \
+#      -DCLANG_TABLEGEN="/cgnutools/bin/clang-tblgen" 
+
+# compile
+ninja -C build1
+
+# For troubleshooting, this is the breakdown of build targets:
+ninja -C build1 llvm-headers # 198 targets .................. FAIL
+ninja -C build1 llvm-tblgen  # 241 .......................... 
+ninja -C build1 llvm-lib # .. 1598 .......................... PASS
+ninja -C build1 lld # ........ 126 .......................... PASS
+ninja -C build1 clang # ......1181 .......................... PASS 
+ninja -C build1 libclang # .... 31 .......................... PASS
+ninja -C build1 # ............ 588 .......................... PASS 
+
+# install to llvmtools
+cmake --install build1 --strip
+
+# Make LLD the default linker
+ln -sv lld /llvmtools/bin/ld
+
+# Many packages use the name cc to call the C compiler. To
+# satisfy those packages, create a symlink
+ln -sv clang-17 /llvmtools/bin/cc
+
+# Clear variables used in the CMake invocation:
+unset CFLAGS CXXFLAGS CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF
+
+# cgnutools has served it's purpose. Remove from $PATH
+export PATH=/llvmtools/bin:/bin:/usr/bin
+
+# Stage1 clang expects headers in /llvmtools/usr/include
+# May need a patch clang source to change that...
+# o clang/lib/Driver/ToolChains/Linux.cpp
+# o clang/lib/Driver/ToolChains/Gnu.cpp
+# For now, create a directory and links.
+mkdir -pv /llvmtools/usr
+ln -sv ../include /llvmtools/usr/include
+
+# Test stage1 Clang
+echo "int main(){}" > dummy.c
+/llvmtools/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in]' dummy.log | grep ld.lld:
+# Should output:
+# ld.lld: /llvmtools/lib/Scrt1.o
+# ld.lld: /llvmtools/lib/crti.o
+# ld.lld: /llvmtools/lib/crtn.o
+
+# Verify that stage2 clang is searching for the correct header files:
+grep -B1 -A2 '^ /llvmtools' dummy.log
+# It should output:
+# #include <...> search starts here:
+#  /llvmtools/usr/include
+#  /mnt/cmlfs/llvmtools/lib/clang/17/include
+# End of search list.
+
+# Make sure no libraries are loaded from the host or cgnutools
+grep ld.lld:  dummy.log
+# ld.lld: /llvmtools/lib/Scrt1.o
+# ld.lld: /llvmtools/lib/crti.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtbegin.o
+# ld.lld: /tmp/dummy-35ed76.o
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /llvmtools/lib/libunwind.so
+# ld.lld: /llvmtools/lib/libatomic.so
+# ld.lld: /llvmtools/lib/libc.so
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/libclang_rt.builtins.a
+# ld.lld: /llvmtools/lib/libunwind.so
+# ld.lld: /mnt/cmlfs/llvmtools/lib/clang/17/lib/x86_64-pc-linux-musl/clang_rt.crtend.o
+# ld.lld: /llvmtools/lib/crtn.o
+
+# Check if stage1 clang++ [in llvmtools] has atomics.
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+/llvmtools/bin/clang++ \
+atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# Make sure stage1 clang can find libc++ headers:
+grep -B2 -A2 '^ /llvmtools' atomics-test.log
+# It should output this order:
+# #include <...> search starts here:
+#  /mnt/cmlfs/llvmtools/bin/../include/c++/v1
+#  /llvmtools/usr/include
+#  /mnt/cmlfs/llvmtools/lib/clang/17/include
+# End of search list.
+# NOTE: /llvmtools/include/c++/v1 should be searched first.
+
+# Test if stage1 clang supports C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+
+int main(){
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+/llvmtools/bin/clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# Should return nothing if there are no errors.
+
+# Execute the binary. Should output "C++". Hopefully this is not a problem later
+./a.out
+
+# Check that libunwind, libc++abi, libc++ and LLVM.so are GCC-free:
+llvm-readelf -d /llvmtools/lib/libunwind.so.1.0  | grep Shared | cut -b 37-
+# Shared library: [libc.so]
+llvm-readelf -d /llvmtools/lib/libc++.so.1.0  | grep Shared | cut -b 37-
+# Shared library: [libc.so]
+llvm-readelf -d /llvmtools/lib/libc++abi.so.1.0  | grep Shared | cut -b 37-
+# Shared library: [libc.so]
+llvm-readelf -d /llvmtools/lib/libLLVM-17.0.6.so | grep Shared | cut -b 37-
+# Shared library: [libz.so.1]
+# Shared library: [libc++.so.1]
+# Shared library: [libc.so]
+
+# If all is well, clean up
+rm -rf build dummy.* atomics-test.* cxx11-test.*
+unset CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF CFLAGS CXXFLAGS

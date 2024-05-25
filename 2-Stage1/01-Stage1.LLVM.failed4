@@ -4,10 +4,16 @@
 # o Reuse llvm-project source tree from before
 #
 
-export CFLAGS="-fPIC -I/cgnutools/include"
+# Fix stage 0 clang config
+cat >> /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
+-nostartfiles
+-lc++
+EOF
+
+export CFLAGS="-fPIC "
 export CXXFLAGS=$CFLAGS
 
-# Set the compiler and linker flags...
+# Set the compiler and linker flags to use stage 0 clang
 export  CARGS="-DCMAKE_C_COMPILER=/cgnutools/bin/clang "
 export CARGS+="-DCMAKE_CXX_COMPILER=/cgnutools/bin/clang++ "
 export CARGS+="-DCMAKE_AR=/cgnutools/bin/llvm-ar "
@@ -18,26 +24,12 @@ export CARGS+="-DCLANG_DEFAULT_LINKER=/llvmtools/bin/ld.lld "
 # Set the tuples & build target ...
 export CARGS+="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
 export CARGS+="-DLLVM_HOST_TRIPLE=${TARGET_TUPLE} "
-export CARGS+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} "
 export CARGS+="-DLLVM_TARGET_ARCH=${LARCH} "
 export CARGS+="-DLLVM_TARGETS_TO_BUILD=Native;host;${LARCH} "
 
 # Set the paths ...
 export CARGS+="-DCMAKE_INSTALL_PREFIX=/llvmtools "
 export CARGS+="-DDEFAULT_SYSROOT=/llvmtools "
-
-# Set options for compiler-rt
-# + avoid all the optional runtimes:
-export CARGS+="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
-export CARGS+="-DCOMPILER_RT_BUILD_XRAY=OFF "
-export CARGS+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
-export CARGS+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
-export CARGS+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
-# + Avoid need for libexecinfo:
-export CARGS+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
-export CARGS+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON "
-export CARGS+="-DCOMPILER_RT_CXX_LIBRARY=libcxx "
-export CARGS+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
 
 # Set options for clang
 # + Set the standard C++ library that clang will use to LLVM's libc++
@@ -47,27 +39,9 @@ export CARGS+="-DCLANG_DEFAULT_RTLIB=compiler-rt "
 export CARGS+="-DCLANG_DEFAULT_UNWINDLIB=libunwind "
 export CARGS+="-DCLANG_DEFAULT_CXX_STDLIB=libc++ "
 
-# Set options for libc++
-export CARGS+="-DLIBCXX_HAS_MUSL_LIBC=ON "
-export CARGS+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
-export CARGS+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
-export CARGS+="-DLIBCXX_CXX_ABI=libcxxabi "
-export CARGS+="-DLIBCXX_USE_COMPILER_RT=ON "
-export CARGS+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
-export CARGS+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
-
-# Set options fo libc++abi
-export CARGS+="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
-export CARGS+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
-export CARGS+="-DLIBCXXABI_USE_COMPILER_RT=ON "
-
-# Set options for libunwind
-export CARGS+="-DLIBUNWIND_INSTALL_HEADERS=ON "
-export CARGS+="-DLIBUNWIND_USE_COMPILER_RT=ON "
-
 # Set LLVM options
 # + Enable Exception handling and Runtime Type Info
-export CARGS="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+export CARGS+="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
 export CARGS+="-DLLVM_ENABLE_ZLIB=ON "
 export CARGS+="-DLLVM_INSTALL_UTILS=ON "
 export CARGS+="-DLLVM_BUILD_LLVM_DYLIB=ON "
@@ -90,27 +64,29 @@ export CARGS+="-DCMAKE_BUILD_TYPE=Release "
 export CARGS+="-G Ninja -Wno-dev "
 
 export EPRJS="lld;clang"
-export LVENDOR="llvmtools 4.0.1"
-
-export CARGS+="-DLLVM_ENABLE_PROJECTS=${EPRJS} "
-export CARGS+="-DCLANG_VENDOR=${LVENDOR} "
-export CARGS+="-DLLD_VENDOR=${LVENDOR} "
 
 # Just build stage 1 clang+lld+llvm-base as libc++, compiler-rt, 
 # and libunwind were just built
-cmake -B build1 -S llvm $CARGS 
+# * Use tablegens built earlier to correctly build tablgen for 
+# this iteration (stage1) of LLVM.
+cmake -B build1 -S llvm $CARGS \
+      -DLLVM_ENABLE_PROJECTS=${EPRJS} \
+      -DCLANG_VENDOR='llvmtools 4.0.1'  \
+      -DLLD_VENDOR='llvmtools 4.0.1' \
+      -DLLVM_TABLEGEN="/cgnutools/bin/llvm-tblgen" \
+      -DCLANG_TABLEGEN="/cgnutools/bin/clang-tblgen" 
 
 # compile
 ninja -C build1
 
 # For troubleshooting, this is the breakdown of build targets:
-ninja -C build1 llvm-headers # 198 targets .................. PASS 
-ninja -C build1 llvm-tblgen  #  68 .......................... PASS
-ninja -C build1 llvm-lib # .. 1598 .......................... PASS
+ninja -C build1 llvm-headers #  23 targets .................. PASS
+ninja -C build1 llvm-tblgen  # 241 .......................... PASS 
+ninja -C build1 llvm-lib # .. 1592 .......................... PASS
 ninja -C build1 lld # ........ 126 .......................... PASS
-ninja -C build1 clang # ......1181 .......................... PASS 
-ninja -C build1 libclang # .... 31 .......................... PASS
-ninja -C build1 # ............ 588 .......................... PASS 
+ninja -C build1 libclang # ... 848 .......................... FAIL
+ninja -C build1 clang # ......1174 .......................... 
+ninja -C build1 # ............ 588 ..........................  
 
 # install to llvmtools
 cmake --install build1 --strip

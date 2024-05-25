@@ -1,0 +1,6 @@
+# cgnutools: stage 0 musl libc
+# Build as cmlfs
+
+# Configure 
+ARCH=${MCA} CC=/cgnutools/bin/clang \
+

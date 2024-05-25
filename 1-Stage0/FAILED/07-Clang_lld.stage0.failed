@@ -1,0 +1,171 @@
+# cgnutools: Stage0 Clang+lld+llvm-base 
+# Build as cmlfs
+#
+# o Reuse llvm-project source tree from before
+# o stage 0 Clang will depend on cross-gcc headers & libraries. 
+#   It will build stage1 w/o libgcc_s & cross-gcc
+# o Stage 0 clang will install in cgnutools, but Sysroot will be llvmtools. This will
+#   avoid duplicate building of packages.
+
+# Force clang to use dynamic linux loader in /llvmtools
+patch -Np1 -i ../patches/llvm-cmlfs/modify-toolchain-dynamic-loader.llvmtools.patch 
+patch -Np1 -i ../patches/llvm-cmlfs/modify-test-dynamic-loader.llvmtools.patch 
+
+# Built llvm-tblgen will need libstdc++.so.6 & libgcc_s.so.1.
+# Set the rpath
+export  CFLAGS="-fPIC -I/cgnutools/include -Wl,-rpath=/cgnutools/${TARGET_TUPLE}/lib "
+export CXXFLAGS=$CFLAGS
+
+# Set the compiler and linker flags...
+export  CT="-DCMAKE_C_COMPILER=${TARGET_TUPLE}-gcc "
+export CT+="-DCMAKE_CXX_COMPILER=${TARGET_TUPLE}-g++ "
+export CT+="-DCMAKE_AR=/cgnutools/bin/${TARGET_TUPLE}-ar "
+export CT+="-DCMAKE_NM=/cgnutools/bin/${TARGET_TUPLE}-nm "
+export CT+="-DCMAKE_RANLIB=/cgnutools/bin/${TARGET_TUPLE}-ranlib "
+export CT+="-DCLANG_DEFAULT_LINKER=/cgnutools/bin/ld.lld "
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_HOST_TRIPLE=${CMLFS_HOST} "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=${LARCH} "
+export CTG+="-DLLVM_TARGET_ARCH=${LARCH} "
+export CTG+="-DLLVM_TARGETS_TO_BUILD=host;${LARCH} "
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+export CP+="-DDEFAULT_SYSROOT=/llvmtools "
+
+# Set LLVM options
+# + Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+# Turn off LLVM options
+# + Turn off features host may have
+export  COFF="-DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF -DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBPFM=OFF "
+
+# Just build clang & lld to use cross-gcc's headers & libstdcxx
+cmake -B build0  -G Ninja -Wno-dev -S llvm -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" -DCLANG_VENDOR="cgnutools 4.0.1" \
+      -DLLVM_INCLUDE_TESTS=OFF -DLIBCLANG_BUILD_STATIC=ON $CT $CP $CLLVM $COFF $CTG \
+      -DLLVM_TABLEGEN=/cgnutools/${CMLFS_HOST}/bin/llvm-tblgen \
+      -DCLANG_TABLEGEN=/cgnutools/${CMLFS_HOST}/bin/clang-tblgen 
+
+# Compile
+ninja -C build0
+
+# For trouble shooting:
+ninja -C build0 llvm-tblgen # 264 ................................. PASS
+ninja -C build0 llvm-lib # 356 .................................... PASS
+ninja -C build0 lld # 1092 ........................................ PASS 
+ninja -C build0 clang # 1107 ...................................... PASS 
+ninja -C build0 # 979 ............................................. PASS
+
+
+# Install
+cmake --install build0 --strip 
+
+# Install llvm-lit iscript for buidling standalone LLVM projects
+cp -va build0/bin/llvm-lit /cgnutools/bin/
+
+# Configure stage0 clang... to use cross-gcc header's and libraries.
+# Once libc++ is installed in llvmtools, this config will be modified
+cat > /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
+-L/cgnutools/lib
+-nostdinc++
+-I/cgnutools/${TARGET_TUPLE}/include/c++/13.2.0
+-I/cgnutools/${TARGET_TUPLE}/include/c++/13.2.0/${TARGET_TUPLE}
+-I/llvmtools/include
+EOF
+
+# Binaries built by stage0 clang will look for libstdcxx .
+# Add a search path for the dynamic linker/loader in llvmtools:
+echo "/cgnutools/${TARGET_TUPLE}/lib" >> /llvmtools/etc/ld-musl-${MCA}.path
+
+# Test stage0 Clang
+cd $CMLFS/sources
+echo "int main(){}" > dummy.c
+/cgnutools/bin/clang dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /llvmtools'
+
+# Shoud output:
+# [Requesting program interpreter: /llvmtools/lib/ld-musl-x86_64.so.1
+
+# Check if the correct start files are used
+grep  'crt[1in].o' dummy.log | grep 'ld.lld: '
+# ld.lld /llvmtools/lib/Scrt1.o 
+# ld.lld /llvmtools/lib/crti.o 
+# ld.lld /llvmtools/lib/crtn.o 
+
+# Verify that stage0 clang is searching for the correct header files:
+grep -B3 -A3 '^ /llvmtools/include' dummy.log
+##include <...> search starts here:
+# /cgnutools/i686-pc-linux-musl/include/c++/13.2.0
+# /cgnutools/i686-pc-linux-musl/include/c++/13.2.0/i686-pc-linux-musl
+# /llvmtools/include
+# /cgnutools/bin/../lib/gcc/i686-pc-linux-musl/13.2.0/../../../../i686-pc-linux-musl/include
+# /mnt/cmlfs/cgnutools/lib/clang/17/include
+# NOTE: The libstdcxx headers should be searched first before any other header directories.
+# NOTE: Above will differ sligthly if compiling for a different arch
+
+# Check if stage0 clang++ [in llvmtools] has atomics.
+cat > atomics-test.cpp << "EOF"
+#include <atomic>
+std::atomic<int> x;
+std::atomic<short> y;
+std::atomic<char> z;
+int main() {
+  ++z;
+  ++y;
+  return ++x;
+}
+EOF
+
+/cgnutools/bin/clang++ \
+atomics-test.cpp -v -Wl,--verbose &> atomics-test.log
+
+# Check for errors during compile or link:
+grep error:  atomics-test.log
+# Should return nothing if there are no errors.
+
+# Test if stage0 clang support C++11
+cat > cxx11-test.cpp << "EOF"
+#include <iostream>
+   #if __cplusplus==201402L
+   std::cout << "C++14" << std::endl;
+   #elif __cplusplus==201103L
+   std::cout << "C++11" << std::endl;
+   #else
+   std::cout << "C++" << std::endl;
+   #endif
+
+   return 0;
+}
+EOF
+
+/cgnutools/bin/clang++ cxx11-test.cpp -v -Wl,--verbose &> cxx11-test.log
+
+# Check for errors during compile or link:
+grep error: cxx11-test.log
+# Should return nothing if there are no errors.
+# If there is an error, this is not critical. Once libc++ is installed, this test should not fail with errors.
+
+# Execute the binary. Should output "C++" ... which may be a problem later.
+./a.out
+
+# Check if stage 0 clang supports exception handling:
+/cgnutools/bin/clang++ files/eh-test.cpp -v -Wl,--verbose &> eh-test.log
+grep error: eh-test.log
+# Should return nothing (this means no compilation errors)
+
+# Execute compiled binary with an argumet, say an interger:
+./a.out 4
+# Should return:
+# Error: Exception requested by caller
+# ... which means exception handling is supported
+
+# Stage 0 Clang is now configured & tested to use libgcc (not compiler-rt) and libstdcxx (not libc++)  
+
+# If all is good, remove build directory. Sourc tree will be re-used later
+rm -rf build dummy.* atomics-test.* cxx11-test.* eh-test.log
+unset CT CTG CP CRT CLG CLCPP CLCPPA CUW CLLVM COFF CFLAGS CXXFLAGS LINKERFLAGS

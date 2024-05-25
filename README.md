@@ -10,10 +10,7 @@ On March 28, 2024, malicious code was discovered in the upstream tarballs of xz.
 
 ## Getting Started
 
-The master branch may be unstable when I am working on upgrading CMLFS. 
-
-To build this project, pick a branch other than master OR choose a tag. Each branch & tag are based on the LLVM version.
-As of this writing, llvm-15.0.6 is stable. Older branches maybe incomplete or unstable (may not compile).
+This is the experimental branch for cross-compiling on non-similar CPU architectures (i.e. arm on x86_64 host).
 
 When I have time later, I will write a more thorough introduction for users new to CMLFS.
 
@@ -45,26 +42,26 @@ When I have time later, I will write a more thorough introduction for users new 
 <ul>
 <li>AMD64/x86_64: PASS --Toolchains and final system build sucessfully (musl & glibc hosts) .</li>
 <li>i686: PASS -- Toolchains and final system build sucessfully (musl host, glibc host not tested yet).</li>
-<li>AARCH64/ARM64: Pending</li>
+<li>AARCH64/ARM64: Pending... stage 1 LLVM fails to compile.</li>
 <li>ARMV7L: Pending</li>
 </ul>
 
 ## Goals
 
 <ul>
-<li> [x] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
-<li> [x] Build final root filesystem with LLVM</li>
-<li> [x] Set default linker as lld(LLVM)</li>
-<li> [x] Set default C++ standard library as libcxx(LLVM)</li>
-<li> [x] Set default C++ ABI library as libcxxabi(LLVM)</li>
-<li> [x] Set default stack unwinding library as libunwind(LLVM)</li>
-<li> [x] Eliminate dependacy on GCC's libgcc_s</li>
-<li> [x] Build GCC as a secondary systen compiler. </li>
-<li> [x] Build toolchain (llvmtools) with GCC as secondary compiler</li>
+<li> [ ] Build a toolchain (llvmtools) with LLVM+stage1_clang but without GCC</li>
+<li> [ ] Build final root filesystem with LLVM</li>
+<li> [ ] Set default linker as lld(LLVM)</li>
+<li> [ ] Set default C++ standard library as libcxx(LLVM)</li>
+<li> [ ] Set default C++ ABI library as libcxxabi(LLVM)</li>
+<li> [ ] Set default stack unwinding library as libunwind(LLVM)</li>
+<li> [ ] Eliminate dependacy on GCC's libgcc_s</li>
+<li> [ ] Build GCC as a secondary systen compiler. </li>
+<li> [ ] Build toolchain (llvmtools) with GCC as secondary compiler</li>
 <li> [x] Merge cross-tools build with cgnutools </li>
-<li> [x] Build successfully on a Glibc host </li>
-<li> [x] Build final system without GCC </li>
-<li> [x] Replace binutils with elftoolchain </li>
+<li> [ ] Build successfully on a Glibc host </li>
+<li> [ ] Build final system without GCC </li>
+<li> [ ] Replace binutils with elftoolchain </li>
 <li> [ ] Reduce LLVM size & build time for cgnutools and llvmtools </li>
 <li> [ ] Create initramfs with busybox & mdev </li>
 <li> [ ] Build on aarch64</li>
@@ -102,37 +99,24 @@ When I have time later, I will write a more thorough introduction for users new 
  <li>texinfo 4.7 </li>
   <li>xz 5.0.0 </li>
 </ul>
- * (if hostdistro is MLFS/LFS, then all development packages are installed)
+ * (if host distro is MLFS/LFS, then all development packages are installed)
 
 ## Current Method
 
-Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-compile a stage0 LLVM+clang. This stage0 clang will still link to `libgcc_s` [in cgnutools] but will later be used to build a stage1 clang free of `libbgcc_s`. The goal is to build clang+friends with clang and not GCC.
+Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-compile a stage0 LLVM. This stage0 clang will still link to `libgcc_s` [in cgnutools] but will later be used to build a stage1 clang free of `libbgcc_s`. The goal is to build clang+friends with clang and not GCC.
 
 * Some packages can be built once to be used by the toolchain [llvmtools] and the final system, but will be built twice to make it easy to implement a package managment system [which is outside the scope of this project]. 
 
 <ol>
-<li>Bootstrap build of cgnutools with mussel</li>
-<li>Use mussel-built toolchain (cgnutools) to build stage0 LLVM+clang+LLD & install in cgnutools</li>
-<li>Use stage0 LLVM+clang+LLD to build stage 1 runtimes to llvmtools in this order:
-  <ol>
-    <li>libc++ headers</li>
-    <li>compiler-rt</li>
-    <li>libc++abi, libc++, libunwind</li>
-  </ol>
-</li>
-<li>Build stage 1 LLVM+clang+compiler-rt+lld and install in llvmtools</li>
-<li>Build enough of llvmtools with stage 1 LLVM+clang+compiler-rt+lld to enter chroot</li>
-<li>Enter chroot and use stage 1 LLVM to build dependencies for building LLVM</li>
-<li>Use stage 1 LLVM to build stage 2 LLVM+clang+lld. Do not build runtimes (libc++{,abi}, libunwind, compiler-rt) yet.</li>
-<li>Use stage 2 LLVM to build & install the stage2 runtimes in this order
- <ol>  
-   <li>libc++-headers (required to build compiler-rt)</li>
-   <li>compiler-rt </li>
-   <li>libc++abi, libc++, libunwind
- </ol>
-</li>
-<li>Use stage 2 LLVM to rebuild stage 2 LLVM+clang+lld against installed stage 2 runtimes & set sysroot to /
-<li>Build final system with llvmtools </li>
+ <li>Use mussel to build a cross-compiling GCC toolchain: Runs on host; Builds binaries that run on target CPU arch. </li>
+ <li>Using the just build cross-gcc, cross-compile stage 1 musl libc, zlib-ng, chimera's libatomic, and LLVM's libunwind.</li>
+ <li>Compile LLVM's tablegen binaries for host.</li>
+ <li>Use host's GCC to build stage 0 clang+LLD+LLVM-base.</li>
+ <li>Use stage 0 clang to build stage 1 libc++ & compiler-rt.</li> 
+ <li>Use stage 0 clang to build stage 1 clang+LLD+LLVM-base.</li>
+ <li>Cross-compile enough packages to an emulated chroot or Virtual Machine.</li>
+ <li>Build the rest of the stage 1 toolchain in chroot/VM.</li>
+ <li>Build the final system with stage 1 toolchain.</li>
 </ol>
 
 ## Issues
@@ -140,11 +124,14 @@ Build 'cross-tools' with [Mussel](https://github.com/firasuke/mussel) to cross-c
 <li>Test for C++11/14 fails without error when testing stage0 & stage1 LLVM's. Likely test needs updating</li>
 <li>Cannot build LLVM all at once. Have to build just LLVM-base, clang, and lld first... then use it to build the runtimes and then rebuild LLVM-base, clang, and lld to compile against just built runtimes.</li> 
 <li> mussel cannot be reliably built by a system's clang. For now, use GCC. Not sure if just an isolated issue with my system or not. Will need to verify on a MLFS system with LLVM as secondary system compiler.</li>
+<li>Stage 1 LLVM fails to cross-build as it may appear just built binaries during build attempts to run on host </li>
+<li>Cross-GCC (built by mussel) has collect2 that cannot find linkers when cross-gcc is passed -fuse-ld=lld</li>
 </ul>
 
 ## Change log
 
 <ul>
+<li>4.0.1.e: 1st attempt to cross-compile CMLFS with non-similar host & target CPU architechtures</li>
 <li>4.0.1: Upgraded to LLVM 17.0.6. Updated build method for cross-compiling. Stage 2 LLVM no longer needs a rebuild.</li>
 <li>4.0.0: Upgraded to LLVM 17.0.5 </li>
 <li>3.0.0: Upgraded to LLVM-15.0.6. cgnutools is now bootstrapped with mussel. Replaced binutils with elftoolchain. Most of llvmtools will be build under chroot to avoid contamination from host. </li>

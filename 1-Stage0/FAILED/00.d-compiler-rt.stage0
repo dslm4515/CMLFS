@@ -1,0 +1,79 @@
+# llvmtools: stage 0 LLVM -- compiler-rt
+# Build as cmlfs
+
+# NOTE: Reuse source tree from before 
+
+# Set the rpath
+export  CFLAGS="-fPIC -I/cgnutools/include -Wl,-rpath=/opt/gnu/lib"
+export CXXFLAGS=$CFLAGS
+
+# Set the tuples & build target ...
+export  CTG="-DLLVM_HOST_TRIPLE=${CMLFS_HOST} "
+export CTG+="-DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} " #<<
+export CTG+="-DLLVM_DEFAULT_TARGET_TRIPLE=${TARGET_TUPLE} " # <<
+
+# Set the paths ...
+export  CP="-DCMAKE_INSTALL_PREFIX=/cgnutools "
+
+# Set LLVM options: Enable Exception handling and Runtime Type Info
+export  CLLVM="-DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON "
+
+# Turn off LLVM options: Turn off features host may have
+export  COFF="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_LIBXML2=OFF "
+export COFF+="-DLLVM_ENABLE_LIBEDIT=OFF "
+export COFF+="-DLLVM_ENABLE_TERMINFO=OFF "
+
+# Set options fo libc++abi
+export  CLCPPA="-DLIBCXXABI_USE_LLVM_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON "
+export CLCPPA+="-DLIBCXXABI_USE_COMPILER_RT=OFF "
+
+# Set options for libc++
+export  CLCPP="-DLIBCXX_HAS_MUSL_LIBC=ON "
+export CLCPP+="-DLIBCXX_ENABLE_LOCALIZATION=ON "
+export CLCPP+="-DLIBCXX_ENABLE_NEW_DELETE_DEFINITIONS=ON "
+export CLCPP+="-DLIBCXX_CXX_ABI=libcxxabi "
+export CLCPP+="-DLIBCXX_USE_COMPILER_RT=OFF "
+export CLCPP+="-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON "
+export CLCPP+="-DLIBCXX_ENABLE_ASSERTIONS=ON "
+
+# Set options for compiler-rt
+# + avoid all the optional runtimes:
+export  CRT="-DCOMPILER_RT_BUILD_SANITIZERS=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_XRAY=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_LIBFUZZER=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_PROFILE=OFF "
+export CRT+="-DCOMPILER_RT_BUILD_MEMPROF=OFF "
+# + Avoid need for libexecinfo:
+export CRT+="-DCOMPILER_RT_BUILD_GWP_ASAN=OFF "
+export CRT+="-DCOMPILER_RT_USE_LLVM_UNWINDER=ON "
+export CRT+="-DCOMPILER_RT_USE_BUILTINS_LIBRARY=OFF "
+
+# Configure the source to install headers
+# NOTE: Use full path if host's GCC is not installed in /usr
+PATH=/opt/gnu/bin:/bin \
+CC=gcc CXX=g++ \
+cmake -B build0-crt  -G Ninja -Wno-dev -S runtimes \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_INCLUDE_TESTS=OFF \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt"  \
+      -DLLVM_ROOT=/cgnutools $CP $CLLVM $COFF $CTG $CLCPPA $CLCPP $CRT 
+
+# Build compiler-rt
+PATH=/opt/gnu/bin:/bin \
+ninja -C build0-crt compiler-rt
+
+# Install compiler-rt in cgnutools
+ninja -C build0-crt install-compiler-rt-headers-stripped
+ninja -C build0-crt install-compiler-rt-stripped
+
+# Move misplaced files
+mkdir -pv /cgnutools/lib/clang/17/lib
+mv /cgnutools/lib/linux /cgnutools/lib/clang/17/lib/
+
+# Configure stage 0 clang to use compiler-rt
+cat >> /cgnutools/bin/${TARGET_TUPLE}.cfg <<EOF
+-rtlib=compiler-rt
+EOF
+
+# FAIL: Builds only compiler-rt for host, none for target
